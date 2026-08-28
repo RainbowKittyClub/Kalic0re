@@ -4,7 +4,8 @@ import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import club.rainbowkitty.rkcore.books.hover.HoverTitles;
+import club.rainbowkitty.rkcore.common.frame.FrameLabels;
+import club.rainbowkitty.rkcore.common.label.HoverScanner;
 
 /** Mod entrypoint. **/
 public class Main implements ModInitializer {
@@ -13,7 +14,12 @@ public class Main implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        HoverTitles.register();
+        HoverScanner.init();
+        FrameLabels.register();
+
+        BookText.register();
+        ShelfLabels.register();
+
         LOGGER.info("RKCore Books loaded!");
     }
 }

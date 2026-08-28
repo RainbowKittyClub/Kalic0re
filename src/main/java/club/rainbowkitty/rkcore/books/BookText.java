@@ -1,4 +1,7 @@
-package club.rainbowkitty.rkcore.books.hover;
+package club.rainbowkitty.rkcore.books;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
@@ -8,69 +11,71 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
-// Builds the label text for a shelved book, styled so its type reads at a glance.
-final class BookTitle {
+import club.rainbowkitty.rkcore.common.label.ItemText;
+import club.rainbowkitty.rkcore.common.label.LabelText;
+
+/** Labels a book with its title, styled so its type reads at a glance, over what it holds. */
+public final class BookText {
     private static final ChatFormatting UNNAMED = ChatFormatting.GRAY;
     private static final ChatFormatting ENCHANTMENT = ChatFormatting.YELLOW;
     private static final ChatFormatting CURSE = ChatFormatting.RED;
 
-    private BookTitle() {
+    private BookText() {
     }
 
-    static Component of(ItemStack book) {
-        if (book.getItem() == Items.ENCHANTED_BOOK) {
-            Component enchantments = enchantments(book);
-            if (enchantments != null) {
-                return enchantments;
-            }
+    /** Claims books away from the generic item text. */
+    public static void register() {
+        ItemText.register(BookText::of);
+    }
+
+    /** The label for a book, or null for anything else so the generic form takes over. */
+    public static LabelText of(ItemStack stack) {
+        if (!stack.typeHolder().is(ItemTags.BOOKSHELF_BOOKS)) {
+            return null;
         }
+        return new LabelText(heading(stack), subheadings(stack));
+    }
 
-        boolean named = book.getCustomName() != null;
-
+    private static Component heading(ItemStack book) {
         // A draft stays dim whether or not it has been titled; italics mark the title as the
         // author's working one rather than a published one.
         if (book.getItem() == Items.WRITABLE_BOOK) {
             MutableComponent draft = Component.empty().withStyle(UNNAMED);
-            return (named ? draft.withStyle(ChatFormatting.ITALIC) : draft)
+            return (book.getCustomName() != null ? draft.withStyle(ChatFormatting.ITALIC) : draft)
                     .append(book.getHoverName());
         }
 
-        // Rarity is the item's own signal about itself — it is what makes a knowledge book
-        // magenta — so it outranks the grey that only means "has no title of its own".
-        ChatFormatting rarity = book.getRarity().color();
-        if (rarity != ChatFormatting.WHITE) {
-            return Component.empty().withStyle(rarity).append(book.getHoverName());
-        }
-
-        if (!named) {
-            return Component.empty().withStyle(UNNAMED).append(book.getHoverName());
-        }
-
-        return book.getHoverName();
+        return ItemText.heading(book);
     }
 
-    // Null rather than a name when there is nothing stored, so the caller falls back to the item.
-    private static Component enchantments(ItemStack book) {
+    private static List<Component> subheadings(ItemStack book) {
+        List<Component> enchantments = enchantments(book);
+        List<Component> lore = ItemText.subheadings(book);
+        if (enchantments.isEmpty()) {
+            return lore;
+        }
+
+        List<Component> lines = new ArrayList<>(enchantments);
+        lines.addAll(lore);
+        return lines;
+    }
+
+    private static List<Component> enchantments(ItemStack book) {
         ItemEnchantments stored = book.get(DataComponents.STORED_ENCHANTMENTS);
         if (stored == null || stored.isEmpty()) {
-            return null;
+            return List.of();
         }
 
-        MutableComponent lines = Component.empty().withStyle(ChatFormatting.ITALIC);
-        boolean first = true;
+        List<Component> lines = new ArrayList<>();
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : stored.entrySet()) {
-            if (!first) {
-                lines.append("\n");
-            }
-            first = false;
-            lines.append(name(entry.getKey(), entry.getIntValue()));
+            lines.add(name(entry.getKey(), entry.getIntValue()));
         }
-
         return lines;
     }
 
@@ -83,6 +88,6 @@ final class BookTitle {
         }
 
         ChatFormatting colour = enchantment.is(EnchantmentTags.CURSE) ? CURSE : ENCHANTMENT;
-        return Component.empty().withStyle(colour).append(name);
+        return Component.empty().withStyle(colour, ChatFormatting.ITALIC).append(name);
     }
 }

@@ -1,7 +1,8 @@
 # Bookshelf hover titles
 
-Design notes for the first rkcore-books feature. Implemented in
-`club.rainbowkitty.rkcore.books.hover`.
+Design notes for the first rkcore-books feature. The label and raycast machinery is in
+`club.rainbowkitty.rkcore.common.label`; the shelf placement and book styling are in
+`club.rainbowkitty.rkcore.books`.
 
 ## Behaviour
 
@@ -64,13 +65,18 @@ Titles come from `ItemStack.getHoverName()`. Vanilla already routes book titles
 through it — `getCustomName()` falls back to `WRITTEN_BOOK_CONTENT.title().raw()` —
 so there is no reason to read the data component directly. Per item:
 
-| Item | Label shows | Style |
+| Item | Heading | Style |
 | --- | --- | --- |
 | `written_book` | the title, or `CUSTOM_NAME` if set (that wins) | unstyled |
-| `enchanted_book` | one enchantment per line, from `STORED_ENCHANTMENTS` | yellow italic |
+| `enchanted_book` | the plain item name | yellow |
 | `writable_book` | `CUSTOM_NAME`, else "Book and Quill" | grey, italic once named |
 | `knowledge_book` | the plain item name | magenta |
 | `book` | the plain item name | grey |
+
+The lower plate takes `STORED_ENCHANTMENTS` one enchantment per line in yellow italic,
+then `LORE`. Lore comes from `ItemLore.styledLines()` rather than `lines()`, so it
+arrives with the same dark purple italic base a tooltip would give it, and an author's
+own colour still wins because that style is merged as a base rather than applied over.
 
 ## Styling
 
@@ -131,12 +137,21 @@ tick removes most of the remaining work for idle players.
 
 ## Rendering
 
-One `ElementHolder` per **player**, holding one `TextDisplayElement`.
+One `ElementHolder` per **player**, holding two `TextDisplayElement`s: a heading plate
+and a subheading plate under it, so a name reads as a name rather than as the first
+line of whatever the item has to say about itself. The gap between them is half a line
+height, derived from the scale so it reads the same at any size.
 
 Per-player is the right unit here specifically because the label is hovered-slot
 only: two players at the same shelf can hover different slots, so both the text and
 the position differ per viewer. A shared per-shelf holder would only work if every
 viewer saw identical content.
+
+An item with no lore still has both elements; the lower one is blanked by setting its
+text empty **and** its background to 0. `Display.TextDisplay.INITIAL_BACKGROUND` is
+`0x40000000`, not transparent, so empty text alone leaves a small box hanging there.
+Removing the element instead is not an option worth taking: `GenericEntityElement`'s
+`stopWatching` is a no-op, so per-element hiding never despawns anything.
 
 Relevant setters — note `setBackground` takes a packed ARGB int (pass `0` for fully
 transparent; `setDefaultBackground(true)` instead forces the client's configured
@@ -195,10 +210,24 @@ the scan. The non-ticking variant means `setText` is otherwise never flushed to
 clients. (`ofTicking` would also work, since a 4.5-block reach puts the player well
 inside simulation distance, but self-driving keeps the update in one place.)
 
-Position: with `Direction f = state.getValue(FACING)`, the face plane is
-`Vec3.atCenterOf(pos).relative(f, 0.5)`. Push out a little further along `f`, and set
-the vertical from the hovered row — visual row centres are `y + 0.75` for the top row
-and `y + 0.25` for the bottom. Horizontal stays centred on the block.
+**Placement goes in the transformation, not the entity position.** The client rebuilds
+a display's render state in its own `tick()` (`Display.java:173`) after the data packet
+arrives, but a move packet takes effect the moment it lands. Setting text and position
+together therefore shows the previous target's text at the new target's place for
+exactly one tick. `DisplayElement.setTranslation` writes into `syncedData`, so the
+placement travels in the same `ClientboundSetEntityDataPacket` as the text and the
+client applies the pair in one pass.
+
+That makes offsets **label-space**, since `DisplayRenderer` applies the transformation
+after the billboard quaternion (`:85` then `:87`). For a `FIXED` label rotated to
+`facing.toYRot()` the local axes work out as world up and `facing` — local `+Z` maps to
+`(-sin ψ, 0, cos ψ)`, which is exactly the direction vector of yaw ψ — so the face
+clearance is a plain `+Z` push. For a billboard the axes follow the camera, which is
+what keeps a frame's label sat over its item on screen from any angle. Translation is
+composed before scale (`Transformation.compose`), so it stays in unscaled blocks.
+
+The anchor is `Vec3.atCenterOf(pos)`; the vertical comes from the hovered row, whose
+visual centres are `y + 0.75` for the top row and `y + 0.25` for the bottom.
 
 **Wrapping replaces collision avoidance.** `setLineWidth` takes font pixels, so setting
 it to one block's worth — `1.0 / (0.025 × scale)` — makes the client wrap every label to
@@ -215,8 +244,9 @@ construction.
 A text display is **bottom-anchored, not centred**: the renderer translates the whole
 block by `-height` before the negative Y scale flips it (`DisplayRenderer.java:268`), so
 lines stack upward from the element's position. Left alone, a wrapped or multi-line label
-climbs off the top of the shelf. Subtract `(lines - 1) × lineHeight / 2` from the vertical
-offset to balance it on the point a single line would occupy.
+climbs off the top of the shelf. Subtract `(height - lineHeight) / 2` from the vertical
+offset to balance the whole label — both plates and the gap — on the point a single line
+would occupy.
 
 That requires predicting the line count the client will arrive at, since the client is
 what wraps. Estimate per character — `Font` is client-only — using the default font's 6px

@@ -1,4 +1,4 @@
-package club.rainbowkitty.rkcore.books.mixin;
+package club.rainbowkitty.rkcore.common.mixin;
 
 import java.util.ArrayList;
 import java.util.List;
