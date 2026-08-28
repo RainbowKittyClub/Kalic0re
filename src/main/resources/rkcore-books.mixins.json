@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "club.rainbowkitty.rkcore.books.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ServerEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
