@@ -51,7 +51,11 @@ public final class FrameLabels implements EntityLabels {
     public LabelTarget target(ServerPlayer viewer, ServerLevel level, Entity entity) {
         ItemFrame frame = (ItemFrame) entity;
         ItemStack item = frame.getItem();
-        if (item.isEmpty()) {
+
+        // The same stacks vanilla would have nametagged and no others: ItemFrameRenderer's
+        // shouldShowName asks for a custom name, which for a written book is its title. An item
+        // that was anonymous in a frame before stays anonymous.
+        if (item.getCustomName() == null) {
             return null;
         }
 

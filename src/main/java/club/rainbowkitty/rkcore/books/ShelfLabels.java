@@ -31,7 +31,9 @@ public final class ShelfLabels implements BlockLabels {
             Display.BillboardConstraints.FIXED, false, 0.9, Display.TextDisplay.Align.CENTER,
             true, Brightness.FULL_BRIGHT);
 
-    private static final double FACE_CLEARANCE = 0.65;
+    // Measured from the block centre, so half a block reaches the front face and the rest is the
+    // gap that keeps the text off it.
+    private static final double FACE_CLEARANCE = 0.5 + 1.0 / 16.0;
     private static final double ROW_OFFSET = 0.25;
 
     private ShelfLabels() {
