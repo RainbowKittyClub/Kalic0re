@@ -5,7 +5,6 @@ import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.item.ItemStack;
@@ -45,7 +44,7 @@ public final class ShelfLabels implements BlockLabels {
     }
 
     @Override
-    public LabelTarget target(ServerPlayer viewer, ServerLevel level, BlockHitResult hit) {
+    public LabelTarget target(ServerLevel level, BlockHitResult hit) {
         BlockPos pos = hit.getBlockPos();
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof ChiseledBookShelfBlock shelf)) {

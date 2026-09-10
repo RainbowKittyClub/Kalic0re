@@ -9,4 +9,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'rkcore-books'
+rootProject.name = 'rkcore'

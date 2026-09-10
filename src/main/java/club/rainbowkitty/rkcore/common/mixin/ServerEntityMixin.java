@@ -33,7 +33,7 @@ abstract class ServerEntityMixin {
                             + "<init>(ILjava/util/List;)V"),
             index = 1,
             require = 2)
-    private List<SynchedEntityData.DataValue<?>> rkcoreBooks$hideFramedName(
+    private List<SynchedEntityData.DataValue<?>> rkcore$hideFramedName(
             List<SynchedEntityData.DataValue<?>> values) {
         if (!(this.entity instanceof ItemFrame)) {
             return values;

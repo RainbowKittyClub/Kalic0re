@@ -21,7 +21,7 @@
     ]
   },
   "mixins": [
-    "rkcore-books.mixins.json"
+    "rkcore.mixins.json"
   ],
 
   "depends": {

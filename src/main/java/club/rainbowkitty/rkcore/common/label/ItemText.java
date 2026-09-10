@@ -3,16 +3,26 @@ package club.rainbowkitty.rkcore.common.label;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
+
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
-/** Builds the label text for an item: a heading naming it, then any lore beneath it. */
+/** Builds the label text for an item: a heading naming it, then its enchantments and lore. */
 public final class ItemText {
     private static final ChatFormatting UNNAMED = ChatFormatting.GRAY;
+    private static final ChatFormatting ENCHANTMENT = ChatFormatting.YELLOW;
+    private static final ChatFormatting CURSE = ChatFormatting.RED;
     private static final List<Function<ItemStack, LabelText>> BUILDERS = new ArrayList<>();
 
     private ItemText() {
@@ -53,9 +63,39 @@ public final class ItemText {
         return stack.getHoverName();
     }
 
-    /** The item's lore, styled the way a tooltip would style it. */
+    /** The item's enchantments, then its lore styled the way a tooltip would style it. */
     public static List<Component> subheadings(ItemStack stack) {
+        return Stream.concat(enchantmentLines(stack.get(DataComponents.ENCHANTMENTS)).stream(),
+                lore(stack).stream()).toList();
+    }
+
+    /** One line per enchantment, for whichever component holds them, or none for null or empty. */
+    public static List<Component> enchantmentLines(ItemEnchantments enchantments) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            return List.of();
+        }
+
+        List<Component> lines = new ArrayList<>();
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+            lines.add(enchantmentName(entry.getKey(), entry.getIntValue()));
+        }
+        return lines;
+    }
+
+    private static List<Component> lore(ItemStack stack) {
         ItemLore lore = stack.get(DataComponents.LORE);
         return lore == null ? List.of() : lore.styledLines();
+    }
+
+    // Enchantment.getFullname cannot be reused: it merges its colour into the component itself,
+    // which then beats anything the label sets. The parts it builds the name from are public.
+    private static Component enchantmentName(Holder<Enchantment> enchantment, int level) {
+        MutableComponent name = enchantment.value().description().copy();
+        if (level != 1 || enchantment.value().getMaxLevel() != 1) {
+            name.append(" ").append(Component.translatable("enchantment.level." + level));
+        }
+
+        ChatFormatting colour = enchantment.is(EnchantmentTags.CURSE) ? CURSE : ENCHANTMENT;
+        return Component.empty().withStyle(colour, ChatFormatting.ITALIC).append(name);
     }
 }

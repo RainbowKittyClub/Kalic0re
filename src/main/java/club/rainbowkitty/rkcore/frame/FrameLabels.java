@@ -1,14 +1,14 @@
-package club.rainbowkitty.rkcore.common.frame;
+package club.rainbowkitty.rkcore.frame;
 
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import club.rainbowkitty.rkcore.common.label.EntityLabels;
@@ -22,10 +22,7 @@ import club.rainbowkitty.rkcore.common.label.LabelText;
 /** Names whatever is in the item frame under a player's crosshair. */
 public final class FrameLabels implements EntityLabels {
     // Replaces vanilla's own framed-item nametag like for like: that one billboarded and drew
-    // through walls, so this one has to as well or framed items become harder to read than before.
-    // The shelf label wraps to its block because it is pinned flat against one. This one floats
-    // clear and turns to face the viewer, so it only needs a bound loose enough that a long name
-    // does not become a tall column.
+    // through walls, so this one has to as well or framed items get harder to read than before.
     private static final LabelStyle STYLE = new LabelStyle(0.5F,
             Display.BillboardConstraints.CENTER, true, 2.5, Display.TextDisplay.Align.CENTER,
             true, Brightness.FULL_BRIGHT);
@@ -48,8 +45,8 @@ public final class FrameLabels implements EntityLabels {
     }
 
     @Override
-    public LabelTarget target(ServerPlayer viewer, ServerLevel level, Entity entity) {
-        ItemFrame frame = (ItemFrame) entity;
+    public LabelTarget target(ServerLevel level, EntityHitResult hit) {
+        ItemFrame frame = (ItemFrame) hit.getEntity();
         ItemStack item = frame.getItem();
 
         // The same stacks vanilla would have nametagged and no others: ItemFrameRenderer's

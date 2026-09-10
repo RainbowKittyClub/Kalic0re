@@ -1,8 +1,8 @@
 package club.rainbowkitty.rkcore.common.label;
 
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.EntityHitResult;
 
 /** Labels entities of one kind for {@link HoverScanner}. */
 public interface EntityLabels {
@@ -12,6 +12,6 @@ public interface EntityLabels {
      */
     boolean handles(Entity entity);
 
-    /** The label for the entity, or null when it has nothing to show right now. */
-    LabelTarget target(ServerPlayer viewer, ServerLevel level, Entity entity);
+    /** The label for the entity that was hit, or null when it has nothing to show. */
+    LabelTarget target(ServerLevel level, EntityHitResult hit);
 }

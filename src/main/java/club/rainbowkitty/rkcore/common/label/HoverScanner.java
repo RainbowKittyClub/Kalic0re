@@ -87,7 +87,7 @@ public final class HoverScanner {
                 : eye.distanceToSqr(blockHit.getLocation());
 
         LabelTarget entity = fromEntity(player, level, eye, range, limit);
-        return entity != null ? entity : fromBlock(player, level, blockHit);
+        return entity != null ? entity : fromBlock(level, blockHit);
     }
 
     private static LabelTarget fromEntity(ServerPlayer player, ServerLevel level, Vec3 eye,
@@ -110,7 +110,7 @@ public final class HoverScanner {
             if (!provider.handles(hit.getEntity())) {
                 continue;
             }
-            LabelTarget target = provider.target(player, level, hit.getEntity());
+            LabelTarget target = provider.target(level, hit);
             if (target != null) {
                 return target;
             }
@@ -127,13 +127,13 @@ public final class HoverScanner {
         return false;
     }
 
-    private static LabelTarget fromBlock(ServerPlayer player, ServerLevel level, HitResult result) {
+    private static LabelTarget fromBlock(ServerLevel level, HitResult result) {
         if (!(result instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
             return null;
         }
 
         for (BlockLabels provider : BLOCK_PROVIDERS) {
-            LabelTarget target = provider.target(player, level, hit);
+            LabelTarget target = provider.target(level, hit);
             if (target != null) {
                 return target;
             }

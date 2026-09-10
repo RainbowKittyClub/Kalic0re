@@ -71,13 +71,9 @@ final class HoverLabel {
         this.shown = false;
     }
 
-    /*
-     * Placement rides in the display transformation rather than in the element's position, so that
-     * both plates move in the same tracked-data packet their text travels in and the client applies
-     * the pair together when it next rebuilds the display's render state. Moving the element
-     * instead splits them, because a position packet takes effect the moment it lands: the label
-     * then spends a tick showing the previous target's text at the new target's place.
-     */
+    // Placement rides in the display transformation, not the element's position, so it travels in
+    // the same packet as the text. A position packet lands immediately and would split the two,
+    // leaving the label a tick showing the old text at the new place.
     private void layout(LabelTarget target) {
         LabelText text = target.text();
         Component below = text.subheading();
