@@ -1,6 +1,7 @@
 package club.rainbowkitty.rkcore.common.armor.datagen;
 
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -40,11 +41,11 @@ public final class ArmorTextureProvider implements DataProvider {
     public CompletableFuture<?> run(CachedOutput cache) {
         ClassLoader loader = ArmorTextureProvider.class.getClassLoader();
         List<CompletableFuture<?>> writes = new ArrayList<>();
+        PackOutput.PathProvider items =
+                output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "textures/item");
 
         for (ArmorArt entry : art) {
             ArmorSet set = entry.set();
-            PackOutput.PathProvider items =
-                    output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "textures/item");
             for (ArmorPiece piece : set.pieces()) {
                 String source = entry.itemArt().get(piece.type());
                 if (source == null) {
@@ -70,7 +71,7 @@ public final class ArmorTextureProvider implements DataProvider {
     }
 
     // Named for this provider so a stuck write is attributable in a thread dump.
-    private static CompletableFuture<?> write(CachedOutput cache, java.nio.file.Path path,
+    private static CompletableFuture<?> write(CachedOutput cache, Path path,
             BufferedImage source, int tint) {
         return PngAssets.save(cache, path, PngAssets.tint(source, tint), "armorTextures");
     }

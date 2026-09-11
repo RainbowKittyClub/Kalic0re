@@ -42,9 +42,4 @@ public record ArmorStats(Map<ArmorType, Integer> defense, int enchantmentValue,
                     + " knockbackResistance=" + knockbackResistance);
         }
     }
-
-    /** Armour points for a slot, or zero where the set gives that slot none. */
-    public int defenseFor(ArmorType type) {
-        return defense.getOrDefault(type, 0);
-    }
 }

@@ -1,8 +1,8 @@
 package club.rainbowkitty.rkcore.common.armor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -111,10 +112,12 @@ public record ArmorSet(String namespace, String name, ArmorStats stats,
     }
 
     // One asset per set means a target declared twice has to agree, since only one of the two
-    // layer lists could ever be written.
+    // layer lists could ever be written. Merged into an EnumMap so the result iterates in a fixed
+    // order whatever order the pieces declared their targets in — datagen picks a set's dyed
+    // overlay off the first match, and an enum-keyed Map.copyOf iterates differently per JVM run.
     private static Map<ArmorLayerTarget, List<ArmorLayer>> mergeLayers(String name,
             List<ArmorPiece> pieces) {
-        Map<ArmorLayerTarget, List<ArmorLayer>> merged = new LinkedHashMap<>();
+        Map<ArmorLayerTarget, List<ArmorLayer>> merged = new EnumMap<>(ArmorLayerTarget.class);
         for (ArmorPiece piece : pieces) {
             piece.layers().forEach((target, layers) -> {
                 List<ArmorLayer> existing = merged.putIfAbsent(target, layers);
@@ -125,7 +128,7 @@ public record ArmorSet(String namespace, String name, ArmorStats stats,
                 }
             });
         }
-        return Map.copyOf(merged);
+        return Collections.unmodifiableMap(merged);
     }
 
     /**
@@ -191,7 +194,8 @@ public record ArmorSet(String namespace, String name, ArmorStats stats,
         /** Restricts the set to the given entity types; unset, any entity may wear it. */
         @SafeVarargs
         public final Builder allowedWearers(EntityType<?>... types) {
-            return allowedWearers(HolderSet.direct(EntityType::builtInRegistryHolder, types));
+            return allowedWearers(HolderSet.direct(
+                    BuiltInRegistries.ENTITY_TYPE::wrapAsHolder, types));
         }
 
         /** Restricts the set to a set of entity types, e.g. a tag's contents. */

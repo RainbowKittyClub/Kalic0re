@@ -1,10 +1,12 @@
 package club.rainbowkitty.rkcore.common.armor.datagen;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 
@@ -71,16 +73,17 @@ public final class ArmorEquipmentProvider implements DataProvider {
     private static Map<ArmorLayerTarget, EquipmentClientInfo.LayerType> resolveLayerTypes() {
         Map<ArmorLayerTarget, EquipmentClientInfo.LayerType> types =
                 new EnumMap<>(ArmorLayerTarget.class);
+        Map<String, EquipmentClientInfo.LayerType> byName = Arrays.stream(
+                        EquipmentClientInfo.LayerType.values())
+                .collect(Collectors.toMap(EquipmentClientInfo.LayerType::getSerializedName,
+                        type -> type));
         for (ArmorLayerTarget target : ArmorLayerTarget.values()) {
-            for (EquipmentClientInfo.LayerType type : EquipmentClientInfo.LayerType.values()) {
-                if (type.getSerializedName().equals(target.serializedName())) {
-                    types.put(target, type);
-                }
-            }
-            if (!types.containsKey(target)) {
+            EquipmentClientInfo.LayerType type = byName.get(target.serializedName());
+            if (type == null) {
                 throw new IllegalStateException("No EquipmentClientInfo.LayerType is serialized"
                         + " as '" + target.serializedName() + "', which " + target + " mirrors");
             }
+            types.put(target, type);
         }
         return types;
     }

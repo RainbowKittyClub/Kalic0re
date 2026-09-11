@@ -1,7 +1,9 @@
 package club.rainbowkitty.rkcore.common.armor.datagen;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
@@ -42,13 +44,9 @@ public final class ArmorLanguageProvider extends FabricLanguageProvider {
 
     // Underscores are word breaks in every registry path this framework generates.
     private static String displayName(String path) {
-        StringBuilder name = new StringBuilder();
-        for (String word : path.split("_")) {
-            if (!word.isEmpty()) {
-                name.append(name.isEmpty() ? "" : " ")
-                        .append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
-            }
-        }
-        return name.toString();
+        return Arrays.stream(path.split("_"))
+                .filter(word -> !word.isEmpty())
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                .collect(Collectors.joining(" "));
     }
 }

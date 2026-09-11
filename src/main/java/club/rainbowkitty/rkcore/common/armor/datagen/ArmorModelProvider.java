@@ -100,13 +100,13 @@ public final class ArmorModelProvider implements DataProvider {
             return ItemModelUtils.plainModel(piece.itemModel().orElseThrow());
         }
 
+        // The generated model and the texture it shows share an id, both being the piece's own.
         Identifier icon = set.itemId(piece).withPath(path -> "item/" + path);
-        Identifier plainModel = icon;
-        ModelTemplates.FLAT_ITEM.create(plainModel, TextureMapping.layer0(new Material(icon)),
+        ModelTemplates.FLAT_ITEM.create(icon, TextureMapping.layer0(new Material(icon)),
                 models::put);
 
         if (overlay.isPresent()) {
-            Identifier dyedModel = plainModel.withSuffix("_dyed");
+            Identifier dyedModel = icon.withSuffix("_dyed");
             ModelTemplates.TWO_LAYERED_ITEM.create(dyedModel,
                     TextureMapping.layered(new Material(icon), new Material(overlay.get())),
                     models::put);
@@ -116,12 +116,12 @@ public final class ArmorModelProvider implements DataProvider {
                     ItemModelUtils.hasComponent(DataComponents.DYED_COLOR),
                     ItemModelUtils.tintedModel(dyedModel, ItemModelUtils.constantTint(-1),
                             new Dye(0)),
-                    ItemModelUtils.plainModel(plainModel));
+                    ItemModelUtils.plainModel(icon));
         }
         if (tintsWholeLayer(set)) {
-            return ItemModelUtils.tintedModel(plainModel, new Dye(UNDYED_LEATHER));
+            return ItemModelUtils.tintedModel(icon, new Dye(UNDYED_LEATHER));
         }
-        return ItemModelUtils.plainModel(plainModel);
+        return ItemModelUtils.plainModel(icon);
     }
 
     // A set whose base layer tints wants its icon tinted the same way, as leather armour is.
