@@ -267,7 +267,7 @@ untyped lambda and hands it a plain `PackOutput`; and datagen leaves a `.cache/`
 output that needs `exclude '.cache/**'` in `processResources`, which `companions` already does and
 the skeleton does not.
 
-## S5 — Item models, textures and lang — **planned**
+## S5 — Item models, textures and lang — **done**
 
 **Build.** Three providers in `common/armor/datagen`, all parameterised by the declared sets.
 `ArmorModelProvider` writes the item definition and model for each piece:
@@ -287,6 +287,39 @@ applies to a dyeable layer, and leaving it in `companions` would mean S7 has now
 **Done when.** On the harness, the humanoid set is drawn on a player with its own textures, the wolf
 piece on a wolf, and every piece shows its own name and icon in the inventory. Dyeing a dyeable piece
 recolours only the layer declared dyeable.
+
+### As built
+
+Four providers, not three. **Declaring a dyeable layer does not make a piece dyeable**, which only
+surfaced when the wolf coat could not be dyed in world: 26.2 has no tag-driven dye recipe, only the
+ordinary `minecraft:crafting_dye` datapack recipe naming its target item explicitly
+(`DyeRecipe.java:20-46`), so a piece can respond to `dyed_color` while nothing can ever put that
+component on it. `ArmorDyeRecipeProvider` closes that, emitting one recipe per piece that has a
+dyeable layer — the same shape `SweaterRecipeProvider` writes by hand today, so S7 keeps working.
+Recipes otherwise stay the consuming mod's business; this one is part of the declaration.
+
+`ArmorModelProvider` derives the dyed item icon rather than taking it as a declaration: a set with an
+`ONLY_IF_DYED` layer gets the conditional `has_component: dyed_color` pair, with the overlay icon
+read as `<namespace>:item/<that layer's texture path>`. The generated definitions match companions'
+existing output shape exactly, which is what S7's diff depends on. A `TINTED` layer maps to a
+dye-tinted single-layer icon, which is code no in-world test has exercised — the harness and
+companions both use `NONE` plus `ONLY_IF_DYED`.
+
+`ArmorTextureProvider` takes its art through a separate {@code ArmorArt} record rather than through
+`ArmorSet`, keeping classpath paths to source art out of a declaration the server reads. Sets with
+hand-drawn textures skip it entirely; it exists for families that differ only in colour.
+`ArmorLanguageProvider` title-cases registry paths, which gives companions' "Light Blue Wolf Sweater"
+with nothing declared.
+
+One last piece of S2 was settled here: `piece.itemModel()` is the *geometry* id, and every piece's
+item definition is generated at its own id, so Polymer always points a client at
+`<namespace>:<piece path>` whichever backend the piece uses.
+
+**Villagers cannot wear layer armour, and nothing server-side can change that.** `VillagerRenderer`
+carries a head layer, a profession layer and a crossed-arms item layer, and no `HumanoidArmorLayer`
+— so a villager draws no armour at all, custom or vanilla. A baby zombie in the same set renders
+correctly from `humanoid_baby/ranger.png`. Reaching villagers would take the display-entity rig this
+framework deliberately does not have.
 
 ## S6 — The head item-model backend — **planned**
 
