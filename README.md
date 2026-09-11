@@ -21,6 +21,9 @@ Each feature is its own top-level package, sharing the raycast/label machinery i
 - `club.rainbowkitty.rkcore.frame` — item-frame hover labels.
 - `club.rainbowkitty.rkcore.armorstands` — armor-stand equipment hover labels.
 - `club.rainbowkitty.rkcore.common.label` — the shared per-player raycast and label machinery all three features build on.
+- `club.rainbowkitty.rkcore.common.armor` — the custom-armor framework: one declaration per set
+  becomes registered items, their Polymer wiring and their generated assets. Not used by this mod's
+  own features; it exists for the sibling mods that shade it (see `docs/plan/custom-armor-models.md`).
 - `club.rainbowkitty.rkcore.common.mixin` — mixin package, registered via `src/main/resources/rkcore.mixins.json`.
 - `docs/` — design notes, one file per feature.
 

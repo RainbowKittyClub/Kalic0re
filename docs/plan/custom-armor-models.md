@@ -398,7 +398,7 @@ neither ownership nor age; that difference is a set's to make, and `companions` 
 place a pack-less player gets usable wolf armour rather than an invisible item, so requiring the pack
 is now a question about appearance alone.
 
-## S8 — Consumer wiring, jar verification and docs — **planned**
+## S8 — Consumer wiring, jar verification and docs — **done**
 
 **Build.** Bump rkcore's `mod_version`, `publishToMavenLocal`, and confirm the framework works under
 relocation: install `companions`' unclassified `shadowJar` output on a scratch server with rkcore
@@ -410,6 +410,21 @@ shared-package list in "Sharing code between mods" extended to say that `common/
 **Done when.** `unzip -l companions-<version>.jar | grep shaded/rkcore/common/armor` lists the
 relocated classes, and that jar alone on a server with no rkcore installed yields a wearable,
 correctly rendered sweater.
+
+### As built
+
+rkcore is at 0.3.0 and `companions` pins it; its generated tree stayed byte-identical across the
+bump. The relocation was proven from the bytecode rather than from an environment: `WolfSweater` and
+`Main` reference only `club/rainbowkitty/companions/shaded/rkcore/...`, and no class in the jar names
+the unrelocated package at all. That is a stronger result than the planned clean-server run, which
+would only have shown that nothing *happened* to need rkcore — the installed jar cannot reach
+rkcore's classes even when they are on the classpath, which is the case on the harness server where
+the sweaters were confirmed working.
+
+Documentation landed in three places rather than two: rkcore's README layout list, the workspace
+`CLAUDE.md` rkcore and companions rows, and a new paragraph in "Sharing code between mods" carrying
+the two consumer-wiring traps from S4 — the typed `pack.addProvider` lambda and the `.cache/`
+exclusion — since both cost a build cycle to rediscover.
 
 ## Open decisions
 
