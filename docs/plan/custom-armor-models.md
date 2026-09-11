@@ -462,17 +462,19 @@ was.
 
 ## Open decisions
 
-**~~Whether the head-model piece graduates into real content.~~** Settled: `armor-harness` was
-refactored into `rkc/mods/artifacts`, which takes the top hat and the ranger set as content and
-drops the harness's wolf coat, since `companions` already owns wolf body armour. `companions` was
-the wrong home — its scope is pets, and this is player cosmetics. `artifacts` is now the only
-consumer of the `ITEM_MODEL` backend, so it is where that path is exercised; `companions` covers the
-layer backend, derived textures and dyeing.
+**Whether the head-model piece graduates into real content — not yet.** `armor-harness` was
+refactored into `rkc/mods/artifacts`, a real mod for player cosmetics; `companions` was the wrong
+home, its scope being pets. But the harness's three demo sets did not survive the move. `artifacts`
+ships one item, `talaria`, which is a LAYER piece, so **the `ITEM_MODEL` backend now has no consumer
+anywhere in the workspace.** It is built, documented and was confirmed in world in S6, and nothing
+exercises it today. The first hat or mask that wants real geometry picks it back up; until then,
+treat S6's result as the last time that path was known to work.
 
-Two consequences worth knowing. Ranger ships the harness's placeholder art — vanilla leather
-recoloured — so the set is structurally real and visually not; replacing the files under
-`textures/art/` is the whole fix. And with the harness gone there is no longer a throwaway consumer
-to try a framework change against: the next one gets tried on `artifacts` or on a new scratch copy.
+Two other consequences. Talaria's textures are vanilla gold armour tinted bronze — placeholder, with
+the tint load-bearing rather than decorative, since the piece falls back to golden boots and untinted
+gold art would render identically with and without the pack. And with the harness gone there is no
+throwaway consumer left to try a framework change against: the next one goes on `artifacts` or on a
+new scratch copy.
 
 **Durability and repair.** Every piece the framework has a precedent for is unbreakable
 (`WolfSweater.java:74-76` deliberately drops vanilla's durability calls). Parameterising durability
