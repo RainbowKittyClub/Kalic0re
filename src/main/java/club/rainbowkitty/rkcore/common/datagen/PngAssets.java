@@ -14,6 +14,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
 
 import net.minecraft.data.CachedOutput;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 
 /**
@@ -67,5 +68,24 @@ public final class PngAssets {
                 throw new UncheckedIOException(e);
             }
         }, Util.backgroundExecutor().forName(executorName));
+    }
+
+    /**
+     * Multiplies every pixel by a colour, the same per-channel operation the client applies to a
+     * dyeable layer at render time — so art baked here and a layer tinted live agree pixel for
+     * pixel.
+     *
+     * @param art the source image, left untouched
+     * @param colour an opaque ARGB colour, e.g. {@code DyeColor.getTextureDiffuseColor()}
+     */
+    public static BufferedImage tint(BufferedImage art, int colour) {
+        BufferedImage out = new BufferedImage(
+                art.getWidth(), art.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < art.getHeight(); y++) {
+            for (int x = 0; x < art.getWidth(); x++) {
+                out.setRGB(x, y, ARGB.multiply(art.getRGB(x, y), colour));
+            }
+        }
+        return out;
     }
 }

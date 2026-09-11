@@ -19,8 +19,10 @@ import net.minecraft.world.item.equipment.ArmorType;
  * @param backend how it is drawn; see {@link ArmorBackend}
  * @param path the registry path, without namespace
  * @param fallback the vanilla item a client without this server's resource pack sees instead
- * @param itemModel the model a {@link ArmorBackend#ITEM_MODEL} piece is drawn with, absent for a
- *        {@link ArmorBackend#LAYER} piece
+ * @param itemModel the model a {@link ArmorBackend#ITEM_MODEL} piece is drawn with, as one model
+ *        references another — {@code <namespace>:item/<name>} — absent for a
+ *        {@link ArmorBackend#LAYER} piece. Every piece's item *definition* is generated at its own
+ *        id either way; this is the geometry that definition points at.
  * @param layers the layers this piece draws, per target; empty for an {@code ITEM_MODEL} piece
  */
 public record ArmorPiece(ArmorType type, ArmorBackend backend, String path, Item fallback,

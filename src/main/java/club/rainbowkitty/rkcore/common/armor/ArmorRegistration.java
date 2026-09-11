@@ -5,7 +5,6 @@ import java.util.Map;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.Item;
@@ -31,7 +30,7 @@ public final class ArmorRegistration {
         Map<ArmorType, Item> items = new EnumMap<>(ArmorType.class);
         for (ArmorPiece piece : set.pieces()) {
             Item item = ItemRegistration.register(set.namespace(), piece.path(),
-                    key -> new PolymerArmorItem(piece.fallback(), model(set, piece),
+                    key -> new PolymerArmorItem(piece.fallback(), set.itemId(piece),
                             properties(set, piece, key)));
             items.put(piece.type(), item);
         }
@@ -41,12 +40,6 @@ public final class ArmorRegistration {
     /** A registered piece's item; only valid to call after {@link #register}. */
     public static Item item(ArmorSet set, ArmorPiece piece) {
         return BuiltInRegistries.ITEM.getValueOrThrow(set.itemKey(piece));
-    }
-
-    // A layer piece's model is the item definition datagen writes for it; an item-model piece's is
-    // the one its mod authored, which is also what the client draws on the head.
-    private static Identifier model(ArmorSet set, ArmorPiece piece) {
-        return piece.itemModel().orElseGet(() -> set.itemId(piece));
     }
 
     // Mirrors vanilla's armour properties minus durability: with no MAX_DAMAGE the piece is not
