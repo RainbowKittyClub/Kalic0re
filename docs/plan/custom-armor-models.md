@@ -106,7 +106,7 @@ off before chasing the code.
 A stage is not finished until its "Done when" is observed. A failure at stage N then implicates N
 rather than anything before it.
 
-## S1 — Scratch consumer harness — **planned**
+## S1 — Scratch consumer harness — **done**
 
 **Build.** Copy `fabric_mod_skeleton/` to `armor-harness/` at the workspace root — outside
 `rkc/mods/`, since this is a throwaway and the workspace root is not a repo — with mod id
@@ -120,7 +120,30 @@ exists: a four-piece humanoid layer set, a single wolf-body piece, and a head-sl
 `scripts/devserver.sh armor-harness rcon "list"` answers on the harness's own port, with the user
 able to join it from their client and Polymer offering its generated pack on join.
 
-## S2 — The armor set declaration — **planned**
+### As built
+
+The skeleton already carried more than the Build text assumed: the `fabricApi` datagen block with
+`client = true` is in `fabric_mod_skeleton/build.gradle` as shipped, and `gradle/devserver.gradle`
+brings `runServer`/`stopServer` plus first-run seeding of `run/` (EULA, superflat world, ops, rcon).
+So the only thing that had to be added was companions' shade arrangement; what had to be *removed*
+was more: bil and `fabric-permissions-api` with their Modrinth and Sponge repos, and the example
+block's `content/`/`polymer/` packages and assets. `mavenLocal()` stayed, now for rkcore rather than
+for bil. Ports are 25605 game, 25582 rcon — mob-overhaul already holds 25599 and planked-chests
+25604.
+
+The `rkcoreSharedJar` filter lists `common/armor/**` from the start, matching nothing until S2.
+`common/item` and `common/datagen` do match, and the built `armorharness-0.1.0.jar` carries them as
+`club/rainbowkitty/armorharness/shaded/rkcore/{item,datagen}/*.class`, so the relocation is known
+good before any framework code exists.
+
+One thing the harness gets for free that the testing section had assumed would need setting up:
+`run/config/polymer/auto-host.json` is seeded `enabled: true` with `required: false`, so the pack is
+offered and declinable on join. Testing the pack-less path in the third finding is a matter of
+clicking Decline, with no config change and no second install.
+
+Boot is 0.37s to `Done`, rcon answers, and the entrypoint logs that no sets are declared yet.
+
+## S2 — The armor set declaration — **done**
 
 **Build.** `common/armor`, server-safe throughout: `ArmorSet` and its `Builder`, `ArmorPiece`,
 `ArmorBackend` (`LAYER`, `ITEM_MODEL`) and `ArmorLayerTarget` (fourth finding). A set carries its
@@ -138,13 +161,44 @@ no piece declared twice. Durability is the one stat to leave out for now — see
 chestplate to `ITEM_MODEL` fails the boot with the builder's own message, visible in
 `scripts/devserver.sh armor-harness logs`.
 
+### As built
+
+**One equipment asset per set, not per piece — this changed S3, S4 and S5.** Vanilla gives a whole
+material a single asset (`minecraft:iron` and the rest, `EquipmentAssets.java:11-27`) and separates
+the slots by layer *target*, not by asset: a helmet, chestplate and boots all read
+`textures/entity/equipment/humanoid/<name>.png` while leggings read the `humanoid_leggings/` copy of
+the same id (`EquipmentClientInfo.java`, `Layer.getTextureLocation`). Per-piece assets would have
+produced four assets and four identical humanoid PNGs. So the asset key is `ArmorSet.assetKey()` at
+`<ns>:<set>`, pieces contribute layer targets, and `ArmorSet.layers()` merges them; two pieces
+declaring one target with different layers is rejected at construction, since only one of the two
+could ever be written. The affected Build texts have been edited to say so.
+
+The baby target had to be a default rather than an option: vanilla routes *every* slot on a baby
+through `HUMANOID_BABY` (`HumanoidArmorLayer.java:69-71`), and the 26.2 jar ships 10 textures under
+`humanoid_baby/` against 10 under `humanoid/`, so a set that omits it renders babies untextured
+rather than unarmoured. A humanoid piece therefore defaults to its outer target plus
+`HUMANOID_BABY`, and a four-piece set merges to exactly vanilla's three.
+
+Two things went in beyond the Build text. `ArmorSet.equippableExtras` is a
+`Consumer<Equippable.Builder>` applied after the framework's own calls, because an animal piece
+needs `setEquipOnInteract`/`setCanBeSheared` (`Equippable.java:235,240`) and re-declaring that
+surface field by field would have been a second, worse copy of it. And a `BODY` piece defaults its
+registry path to the bare set name rather than `<set>_body`, which is what lets companions' sixteen
+`<colour>_wolf_sweater` items keep their current ids in S7.
+
+Validation is in the records' compact constructors rather than the builder, so a hand-built
+`ArmorPiece` cannot dodge it: `ITEM_MODEL` outside the head slot, a `LAYER` piece with no layers or
+with a model, a `BODY` piece on a humanoid target and the converse, a target declared with no
+layers, two pieces in one slot, and the merge conflict above. The harness's chestplate flip failed
+the boot with `ArmorBackend.ITEM_MODEL is only drawn in the head slot, got CHESTPLATE`.
+
 ## S3 — Registration and Polymer wiring — **planned**
 
 **Build.** `ArmorRegistration.register(ArmorSet)`, walking the pieces through
 `common/item/ItemRegistration` and building each `Item.Properties` the way `WolfSweater` does by hand
 (`WolfSweater.java:76-94`): `material.createAttributes(type)`, an `EQUIPPABLE` component built for
-the piece's slot with the allowed-entity set and — for a `LAYER` piece only — `setAsset` naming
-`ResourceKey.create(EquipmentAssets.ROOT_ID, <ns>:<piece name>)`, plus `UNBREAKABLE` and
+the piece's slot with the allowed-entity set and — for a `LAYER` piece only — `setAsset` naming the
+set's own `ArmorSet.assetKey()`, plus the set's `equippableExtras`, `UNBREAKABLE` and
 `stacksTo(1)`. Each item is a `common/item/PolymerModelItem` subclass over the piece's fallback,
 adding the pack-less degradation from the third finding: `getPolymerItemModel` returns `null` and
 `modifyBasePolymerItemStack` swaps in the fallback's own `equippable` whenever
@@ -163,21 +217,20 @@ yet — that is S4 — and the item is expected to hold the fallback's name unti
 
 ## S4 — Equipment-asset datagen — **planned**
 
-**Build.** `common/armor/datagen/ArmorEquipmentProvider`, taking the declared sets and writing
-`assets/<ns>/equipment/<piece>.json` for every `LAYER` piece: `SweaterEquipmentProvider.java:38-51`
-generalised, with `ArmorLayerTarget` mapped to `EquipmentClientInfo.LayerType` here and nowhere else.
-A dyeable layer uses `Layer.onlyIfDyed` when the piece declares a trim overlay and
-`Layer.leatherDyeable` when the whole layer tints; an undyed layer is the plain `Layer` constructor.
-Humanoid pieces emit `HUMANOID` plus `HUMANOID_BABY`, and leggings additionally `HUMANOID_LEGGINGS`,
-since vanilla picks the inner model by slot (`HumanoidArmorLayer.java:69-71`).
+**Build.** `common/armor/datagen/ArmorEquipmentProvider`, taking the declared sets and writing one
+`assets/<ns>/equipment/<set>.json` per set with a `LAYER` piece, straight off `ArmorSet.layers()`:
+`SweaterEquipmentProvider.java:38-51` generalised, with `ArmorLayerTarget` mapped to
+`EquipmentClientInfo.LayerType` here and nowhere else. `ArmorLayer.Dye` maps just as directly —
+`ONLY_IF_DYED` to `Layer.onlyIfDyed`, `TINTED` to `Layer.leatherDyeable`, `NONE` to the plain
+`Layer` constructor.
 
-**Done when.** `./gradlew generateAssets` in the harness writes one equipment JSON per layer piece,
-and — with S5's textures in place — a player wearing the humanoid set is drawn wearing it, seen from
-a second client. Until S5 the asset resolves to a texture that does not exist, so expect the piece to
-"nothing" means the asset did not resolve at all, so expect missing-texture rather than nothing
-until S5 writes the PNGs — that distinction is the actual check here. A second client that declines
-the pack on join wears plain leather armor, not nothing, which is S3's degradation observed for the
-first time.
+**Done when.** `./gradlew generateAssets` in the harness writes one equipment JSON per set, carrying
+the three humanoid targets for `ranger` and `wolf_body` for `wolf_coat`, and — with S5's textures in
+place — a player wearing the humanoid set is drawn wearing it, seen from a second client. Before S5
+the asset resolves to textures that do not exist, so expect missing-texture rather than nothing:
+"nothing" would mean the asset itself did not resolve, which is a different bug. A second client that
+declines the pack on join wears plain leather armor, not nothing, which is S3's degradation observed
+for the first time.
 
 ## S5 — Item models, textures and lang — **planned**
 
@@ -186,8 +239,9 @@ first time.
 `SweaterModelProvider.java:49-75` generalised, `ModelTemplates.FLAT_ITEM` for a plain piece and the
 `hasComponent(DYED_COLOR)` conditional pair for a dyeable one, while an `ITEM_MODEL` piece gets a
 definition pointing at the consumer's authored model and no generated geometry.
-`ArmorTextureProvider` writes each layer's PNG to `textures/entity/equipment/<layer target>/<piece>`
-— the path `EquipmentClientInfo.Layer.getTextureLocation` builds — plus the item texture, tinting
+`ArmorTextureProvider` writes each layer's PNG to `textures/entity/equipment/<layer target>/<set>`
+— the path `EquipmentClientInfo.Layer.getTextureLocation` builds, one image per target rather than
+per piece — plus each piece's item texture, tinting
 from supplied base art where the set asks for it. `ArmorLanguageProvider` writes `item.<ns>.<piece>`
 from a display name on the set, so pieces stop inheriting the fallback's name.
 
