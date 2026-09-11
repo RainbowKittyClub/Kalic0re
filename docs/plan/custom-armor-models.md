@@ -192,7 +192,7 @@ with a model, a `BODY` piece on a humanoid target and the converse, a target dec
 layers, two pieces in one slot, and the merge conflict above. The harness's chestplate flip failed
 the boot with `ArmorBackend.ITEM_MODEL is only drawn in the head slot, got CHESTPLATE`.
 
-## S3 — Registration and Polymer wiring — **planned**
+## S3 — Registration and Polymer wiring — **done**
 
 **Build.** `ArmorRegistration.register(ArmorSet)`, walking the pieces through
 `common/item/ItemRegistration` and building each `Item.Properties` the way `WolfSweater` does by hand
@@ -215,7 +215,23 @@ consumer that wants it keeps calling it itself.
 shows its armor points in the inventory, and shows no durability bar. Nothing is visible on the body
 yet — that is S4 — and the item is expected to hold the fallback's name until S5 writes lang.
 
-## S4 — Equipment-asset datagen — **planned**
+### As built
+
+As planned, in three classes: `ArmorRegistration`, `PolymerArmorItem` and `ArmorPolymerSupport`. The
+one thing the Build text left implicit is that an `ITEM_MODEL` piece still needs an `ArmorMaterial`
+to get its attributes from, and that record has no optional asset — so the material is built per set
+with the set's asset whatever its pieces do, and only `createAttributes` is ever read off it.
+
+The degradation was observed from both sides on the harness. With the pack declined, every piece
+wears as its fallback — leather for the humanoid set, wolf armour for the body piece. With the pack
+accepted, the pieces wear as nothing at all, which is the empty layer map from the third finding and
+stays that way until S4 writes the asset. Tooltips carry the declared armour points and no
+durability bar in both cases, so the attribute and unbreakable paths do not depend on the pack.
+
+Registration is observable without a client: the six ids parse over rcon while a made-up one comes
+back `Unknown item`.
+
+## S4 — Equipment-asset datagen — **done**
 
 **Build.** `common/armor/datagen/ArmorEquipmentProvider`, taking the declared sets and writing one
 `assets/<ns>/equipment/<set>.json` per set with a `LAYER` piece, straight off `ArmorSet.layers()`:
@@ -231,6 +247,25 @@ the asset resolves to textures that do not exist, so expect missing-texture rath
 "nothing" would mean the asset itself did not resolve, which is a different bug. A second client that
 declines the pack on join wears plain leather armor, not nothing, which is S3's degradation observed
 for the first time.
+
+### As built
+
+As planned. `ArmorEquipmentProvider` writes `ranger.json` with its three humanoid targets and
+`wolf_coat.json` with `wolf_body` carrying a plain base and a `dyeable: {}` trim; `top_hat` is
+skipped for having no layer piece, which is `hasLayerPieces()` doing its job. In world, with the pack
+accepted, all four humanoid pieces and the wolf coat draw as missing-texture rather than as nothing,
+and a declined pack still wears leather and wolf armour.
+
+`ArmorLayerTarget` is paired to the vanilla enum by serialized name at class-init, and a target with
+no counterpart throws there — so a vanilla rename fails datagen with a message naming the target
+instead of silently dropping a layer at render time.
+
+Two consumer-wiring details for S8 to write down, both found here rather than designed:
+`pack.addProvider` needs its lambda parameter typed `(FabricPackOutput output)`, because
+`DataGenerator.PackGenerator` carries an `addProvider` overload of its own that otherwise captures an
+untyped lambda and hands it a plain `PackOutput`; and datagen leaves a `.cache/` directory beside its
+output that needs `exclude '.cache/**'` in `processResources`, which `companions` already does and
+the skeleton does not.
 
 ## S5 — Item models, textures and lang — **planned**
 
