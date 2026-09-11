@@ -321,7 +321,7 @@ carries a head layer, a profession layer and a crossed-arms item layer, and no `
 correctly from `humanoid_baby/ranger.png`. Reaching villagers would take the display-entity rig this
 framework deliberately does not have.
 
-## S6 — The head item-model backend — **planned**
+## S6 — The head item-model backend — **done**
 
 **Build.** Nothing new in the item path — S3 already omits `setAsset` for an `ITEM_MODEL` piece,
 which is the whole mechanism (first finding). What this stage is actually for is the transform: the
@@ -336,6 +336,24 @@ derived.
 correctly seated and facing forward when the player turns, and the same on an armor stand. A client
 that declined the pack wears the declared fallback item on its head instead — the model gate from S3,
 seen from the other side.
+
+### As built
+
+The item path needed nothing, as expected: omitting `setAsset` is the whole mechanism. Calibration
+took one round. A model with no `display.head` transform lands centred on the *middle* of the head,
+not on top of it, so the harness's hat sat sunk into the skull with its crown poking out — which
+matched the prediction from the transform arithmetic closely enough to fix in one edit. The mapping
+this produced is in "Reference: putting a model on a head"; `display` translations turned out to be
+parsed in model pixels and applied inside the scale the client has already imposed
+(`ItemTransform.java:60-62`), which is what makes the lift a single number.
+
+The pack-less half was already settled by S3 and only needed confirming: a declined pack draws the
+fallback item's armour rather than an unresolvable model, so the question the plan carried as
+unverified never had to be answered on its own terms.
+
+Villagers take a head model even though they refuse layer armour (S5's finding), since
+`VillagerRenderer` carries a `CustomHeadLayer` and no armour layer. Worth knowing before choosing a
+backend for a set meant to be worn by something other than a player.
 
 ## S7 — Migrate `companions` onto the framework — **planned**
 
@@ -404,6 +422,26 @@ The chain, verified end to end for the layer backend and by inspection for the i
 | Asset resolved from the server pack; unknown ids resolve to an empty layer map | `EquipmentAssetManager.java:19,33-34` |
 | Pack-less connection served the fallback's own model and `equippable` instead | `PolymerItemUtils.java:407,437`, `PolymerItem.java:77` |
 | Layer texture read from `textures/entity/equipment/<layer type>/<path>.png` | `EquipmentClientInfo.java`, `Layer.getTextureLocation` |
+
+## Reference: putting a model on a head
+
+Measured on the harness, and the arithmetic behind it read out of `CustomHeadLayer.java:85-89` and
+`ItemTransform.java:60-62`.
+
+The client draws a head item by lifting a quarter block, turning 180° and scaling by 0.625, all
+before the model's own `display.head` transform applies. Two consequences, which are what an author
+actually needs:
+
+| Quantity | Value |
+|---|---|
+| Where model-space (8, 8, 8) lands | the middle of the head, not the top |
+| One model unit, on screen | 0.625 pixels |
+| Head cube, in model units | 12.8 wide and 12.8 tall, so its top is 6.4 units above centre |
+| Lift to rest geometry on the skull | `display.head.translation` of `[0, 6.4, 0]` |
+
+`display` translations are in model pixels, clamped to ±5 blocks, and applied before the rotation
+and scale in the same transform — so the 0.625 already applies to them and no compensation is
+needed.
 
 ## Reference: layer targets
 
