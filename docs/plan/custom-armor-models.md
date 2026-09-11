@@ -10,12 +10,11 @@ wolves, horses, llamas and happy ghasts are declarable the same way humanoids ar
 
 Everything below about vanilla's render path and Polymer's item handling was read out of
 `libs/decompiledjava/minecraft-26.2` and `libs/polymer` (branch `dev/26.2`), and out of the working
-sweater implementation under `rkc/mods/companions`; it is cited by file and line. None of it has been
-run as a framework — every stage is `planned`, and the head-slot backend has no precedent anywhere in
-this workspace, so treat S6 as the stage most likely to move.
+sweater implementation under `rkc/mods/companions`; it is cited by file and line. Every stage is now
+`done`: the framework is built, both backends are confirmed in world, and `companions` runs on it.
 
-S1 is the harness, and comes first because `rkcore` registers no content of its own and nothing here
-can be seen without a consumer. S2 is the declaration every later stage compiles against. S3 makes
+S1 was the harness, and came first because `rkcore` registers no content of its own and nothing here
+could be seen without a consumer. S2 is the declaration every later stage compiles against. S3 makes
 the items exist; S4 and S5 together make a layer-backed piece visible; S5's item-model half plus S6
 make a head-model piece visible. The S4/S5 layer work and S6 are independent of each other. The
 feature is complete when S6's observation lands — both backends drawn on a vanilla client. S7
