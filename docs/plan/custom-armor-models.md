@@ -425,12 +425,54 @@ Documentation landed in three places rather than two: rkcore's README layout lis
 the two consumer-wiring traps from S4 — the typed `pack.addProvider` lambda and the `.cache/`
 exclusion — since both cost a build cycle to rediscover.
 
+## Cleanup pass — **done**
+
+A simplification run over the finished framework, after every stage had landed.
+
+**What came out.** `ArmorStats.defenseFor` had no caller anywhere — the `defense` map itself is what
+`ArmorMaterial` reads. `ArmorLanguageProvider`'s hand-rolled title-caser became a three-line stream.
+`ArmorModelProvider` carried `plainModel` as an alias for `icon`, two names for one value.
+`ArmorTextureProvider` spelled `java.nio.file.Path` out in a signature and rebuilt a `PathProvider`
+once per set though it never varies. `ArmorEquipmentProvider`'s layer-type pairing ran a nested loop
+past its own match and then re-checked with `containsKey`.
+
+**One latent bug, not a style point.** `ArmorSet.layers()` returned `Map.copyOf(...)` of an
+enum-keyed map. `Map.copyOf` probes on `hashCode`, and an enum's is identity-based, so its iteration
+order varies *between JVM runs*. `ArmorModelProvider.dyedOverlay` picks a set's dyed overlay with
+`findFirst` over exactly that map, which would have made generated output depend on the run for any
+set declaring a dyed layer on more than one target. Nothing shipped hits it — every real set has one
+layer target — and the equipment asset itself was never at risk, since `EquipmentClientInfo.Builder`
+keys into an `EnumMap` of its own. Merging into an `EnumMap` fixes it at the source and makes the
+merged view ordinal-ordered by construction rather than by what vanilla happens to normalise
+downstream.
+
+**`ArmorSet.Builder.allowedWearers`** was calling the deprecated `EntityType::builtInRegistryHolder`
+— an intrusive holder — which was the one deprecation warning in rkcore's build. Now
+`BuiltInRegistries.ENTITY_TYPE::wrapAsHolder`, the same route `companions` already takes for sounds.
+
+**What went in: `ArmorDatagen`.** Every consumer was repeating the same five `pack.addProvider`
+calls, each carrying the `(FabricPackOutput output)` type annotation that S4 cost a build cycle to
+discover, and one of them repeated the explanatory comment verbatim. `ArmorDatagen.addProviders(pack,
+sets, art)` is now the whole armour half of a consumer's datagen entrypoint, and the trap lives in
+one place a consumer never reads. `companions`' entrypoint lost fourteen lines to it; the generated
+tree stayed byte-identical across all 162 files.
+
+rkcore went to 0.4.0 for this — `defenseFor` coming out makes it a breaking change, however dead it
+was.
+
 ## Open decisions
 
-**Whether the head-model piece graduates into real content.** The harness piece is throwaway by
-design. If the head-model backend is wanted for the server, it needs a home — `companions` is the
-obvious one, but its scope today is pets rather than player cosmetics. Settled by deciding what the
-first real custom helmet is for.
+**~~Whether the head-model piece graduates into real content.~~** Settled: `armor-harness` was
+refactored into `rkc/mods/artifacts`, which takes the top hat and the ranger set as content and
+drops the harness's wolf coat, since `companions` already owns wolf body armour. `companions` was
+the wrong home — its scope is pets, and this is player cosmetics. `artifacts` is now the only
+consumer of the `ITEM_MODEL` backend, so it is where that path is exercised; `companions` covers the
+layer backend, derived textures and dyeing.
+
+Two consequences worth knowing. Ranger ships the harness's placeholder art — vanilla leather
+recoloured — so the set is structurally real and visually not; replacing the files under
+`textures/art/` is the whole fix. And with the harness gone there is no longer a throwaway consumer
+to try a framework change against: the next one gets tried on `artifacts` or on a new scratch copy.
 
 **Durability and repair.** Every piece the framework has a precedent for is unbreakable
 (`WolfSweater.java:74-76` deliberately drops vanilla's durability calls). Parameterising durability
