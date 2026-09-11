@@ -355,7 +355,7 @@ Villagers take a head model even though they refuse layer armour (S5's finding),
 `VillagerRenderer` carries a `CustomHeadLayer` and no armour layer. Worth knowing before choosing a
 backend for a set meant to be worn by something other than a player.
 
-## S7 — Migrate `companions` onto the framework — **planned**
+## S7 — Migrate `companions` onto the framework — **done**
 
 **Build.** Rewrite `WolfSweater.register` as sixteen `ArmorSet` declarations — one per `DyeColor`,
 each a single `BODY` piece on the `wolf_body` target with a plain base layer and an
@@ -373,6 +373,30 @@ tree as before the migration — diff it against a copy taken first, and expect 
 equipment JSONs and textures; any difference is a framework bug, not a licence to update the
 expectation. Then the built jar on the harness server: sweaters craft, wear, dye and render as they
 do on live today.
+
+### As built
+
+`diff -r` against the pre-migration snapshot reported **zero differences** across all 162 generated
+files — equipment assets, item definitions, models, the 32 tinted textures, lang, recipes and
+advancements alike. Four providers were deleted rather than the three the Build text names: lang
+generalised as cleanly as the rest, so `SweaterLanguageProvider` went too, and the framework's
+title-casing reproduces "Light Blue Wolf Sweater" with nothing declared.
+
+`SweaterRecipeProvider` kept its wool recipe and lost its dye recipe to `ArmorDyeRecipeProvider`;
+that swap is inside the zero-diff, so the framework's recipe is byte-identical to the hand-written
+one it replaced. `companions` also picked up the pack-less fallback for free — a declined pack now
+wears vanilla wolf armour where it used to show nothing, confirmed in world on a wolf.
+
+**A wild wolf refuses a sweater, and always did.** `Wolf.mobInteract` gates body armour on
+`isOwnedBy(player)` (`Wolf.java:461`), so an untamed wolf rejects sweaters exactly as it rejects
+vanilla wolf armour — this surfaced during testing and is not a migration regression, since
+`Item.java:558-573` shows vanilla's own `wolfArmor()` properties omit `setEquipOnInteract` too. The
+harness's `wolf_coat` sets that flag and so routes through `Equippable.equipOnTarget`, which checks
+neither ownership nor age; that difference is a set's to make, and `companions` stays with vanilla's.
+
+`markAsRequired` was dropped from `companions` on the way through, deliberately: with the fallback in
+place a pack-less player gets usable wolf armour rather than an invisible item, so requiring the pack
+is now a question about appearance alone.
 
 ## S8 — Consumer wiring, jar verification and docs — **planned**
 
