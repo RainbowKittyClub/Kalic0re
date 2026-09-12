@@ -158,7 +158,7 @@ still leaves open.
 tags are all deleted, being fully subsumed by `main`. `backup/pre-untangle` remains as the only
 witness to the pre-split tree.
 
-## S2 — Converge planked-chests datagen on the typed vanilla API — **planned**
+## S2 — Converge planked-chests datagen on the typed vanilla API — **done**
 
 **Build.** First resolve the unknown: write a throwaway provider on `planked-chests`' existing
 `client = false` datagen source set that touches `ClientItem.CODEC` and `ModelTemplates.FLAT_ITEM`,
@@ -184,6 +184,44 @@ hand-written objects, in which case the diff has to be shown to be key order onl
 The `ElementModels.model:142` emitter (a `particle` texture plus an `elements[]` array) has no
 typed equivalent, because nothing in vanilla's builders emits arbitrary cuboids. It stays, and is
 what S3 extracts.
+
+### As built
+
+**The typed builders cannot be loaded under `client = false` at all, so only the `saveAll` half
+shipped.** The probe failed at runtime with `Cannot load class
+net.minecraft.client.data.models.model.ModelTemplates in environment type SERVER`: Fabric Loader
+enforces `@Environment` at class-load time even in a dev datagen run, so the merged jar being
+unsplit — the reason the Build text expected this might work — is irrelevant. Reading the sources
+first was not sufficient evidence and pointed the wrong way: `ModelTemplates`, `TextureMapping`,
+`ItemModelUtils` and `ClientItem` have no static initialisers and no `Minecraft.getInstance()`
+coupling, and `ClientItem` is a plain codec record. Its `@Environment(EnvType.CLIENT)` annotation is
+the whole story, and only running it showed that.
+
+**Raw JSON stays, and `planked-chests` stays on `client = false`.** The Build text left the choice
+between flipping to `client = true` and keeping raw JSON. Keeping it, because the conversion buys
+less than it first appeared: `ElementModels`' 239 lines emit arbitrary `elements[]` cuboids, which
+no vanilla builder produces, so the bulk of this mod's datagen would remain raw either way.
+Flipping would boot a client instance to convert roughly 40 lines of small emitters. Reversible if
+a later stage wants the typed route for other reasons.
+
+**What shipped: five save loops replaced with `DataProvider.saveAll`.** Three pure-JSON providers
+(`ChestBlockStateProvider`, `ChestElementModelProvider`, `ShulkerElementModelProvider`) and two that
+mix PNG futures with a JSON map (`ChestMinecartTextureProvider`, `CargoCartTextureProvider`).
+`ChestTextureProvider` and `ShulkerAtlasProvider` needed no change — the first writes only PNGs, the
+second a single file. `ElementModels.itemDefinition`, `variantModel` and `CartIcons.generatedModel`
+all survive, having no server-safe typed equivalent.
+
+**The conversion is behaviour-preserving by construction, not only by test.** `saveAll`'s
+`Function<E, JsonElement>` overload is the same code the providers wrote by hand — stream the
+entries, apply the path getter, call `saveStable` per entry, `allOf` the result
+(`DataProvider.java:52-60`). Confirmed anyway: `clean generateAssets` output is byte-identical to
+the captured baseline, same SHA-1 over all 1543 files. `./gradlew build` exits 0 and
+`checkstyleTarget` is clean for both of this mod's source trees.
+
+**Reference correction.** `Material` is `net.minecraft.client.resources.model.sprite.Material`,
+not `net.minecraft.client.renderer.block.model.Material` — the probe's first compile failed on a
+guessed import while `ArmorModelProvider:18` already had it right. Copy from the working consumer
+rather than inferring the package.
 
 ## S3 — Extract the entity-model box transcription — **planned**
 
@@ -265,9 +303,10 @@ a chest a redstone conductor and a chest directly below it would refuse to open.
 Polymer section of the workspace `CLAUDE.md` as part of this stage; it costs nothing and is exactly
 the kind of trap that burns a debugging session.
 
-Shape this against S2's outcome: if the typed route worked, emit `MultiVariantGenerator` /
-`BlockModelDefinitionGenerator` rather than the raw objects. Read their actual builder signatures
-first — this document only established that both classes exist in the jar.
+Emit raw `JsonObject`, not `MultiVariantGenerator` / `BlockModelDefinitionGenerator`. S2
+established that `net.minecraft.client.data.models.*` cannot be loaded at all under `client = false`
+datagen, and this helper has to work for a consumer running datagen on a server instance. Edited
+from the original "shape this against S2's outcome" once that outcome was known.
 
 ## S7 — Extract the atlas-merge helper — **planned**
 
