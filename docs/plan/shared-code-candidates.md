@@ -583,6 +583,61 @@ which is the last change that could have affected it.
 **Released as rkcore 0.9.0** with both pins moved. That is the fifth consecutive release in this
 run: 0.5.0 through 0.9.0, one per stage, each naming one set of bytes.
 
+## S8 — Hoist the cart-frame pose into CargoDisplayHolder — **planned**
+
+**Why this stage exists.** Found by a sweep after S7, not by the original survey. That survey was
+name-based and datagen-weighted — five of seven stages — and the runtime display side got one stage
+scoped to three named constants. Matching *shapes* instead of names is what found S4's second lid
+ramp, S5's third compositor, S6's `generatedModel`, and these two stages.
+
+**Build.** Move the pose bookkeeping and the vanilla cart-frame maths out of both cart displays into
+`common/vehicle/CargoDisplayHolder`, which both already extend.
+
+`applyPose(float yaw, float pitch)` gains a `turned` parameter, and the holder keeps the
+`posedYaw`/`posedPitch` pair that answers it (`ChestCartDisplay:52-53`, `ShulkerCartDisplay:71-72`).
+The holder's existing `shownYaw`/`shownPitch` cannot answer it: `markPoseDirty` sets those to NaN,
+so a dirty re-pose is indistinguishable from a real turn without a second pair. Only two subclasses
+exist, both in `planked-chests` — rkcore's other `common/vehicle` classes name the type without
+extending it (`CartCargo:40`, `CargoMinecartChest:148`, `CartCargoSupport:73`) — so the signature
+change reaches nothing else.
+
+`cartFrame(yaw, pitch)`: `Axis.YP.rotationDegrees(yaw)` then `mul(Axis.ZP.rotationDegrees(-pitch))`,
+carrying the reasoning that the roll has to sit *between* the cart's turn and the cargo's own
+(`ChestCartDisplay:113-116`). `cargoOrigin(cartFrame, centreY)`: that centre transformed through the
+frame, less `PASSENGER_ATTACHMENT_Y`, in a vector the holder owns and reuses, with a no-arg reader
+for a callback that needs it after the fact (`ChestCartDisplay.placeHinge`). Plus `CARGO_TURN` and
+the lid-interpolation tick count, defined identically in both classes today, the first with the same
+`AbstractMinecartRenderer#submit` citation in both.
+
+**Done when.** Both displays compile with their copies deleted, and a chest cart and a cart-borne
+shulker box both behave as before in-world. **Load-bearing, unlike S5–S7**: this rewrites the
+transform path itself, and the thing to watch is a *slope*, because the roll-ordering bug the
+hoisted comment describes is invisible on flat track — it tips the cargo sideways only once pitch is
+non-zero.
+
+Not in scope: `topAboveCentre` and the cross-class constant read at `ShulkerCartDisplay`'s
+`CARGO_CENTRE_Y`. The formula has one caller, and the read is deliberate — the shulker box is
+levelled against the chest cart's own figures so that changing either scale keeps the two tops
+level, which is a `planked-chests` fact and not a general one.
+
+## S9 — Hoist the display-element factory and the datagen sniff — **planned**
+
+**Build.** Two small things the earlier stages left behind. `common/display` gains the
+model-carrying `ItemDisplayElement` factory duplicated at `ChestVisual:125-139` and
+`ShulkerCartDisplay:163-174`: `ItemDisplayContext.HEAD`, interpolation 2, and
+`DataComponents.ITEM_MODEL` set on a carrier stack, with near-verbatim comments in both. Keep the
+carrier item a parameter — `Items.CHEST` against `Items.SHULKER_BOX` is what a client without this
+mod's assets would fall back to drawing, and settling that is not this stage's business.
+
+`common/datagen` gains the `DATAGEN` sniff from `ChestBlocks:59`, which this document's
+"deliberately not extracted" table already said to place there *during S3* — "one line; put it in
+`common/datagen` during S3 rather than building a framework around it". S3 did not, and its `As
+built` does not mention it.
+
+**Done when.** Both compile against the shared copies, generated output stays byte-identical, and
+the dev server still skips the woods whose optional mod is absent while datagen still emits all of
+them — which is the sniff's only job.
+
 ## Open decisions
 
 **What the `Kalic0re` re-scope covers, and whether it lands before or after S2–S7.**
