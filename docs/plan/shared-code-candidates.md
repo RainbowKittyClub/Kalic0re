@@ -446,7 +446,7 @@ files, and nothing in `common/datagen` resolves at runtime, so this stage has no
 its shaded copy and uses none of them: its `SweaterTextureProvider` tints through `Graphics2D` and
 composites nothing.
 
-## S6 — Extract the Polymer real-block file set — **planned**
+## S6 — Extract the Polymer real-block file set — **done**
 
 **Build.** Generalise what `ChestBlockStateProvider` writes so that any Polymer mod sending real
 block states to handshake-capable clients gets it: a blockstate pointing at a `particle`-only,
@@ -469,6 +469,61 @@ Emit raw `JsonObject`, not `MultiVariantGenerator` / `BlockModelDefinitionGenera
 established that `net.minecraft.client.data.models.*` cannot be loaded at all under `client = false`
 datagen, and this helper has to work for a consumer running datagen on a server instance. Edited
 from the original "shape this against S2's outcome" once that outcome was known.
+
+### As built
+
+**`common/client` was ruled out by an annotation, not by preference.** The Build text said to land
+this next to the `PolymerClientHandshake` and `PolymerChestRenderer` it completes. It could not go
+there: all three `common/client` classes are `@Environment(EnvType.CLIENT)`, and S2 established that
+Fabric Loader enforces that at class-load time even in a dev datagen run, so a helper a `client =
+false` provider calls would fail to load from that package. `common/net` is runtime networking. It
+landed in `common/datagen` as `PackJson`, with the Polymer reasoning on `particleOnlyModel` and a
+cross-reference to `PolymerClientHandshake`, so the grouping the Build text wanted is served by
+discoverability rather than by directory.
+
+**The `ElementModels` question S3 deferred resolved by deletion.** S3 left both halves of it — the
+misleading name, and whether `variantModel` moves — to this stage. Both members moved:
+`variantModel` is `PackJson.model`, `itemDefinition` is `PackJson.itemDefinition`, and the class is
+gone, so there is no name left to fix. `CartIcons.generatedModel` then turned out to be that same
+parented shape with a fixed parent and texture key, making it a third emitter of one shape, so it
+collapsed too — found by grepping for the shape rather than the name, the way S5's third compositor
+was.
+
+**`PackJson` holds four shapes on one fact.** A `client = false` datagen run cannot name a typed
+builder at all — S2's probe failed with `Cannot load class
+net.minecraft.client.data.models.model.ModelTemplates in environment type SERVER` — so a server-side
+mod that ships client assets writes them as raw JSON. Two of the four are Polymer's real block pair,
+and they are only useful together: a single-variant blockstate plus a model with a `particle`
+texture and no `elements`, which is what stops a handshake-capable client drawing a missing-model
+cube behind its own block-entity renderer while break and landing particles still match the
+material.
+
+**Output is byte-identical across all 1532 files**, with `src/main/generated` deleted first. The
+Build text's "27 blockstates and models" is 27 particle-only models and 54 blockstates — plain and
+trapped share one model, which is why the provider writes two blockstates per wood. All three mods
+build, `checkstyleTarget` is clean on `rkcore/src/main/java` and `planked-chests/src/datagen/java`,
+and the relocated `PackJson` is 1698 bytes in the shipped jar.
+
+**The companion fact went into a `CLAUDE.md` section that did not exist.** The Build text said to
+add the `isRedstoneConductor` trap to the workspace `CLAUDE.md`'s Polymer section; there was no
+Polymer section, only scattered mentions. Created one holding that trap — Polymer reports the
+substitute block state's full-cube shape for non-player collision queries, so vanilla derives
+redstone conductor from it and a chest below would refuse to open — plus one sentence on the file
+set this stage extracted. The stale shared-package list in "Sharing code between mods" was corrected
+in the same pass: it still described `common/datagen` as just `PngAssets` and omitted
+`common/vehicle` and `common/display` entirely.
+
+**No in-world check, by the rule in `docs/TESTING.md`.** Output is byte-identical and nothing new
+resolves at runtime, so the check is confirmatory rather than load-bearing. The Done-when's
+handshake-capable client is also not something this round had available — it needs a client running
+the same jar — and the byte argument covers what it would have shown.
+
+**Released as rkcore 0.8.0** with both pins moved. `companions` writes no raw pack JSON and gains
+`PackJson` unused, as it did `EntityModelBoxes` in S3.
+
+**Noted, not fixed: `docs/plan/chest-minecarts.md:1179` still cites `ElementModels#invertedTwin`.**
+That reference was stale from S3, which moved the method to `EntityModelBoxes`, and is now stale
+twice over. It is another plan document's prose, so it is flagged here rather than edited.
 
 ## S7 — Extract the atlas-merge helper — **planned**
 
