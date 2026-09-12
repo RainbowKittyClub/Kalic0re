@@ -50,11 +50,7 @@ public final class SimpleLocationBasedEffect implements EnchantmentLocationBased
      */
     @FunctionalInterface
     public interface OnChanged {
-        /**
-         * Fired when the item starts matching a slot the enchantment applies to
-         * ({@code becameActive} true) and, while it keeps matching, once per location-changed
-         * check thereafter.
-         */
+        /** @see OnChanged */
         void accept(ServerLevel serverLevel, int enchantmentLevel, EnchantedItemInUse item,
                 Entity entity, Vec3 position, boolean becameActive);
     }
@@ -65,7 +61,7 @@ public final class SimpleLocationBasedEffect implements EnchantmentLocationBased
         /** Does nothing; the default for an effect with no unequip behaviour. */
         OnDeactivated NONE = (item, entity, position, level) -> { };
 
-        /** Fired when the item stops matching, e.g. unequipped or enchantment removed. */
+        /** @see OnDeactivated */
         void accept(EnchantedItemInUse item, Entity entity, Vec3 position, int level);
     }
 }

@@ -38,10 +38,10 @@ public final class SimpleEntityEffect implements EnchantmentEntityEffect {
         return codec;
     }
 
-    /** What runs when the effect fires. */
+    /** What runs when the effect fires; the arguments vanilla's own effect types receive. */
     @FunctionalInterface
     public interface Action {
-        /** What runs when the effect fires. */
+        /** @see Action */
         void apply(ServerLevel serverLevel, int enchantmentLevel, EnchantedItemInUse item,
                 Entity entity, Vec3 position);
     }
