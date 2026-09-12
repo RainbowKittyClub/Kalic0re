@@ -10,8 +10,8 @@ Everything below about the 26.2 enchantment system was read out of
 `libs/decompiledjava/minecraft-26.2` (cited by file and line) and, for the datagen mechanism, out of
 a decompile of the exact Fabric API jar this repo depends on
 (`fabric_version=0.157.0+26.2`, resolved to `fabric-data-generation-api-v1-25.5.0+aed122aa9e.jar`).
-Nothing here has been run — no stage is `done` yet, and the harness in S1 is what the rest verifies
-against.
+S1 through S6 are now built and verified in-world on the harness's dev server — see each stage's "As
+built" note for what matched the plan and what didn't.
 
 S1 is the harness, for the same reason armor's S1 was: `rkcore` registers no content of its own, so
 nothing here is observable without a consumer. S2 and S3 are independent of each other and both
@@ -153,7 +153,7 @@ namespace, since the registry's identifier namespace is `minecraft`
 This is a public, documented extension point — nothing here is a workaround the way armor's raw
 `DataProvider`s over `EquipmentClientInfo.builder` were.
 
-## S1 — Scratch consumer harness — **planned**
+## S1 — Scratch consumer harness — **done**
 
 **Build.** A throwaway consumer mod, built the same way armor's S1 harness was: clone the smallest
 existing mod (`rk-tweaks`, per the workspace's own "no scaffold" guidance) rather than reconstruct one
@@ -172,7 +172,15 @@ will need and nothing else here exercises it.
 **Done when.** `scripts/devserver.sh enchant-harness start` boots and
 `scripts/devserver.sh enchant-harness rcon "list"` answers on the harness's own port.
 
-## S2 — The enchantment declaration — **planned**
+**As built.** Lives at `_scratch/enchant-framework/enchant-harness`, sibling to this checkout, cloned
+from `companions/build.gradle` rather than `rk-tweaks` (the `rkcore`/`shade` consumer wiring was the
+part worth copying verbatim). One deviation from the plan text: the vanilla-vocabulary enchantment
+ended up as a chest-armor `ATTRIBUTES` max-health bump rather than a weapon damage bump, so both
+harness enchantments share `EquipmentSlotGroup.CHEST` — simpler to prove equip/unequip against a
+single slot, and S2's "vanilla vocabulary vs. custom effect" distinction doesn't depend on which slot
+group is used. Ports 25605/25582 were free as expected.
+
+## S2 — The enchantment declaration — **done**
 
 **Build.** `common/enchant/EnchantSpec`: a `ResourceKey<Enchantment>` and a
 `Function<HolderLookup.Provider, Enchantment>` factory, per the second and seventh findings above — a
@@ -189,7 +197,15 @@ vanilla tag (`EnchantmentTags.DAMAGE_EXCLUSIVE`, say) — proving the deferred-r
 actually type-checks against a real `HolderLookup.Provider` once S4 exists to supply one. Until S4
 this stage has nothing to run, only to compile against.
 
-## S3 — Custom effect-type registration — **planned**
+**As built.** `common/enchant/EnchantSpec.java` is a record with four `of(...)` overloads (plain
+builder × table-flag, deferred-lookup builder × table-flag) rather than a single "builder" helper —
+covers the same two cases (needs a `HolderLookup.Provider` or doesn't) without an intermediate type.
+The harness's `harness_vigor` spec calls `exclusiveWith(enchantments.getOrThrow(EnchantmentTags.ARMOR_EXCLUSIVE))`
+inside its factory (armor-themed, not `DAMAGE_EXCLUSIVE`, since the spec itself is an armor attribute
+buff) — S4's generated json (`harness_vigor.json`) confirms it resolves to a real
+`"exclusive_set": "#minecraft:exclusive_set/armor"`, not an unresolved reference.
+
+## S3 — Custom effect-type registration — **done**
 
 **Build.** `common/enchant/EnchantEffectRegistration` (or similar), a thin wrapper over
 `Registry.register(BuiltInRegistries.ENCHANTMENT_ENTITY_EFFECT_TYPE, id, codec)` and its
@@ -214,7 +230,17 @@ enchantments, and both parse at datapack load with no `Unknown enchantment effec
 `scripts/devserver.sh enchant-harness logs`. Nothing fires yet — that needs S4's JSON and S6's
 in-world test.
 
-## S4 — Enchantment datapack datagen — **planned**
+**As built.** `EnchantEffectRegistration` exposes `registerEntityEffect`/`registerLocationBasedEffect`,
+each taking an `Identifier` (not `String`) specifically so a mod's own effect never accidentally
+lands in the `minecraft` namespace the way `Registry.register(Registry, String, T)`'s implicit default
+would allow. The harness's `HarnessEnchantEffects` registers one `SimpleLocationBasedEffect` as a
+`static final` field (forced by a no-op `init()` call from `Main.onInitialize`, the same
+force-class-init pattern `rktweaks.ModGameRules` uses) rather than a plain vanilla effect for the
+second enchantment — the vanilla-vocabulary proof moved to S2's `ATTRIBUTES` spec instead, so S3 only
+needed to prove the custom-registration path, which it does. The harness booted with no
+"Unknown enchantment effect type" warning.
+
+## S4 — Enchantment datapack datagen — **done**
 
 **Build.** `common/enchant/datagen/EnchantDatagenProvider extends FabricDynamicRegistryProvider`,
 taking the harness's declared `List<EnchantSpec>` and, per spec, calling `entries.add(spec.key(),
@@ -230,7 +256,16 @@ The exclusivity-bearing spec's JSON carries a resolved `exclusive_set` rather th
 reference — proof the deferred `HolderLookup.Provider` factory actually ran against real registry
 data, not just compiled.
 
-## S5 — Enchanting-table tag and lang — **planned**
+**As built.** The flagged-as-unpinned call resolved to exactly the guessed shape:
+`entries.add(spec.key(), spec.factory().apply(registries))` against
+`FabricDynamicRegistryProvider.Entries.add(ResourceKey<T>, T)`, confirmed by `javap` against
+`fabric-data-generation-api-v1-25.5.0+aed122aa9e.jar`'s nested `Entries` class before writing
+`EnchantDatagenProvider`. `./gradlew generateAssets` on the harness produced
+`data/enchantharness/enchantment/harness_vigor.json` and `harness_flight_proof.json`, both matching
+vanilla's own field shape, with `harness_vigor.json` carrying the resolved
+`"exclusive_set": "#minecraft:exclusive_set/armor"` described in S2's As-built note.
+
+## S5 — Enchanting-table tag and lang — **done**
 
 **Build.** A tag provider over `net.minecraft.data.tags.EnchantmentTagsProvider` (the vanilla base
 class; confirm during this stage whether Fabric API wraps it the way `FabricTagsProvider` wraps item
@@ -245,7 +280,36 @@ needed one.
 **Done when.** On the harness, both declared enchantments appear as candidates at an enchanting table
 (bookshelves present) and their names are readable rather than showing the raw translation key.
 
-## S6 — In-world proof of a custom equip/unequip effect — **planned**
+**As built.** `EnchantTagProvider extends net.minecraft.data.tags.EnchantmentTagsProvider` directly
+(no Fabric wrapper exists for a dynamic-registry tag provider) and deliberately has no
+`@Override getName()` — `javap` confirmed `TagsProvider.getName()` is `public final`, so overriding it
+would not compile. Lang needed no provider, exactly as planned: one `enchantment.<ns>.<path>` key per
+spec in the harness's own `assets/enchantharness/lang/en_us.json`.
+**A real, previously-unflagged datagen-ordering bug surfaced here**, not anticipated by the plan:
+`EnchantTagProvider.addTags` originally called `builder.add(spec.key())`, which failed
+`./gradlew generateAssets` with `IllegalArgumentException: Couldn't define tag
+minecraft:in_enchanting_table as it is missing following references: enchantharness:harness_vigor,
+enchantharness:harness_flight_proof`. Reading `TagsProvider.run()`
+(`data/tags/TagsProvider.java:65-105`) and `FabricDynamicRegistryProvider.run()`
+(`FabricDynamicRegistryProvider.java:44-59`) explains why: every provider in a
+`FabricDataGenerator.Pack` shares one `CompletableFuture<HolderLookup.Provider>` snapshot built once
+at datagen boot from whatever datapacks are already loaded — a sibling `FabricDynamicRegistryProvider`
+in the *same run* only ever writes JSON to disk, it never feeds its output back into that shared
+snapshot, so a tag referencing this mod's own just-declared enchantment can never resolve at
+validation time no matter what order the providers run in. Vanilla's own combined datagen avoids this
+because its shared registries snapshot is built from a `RegistrySetBuilder` bootstrap
+(`Enchantments.bootstrap`) that populates the *same* in-memory registry every provider reads — a
+mechanism Fabric API's dynamic-registry datagen does not replicate. The fix is the vanilla-supplied
+escape hatch for exactly this ordering problem: `TagAppender.addOptional(ResourceKey)`
+(`data/tags/TagAppender.java`) builds a `TagEntry` with `required=false`, whose
+`verifyIfPresent` (`tags/TagEntry.java`) short-circuits to `true` without consulting the registries
+snapshot at all. `EnchantTagProvider` now calls `builder.addOptional(spec.key())` instead of `.add(...)`
+— this only weakens datagen-time validation, not the tag's behavior at real runtime, where the game
+loads this mod's own generated enchantment json alongside the tag json and the reference resolves
+normally (confirmed in S6's own in-world run). Any future `common/enchant` tag provider referencing
+this framework's own declared content needs the same `addOptional`, not `add`.
+
+## S6 — In-world proof of a custom equip/unequip effect — **done**
 
 **Build.** Nothing new — this stage is the in-world test that the rest of the framework was built
 to pass. `/give` an enchanted book carrying the location-based custom-effect enchantment, apply it via
@@ -257,6 +321,25 @@ This is the stage that makes the feature complete: it is the first point anythin
 own Java code runs off a declared enchantment's equip/unequip transition, which is the exact
 mechanism a future flight enchantment needs (see Findings and the Reference section below) — not just
 that vanilla's existing vocabulary still works.
+
+**As built.** Ran on the harness's dev server (`scripts/devserver.sh <harness-dir> rcon "..."`) against
+a `NoGravity` armor stand rather than a book-and-anvil flow on a real player — an `/item replace entity
+... armor.chest with minecraft:iron_chestplate[minecraft:enchantments={"enchantharness:harness_flight_proof":1}]`
+gives the exact same equip transition `EnchantmentHelper`/`Enchantment.runLocationChangedEffects`
+drives for any `LivingEntity`, without needing a connected client. (Two dead ends before landing on
+this, worth recording since a future headless rcon test will hit the same ones: a `NoAI` zombie at
+`y=100` never became selectable — it burned to death from sun exposure on the very next tick, since
+`NoAI` disables pathfinding, not fire-in-daylight or fall physics; and even a fireproof mob needs
+`forceload add <x> <z>` first, since a fresh dev world keeps no chunks loaded at all with zero players
+connected, and an unloaded entity is not selector-visible.) Server log confirmed both edges:
+```
+[...] (enchantharness) flight_proof onChangedBlock: entity=Armor Stand becameActive=true
+[...] (enchantharness) flight_proof onDeactivated: entity=Armor Stand
+```
+`/attribute @e[...] minecraft:max_health get` also confirmed `harness_vigor`'s vanilla-vocabulary
+`ATTRIBUTES` effect (20 → 24 at level 2, i.e. `+2` per level), so both harness enchantments are proven
+live, not just the amendment's location-based one. No `Mixin apply failed`/`InvalidInjectionException`
+in the server log (grep count 0), consistent with the framework needing no mixin at all.
 
 ## Open decisions
 
