@@ -302,12 +302,12 @@ explicitly out of scope for this scratch checkout, as already noted in the Build
 ## Open decisions
 
 **Whether a timed/consumable effect (drink this, effect lasts 30s) needs a dedicated mechanism, or
-whether `PlayerEffectSource.custom(...)` is expressive enough via a consumer-owned expiry map.** The
-generic escape hatch can express it today — a consumer stores its own `Map<UUID, Long>` expiry and
-hands `custom(player -> expiry.getOrDefault(...) > gameTime)` to `PlayerEffect` — so this plan
-doesn't build a second source kind for it. Settled by the first real consumer that wants one; if it
-turns out every consumer wants the same expiry-map shape, that's the extraction, not a new
-`PlayerEffectSource` variant.
+whether a plain `PlayerEffectSource` lambda is expressive enough via a consumer-owned expiry map.**
+A bare lambda can express it today — a consumer stores its own `Map<UUID, Long>` expiry and hands
+`player -> expiry.getOrDefault(...) > gameTime` to `PlayerEffect` — so this plan doesn't build a
+second source kind for it. Settled by the first real consumer that wants one; if it turns out every
+consumer wants the same expiry-map shape, that's the extraction, not a new `PlayerEffectSource`
+variant.
 
 **Whether `common/effect` should offer a `MobEffect`-backed presentation (HUD icon, particle, native
 sync) as an alternative or addition to the hook-only model.** Deliberately not built now — see the
@@ -348,3 +348,28 @@ framework, not a unilateral abstraction from this side.
 | The real `AttributeModifier` is `net.minecraft.world.entity.ai.attributes.AttributeModifier` (record: id, amount, operation); `net.minecraft.world.attribute.modifier.AttributeModifier` is an unrelated interface for environment/render value blending | Read both files; confirmed the first is what `LivingEntity`/`AttributeMap`/`ArmorMaterial` actually use via `grep` across `libs/decompiledjava/minecraft-26.2` |
 | `MobEffect` is a `BuiltInRegistries.MOB_EFFECT` entry with a protected constructor (subclassable) and `MobEffectInstance.INFINITE_DURATION = -1` | Read `MobEffect.java:39-58`, `MobEffectInstance.java:27` |
 | `HoverScanner`'s per-tick, per-player shape is what `PlayerEffectDispatcher` mirrors | Read `common/label/HoverScanner.java:29-150` in this checkout |
+
+## Cleanup pass before merging to main
+
+The framework was reviewed as a whole before it landed in `rkcore`'s `main`, with `artifacts` as its
+first real consumer. What changed from the as-built text above:
+
+- **`PlayerEffectSource.custom(Predicate<ServerPlayer>)` removed.** `PlayerEffectSource` is itself a
+  functional interface, so the escape hatch was a rename of the lambda a consumer could already
+  write. The `equipped`/`held` factories stay — those do real work, iterating `slot.slots()`.
+- **`PlayerEffectDispatcher.onEndTick` returns early when no effect is registered.** The per-tick
+  scan allocates per online player; a mod depending on `rkcore` for something else entirely should
+  not pay for a framework it never used.
+- **`common/death` collapsed from two files to one.** `DeathMessageOverride` was a record pairing a
+  `BiPredicate` condition with a message `Function`; it is now a single functional interface nested
+  in `DeathMessageOverrides`, returning the replacement message or null. The first consumer's
+  override already cleared a tracking map inside what was declared a predicate — one function makes
+  that side effect obvious and runs it exactly once.
+- **The `harness/` scratch consumer was deleted.** It was an independent Gradle project inside this
+  checkout (`rootProject.name = 'effectharness'`), never referenced by `rkcore`'s own build, that
+  existed to prove the shade/relocation path and the equip/unequip lifecycle. `artifacts` now
+  exercises both as a real consumer, so keeping it would leave a second, never-built Gradle project
+  and a committed wrapper jar in `rkcore` permanently. Recoverable from history at `233899a`.
+
+Unchanged and still true: the in-world verification each stage's "Done when" asks for was done on
+that harness, and nothing in this pass altered the dispatcher's scan semantics or the hook contract.

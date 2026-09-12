@@ -406,3 +406,78 @@ this framework stops at confirming the hook shape reaches it.
 | `Registries.ENCHANTMENT` | Datapack registry | Per-world, from datapack JSON | S4's datagen provider (JSON on disk, not a runtime call) |
 | `BuiltInRegistries.ENCHANTMENT_ENTITY_EFFECT_TYPE` / `..._VALUE_EFFECT_TYPE` / `..._LOCATION_BASED_EFFECT_TYPE` | Ordinary code registry | Mod init | S3's registration helper |
 | `BuiltInRegistries.ITEM`, `BuiltInRegistries.ENTITY_TYPE` | Ordinary code registry | Mod init (already populated by the time a consumer declares a spec) | Not written by this framework — read to build `HolderSet`s for `supportedItems`/`primaryItems` |
+
+## S7 — Hiding an enchanted item's model — **done**
+
+Built after S1–S6, on top of the declaration machinery rather than beside it: an enchantment that
+changes how its item *renders* instead of what it does. `common/enchant/HideEquipmentModelEnchantments`
+maps a `ResourceKey<Enchantment>` to a `HiddenEquipmentStyle`, and `common/enchant/client/` turns
+that into render decisions for both vanilla pipelines that draw an enchanted item.
+
+**Hiding is not "skip the draw call", and the reason is the glint.** `RenderPipelines.GLINT`
+depth-tests `CompareOp.EQUAL`, so it draws only where an earlier pass wrote exactly matching depth —
+that test is the *only* thing giving vanilla glint its shape, since the glint shader samples nothing
+but the scrolling glint texture. Drop the pass that writes the depth and the glint silently dies
+with it. This is also why a fully transparent texture cannot produce the effect: the item and armor
+pipelines both declare `withShaderDefine("ALPHA_CUTOUT", 0.1F)`, and a discarded fragment writes no
+depth at all.
+
+`HiddenEquipmentStyle` is the resulting 2×2 — whether the invisible mesh still writes depth
+(*occluding*) and whether the glint still draws (*glinting*): `HIDDEN`, `HIDDEN_GLINT`, `PHANTOM`,
+`PHANTOM_GLINT`. Occluding is the interesting half: armor is modelled fractionally outside the skin
+it covers, so an invisible mesh that still writes depth occludes the wearer's own body and cuts a
+piece-shaped hole clean through them. That started as a bug report and was kept as an option.
+
+**26.2 runs a reversed-Z depth buffer.** `DepthStencilState.DEFAULT` is
+`(CompareOp.GREATER_THAN_OR_EQUAL, true)` — nearer geometry holds the *larger* depth value. The first
+working build used `LESS_THAN_OR_EQUAL` for its relaxed glint and looked right in-world, but was
+passing on the mesh's back faces, dropping the glint anywhere the piece extended past the wearer's
+silhouette. Do not reason about depth ops here from OpenGL habit.
+
+**Armor and held items need different answers, and the armor one does not transfer.** Armor picks a
+render type per `submitModel` call, so a consumer's mixin redirects it; a non-occluding style can
+drop the plain pass and relax the glint to `GREATER_THAN_OR_EQUAL`, because an armor model is a box
+whose geometry already approximates its own silhouette. Items have no per-call render type at all —
+`ItemFeatureRenderer` draws one `BakedQuad` list twice, main then foil, using each quad's own
+`materialInfo().itemRenderType()` — so the lever is the quad's material, rewritten at resolve time
+in `ItemModelResolver.updateForTopItem` (the last place holding both the `ItemStack` and a finished
+`ItemStackRenderState`). And relaxing the glint there fills the whole 16×16 quad, because a flat
+sprite's shape lives entirely in the depth the alpha cutout wrote. So a glinting item *must* write
+depth and use vanilla's untouched `EQUAL` glint, which makes `HIDDEN_GLINT` and `PHANTOM_GLINT`
+identical for items.
+
+**Consumer wiring.** `HiddenRendering.init(MOD_ID, Shim::create)` once from a `ClientModInitializer`,
+plus a ~6-line mod-named shim in `net.minecraft.client.renderer.rendertype` exposing the
+package-private `RenderType.create` — unavoidable, since relocated code cannot squat a vanilla
+package without two consumers colliding on one class name — and the mixins, which are never shared
+code: a `@Redirect` pair on `EquipmentLayerRenderer` for armor, an `@Inject` plus an `@Accessor` on
+the item-resolve path for held items. `RenderPipeline`s are built unregistered, since
+`RenderPipelines.register` is private; they compile lazily and work.
+
+**Verified in-world** by the user on a connected client, for `HIDDEN_GLINT`, on both worn armor and
+held items — the only way to verify any of it, since a dedicated server never loads client mixins.
+`HIDDEN` and `PHANTOM` are reasoned but unobserved.
+
+## Cleanup pass before merging to main
+
+Reviewed as a whole before landing in `rkcore`'s `main`, with `artifacts` as the first real consumer:
+
+- **One `init` instead of two.** `HiddenEquipmentRendering` and `HiddenItemRendering` each had their
+  own public `init`, their own copy of the depth-only `ColorTargetState`, their own namespace and
+  factory statics and their own init guard. That moved to `HiddenRendering`, which owns the single
+  public entry point and the shared depth-only pipeline builder; a consumer that called only one of
+  the old pair got a half-initialised framework that threw at first render.
+- **The fully-hidden style drops its geometry instead of drawing it invisibly.** `HIDDEN` writes
+  neither colour nor depth, so submitting quads for it was pure GPU work for nothing; `hideLayer`
+  now clears the quad list, which also deleted a whole render pipeline and two caches. Only the draw
+  goes — a layer's extents, and so its model bounding box, are a separate field.
+- **The relaxed item glint and its `ItemFeatureRenderer` mixin were deleted**, superseded by the
+  depth-writing rule above.
+- **The `harness/` scratch consumer was deleted** — see `player-effect-framework.md`'s own cleanup
+  section for the reasoning; it covered both frameworks.
+
+`EnchantEffectRegistration`, `SimpleEntityEffect` and `SimpleLocationBasedEffect` (S3) are kept but
+have no consumer yet: `artifacts`' flight ability went to `common/effect` instead, and its one
+enchantment is render-only. They are the framework's only runtime hook — without them a declared
+enchantment can carry vanilla effects and nothing else — so they stay, flagged as unexercised rather
+than removed.
