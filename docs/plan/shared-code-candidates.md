@@ -85,6 +85,15 @@ Because every consumer builds against a `mavenLocal` jar, each stage that change
 ends with `cd rkc/mods/rkcore && ./gradlew publishToMavenLocal` and a rebuild of **both** consumers,
 not just the one that motivated the change.
 
+Two mechanics of that comparison, found in S3. `clean` does not clear the hash cache beside the
+output — it only empties `build/` — so an unchanged rerun writes nothing, and datagen's own
+`written: 0, removed stale: 0` line is the positive signal rather than a sign the run did nothing.
+But `HashCache.shouldWrite` compares the new hash against the *cache*, not against the bytes on
+disk (`HashCache.java:161-163`), so deleting `src/main/generated` before regenerating is what makes
+the comparison independent of the cache. Separately, `lintAll` reaches neither mod's datagen: its
+`mods` map lists only `src/main/java` per mod (`scripts/lint/build.gradle:15-20`), so a datagen
+stage needs `checkstyleTarget -PtargetDir=<mod>/src/datagen/java` run by hand.
+
 A stage is not finished until its "Done when" is observed. A failure at stage N implicates stage N
 and not the ones before it.
 
@@ -223,7 +232,7 @@ not `net.minecraft.client.renderer.block.model.Material` — the probe's first c
 guessed import while `ArmorModelProvider:18` already had it right. Copy from the working consumer
 rather than inferring the package.
 
-## S3 — Extract the entity-model box transcription — **planned**
+## S3 — Extract the entity-model box transcription — **done**
 
 **Build.** Move `ElementModels`' geometry half into `rkcore` as `common/datagen/EntityModelBoxes`:
 the two `box` overloads (`:39`, `:59`), `invertedTwin:122`, `model:142` and `UV_SCALE:25`. Leave
@@ -242,6 +251,50 @@ block-model `uv` space, with the u/v pair swaps that entity-cube vertex winding 
 `ShulkerModel`'s mob convention (`PartPose.offset(0, 24, 0)`, Y growing downward), and
 `invertedTwin`'s inward-facing duplicate that restores what no-cull entity rendering drew. Its own
 comment says a second copy would be a liability; there are already two consumers inside one mod.
+
+### As built
+
+**The split was a dependency closure, and it came apart cleanly.** `EntityModelBoxes` took both
+`box` overloads, `invertedTwin`, `model` and `UV_SCALE` along with all five private helpers,
+because each helper serves exactly one half: `putFace`, `element` and `vec` are reached only from
+`box`, `copyVec` and `mirroredFace` only from `invertedTwin`. The two members left behind,
+`variantModel` and `itemDefinition`, call no private helper at all, so nothing had to be duplicated
+or promoted.
+
+**No build wiring changed, as the Build text predicted.** Both consumers already filtered
+`common/datagen/**` for `PngAssets`, and `planked-chests`' datagen source set already imported from
+that package, so the whole consumer-side edit is one import line per provider plus the renamed call
+sites.
+
+**Output is byte-identical across 1532 files.** That is the same tree S2 counted as 1543; the
+difference is the 11 `.cache` hash files, one per provider, which this stage's manifest excludes.
+`src/main/generated` was deleted outright before regenerating (`written: 1532`) so the comparison
+did not rest on the cache. `./gradlew build` exits 0 in `rkcore`, `planked-chests` and `companions`,
+and `checkstyleTarget` is clean on `rkcore/src/main/java` and `planked-chests/src/datagen/java`.
+
+**Relocation verified in the shipped jar**, not only on the compile classpath:
+`club/rainbowkitty/plankedchests/shaded/rkcore/datagen/EntityModelBoxes.class`, 6497 bytes against
+6469 unrelocated, the delta being the rewritten class name in the constant pool. It ships unused,
+like `PngAssets`, because the datagen source set is not in the jar.
+
+**The in-world check passed, and was confirmatory rather than load-bearing.** Byte-identical output
+means the game loads the JSON it loaded before, and nothing resolves `EntityModelBoxes` at runtime,
+so no render path could have moved. Observed anyway on the dev server (port 25604, zero mixin
+errors): a single chest's interior walls for `invertedTwin`, the double-chest seam for the `hidden`
+face, and a cart-borne shulker box for the `flippedY` branch.
+
+**Released as rkcore 0.5.0, with both consumer pins moved.** 0.4.0 was republished in place first,
+per CLAUDE.md's dev loop, which left that coordinate holding different bytes than the jar
+`companions` had built against; 0.5.0 restores a pin that names a reproducible artifact. Nothing in
+`companions` uses the new class, but its shaded jar gains it, since its filter takes
+`common/datagen/**` whole.
+
+**Two testing mechanics were added to "How these stages get tested"** — the hash cache surviving
+`clean`, and `lintAll` not reaching `src/datagen/java`. Both apply to S4 through S7.
+
+**Left alone: `ElementModels` now covers less than its name says** — two JSON-shape helpers and no
+elements. Renaming it touches four files and was not in the Build text, and S6 is the stage likely
+to move `variantModel` anyway, so that is the place to settle the name.
 
 ## S4 — Extract the display-element pose constants — **planned**
 
