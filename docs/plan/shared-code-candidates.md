@@ -148,15 +148,15 @@ main` fails with "Repository not found" while `planked-chests` pushes fine over 
 `gh api repos/RainbowKittyClub/rkcore` returns a bare 404 with no rename redirect, and a GitHub
 rename always leaves one — so the repo was deleted rather than renamed.
 `RainbowKittyClub/Kalic0re`, described as the "java library used by all RKC/Kalic0 mods", was
-created empty at 2026-09-12T03:39:19Z and pushed once a second later; fetching it read-only shows a
-single unrelated "Initial commit" sharing no history with this checkout. It is the evident successor
-but holds none of this work yet. See Open decisions.
+created empty at 2026-09-12T03:39:19Z and pushed once a second later; fetching it read-only shows
+a single unrelated "Initial commit" sharing no history with this checkout. It is the confirmed
+successor — a rename plus a slight re-scope — and holds none of this work yet; leaving `rkcore`
+local-only is a deliberate choice, not an unresolved one. See Open decisions for what the re-scope
+still leaves open.
 
-**Cleanup state.** `custom-armor-models` and `cargo-minecarts` are deleted, both being fully
-subsumed by `main`. The three `prereunion/*` tags are kept for now: they were to go once the push
-landed, and it has not. They mark nothing unique — `main` carries all 18 commits and
-`backup/pre-untangle` remains — so they can be dropped with one command whenever the remote question
-is settled.
+**Cleanup state.** `custom-armor-models`, `cargo-minecarts` and the three `prereunion/*` recovery
+tags are all deleted, being fully subsumed by `main`. `backup/pre-untangle` remains as the only
+witness to the pre-split tree.
 
 ## S2 — Converge planked-chests datagen on the typed vanilla API — **planned**
 
@@ -290,15 +290,21 @@ Re-check them before relying on the helper somewhere new.
 
 ## Open decisions
 
-**Where `rkcore` pushes now.** Its GitHub repository was deleted and the empty
-`RainbowKittyClub/Kalic0re` created in its place, so 19 commits of finished work exist only in this
-checkout. Three shapes, and they are not equivalent: repoint `origin` at `Kalic0re` and push over
-its lone initial commit (force, or an unrelated-histories merge); recreate `RainbowKittyClub/rkcore`
-and push the fast-forward as intended; or treat `Kalic0re` as a genuine re-scoping, in which case
-the mod id, Maven coordinate and `club.rainbowkitty.rkcore` package all move too and both consumers'
-`relocate` lines change with them. Settled by what the new repository was created *for*, which is
-not recoverable from the repository itself. Until it is settled, nothing off this machine has a copy
-of the armor or cargo-minecart frameworks.
+**What the `Kalic0re` re-scope covers, and whether it lands before or after S2–S7.**
+`RainbowKittyClub/rkcore` was deleted deliberately and `Kalic0re` is its intended successor — a
+rename plus a slight re-scope — with this checkout left local-only for now, on purpose. So the
+remote question is closed; what is open is the scope, and it has a sequencing consequence. If the
+re-scope moves the mod id, the Maven coordinate and the `club.rainbowkitty.rkcore` package, then
+every stage below either lands in the old namespace and gets rewritten, or waits. Extracting first
+is the cheaper order despite appearances: the moves are mechanical and both consumers already funnel
+the namespace through one `relocate` line each (`planked-chests/build.gradle`,
+`companions/build.gradle`), whereas renaming first freezes S2–S7 behind work whose shape is not yet
+decided. Worth deciding explicitly rather than by drift.
+
+**No copy of this work exists off this machine.** A consequence of the above rather than a decision
+in itself, but it governs how much unpushed work should accumulate here before the migration
+happens. The armor and cargo-minecart frameworks are both finished, deployed-adjacent code with 20
+commits behind them and no remote.
 
 **Whether `planked-chests` moves to `client = true` datagen.** Settled by the probe at the top of
 S2, not by argument. If the typed builders load without a client instance the question never comes
