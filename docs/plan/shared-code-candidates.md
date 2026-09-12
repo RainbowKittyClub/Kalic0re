@@ -142,10 +142,21 @@ jar. The republished jar carries 7 `common/vehicle` classes and all nine package
 `planked-chests/gradle.properties:21` moved from `rkcore_version=0.2.0` to `0.4.0`, and
 `./gradlew build` exits 0 in `rkcore`, `planked-chests` and `companions`.
 
-**Not yet done:** `main` is unpushed, and the now-redundant `custom-armor-models` and
-`cargo-minecarts` branches still point into `main`'s history. Recovery tags `prereunion/main`,
-`prereunion/custom-armor-models` and `prereunion/cargo-minecarts` mark the pre-rebase heads and can
-go once the push lands.
+**The reunited branch cannot be pushed: `rkcore`'s remote no longer exists.** `git push origin
+main` fails with "Repository not found" while `planked-chests` pushes fine over an identical
+`ssh://git@github.com/RainbowKittyClub/...` URL, so it is the repository and not the credentials.
+`gh api repos/RainbowKittyClub/rkcore` returns a bare 404 with no rename redirect, and a GitHub
+rename always leaves one — so the repo was deleted rather than renamed.
+`RainbowKittyClub/Kalic0re`, described as the "java library used by all RKC/Kalic0 mods", was
+created empty at 2026-09-12T03:39:19Z and pushed once a second later; fetching it read-only shows a
+single unrelated "Initial commit" sharing no history with this checkout. It is the evident successor
+but holds none of this work yet. See Open decisions.
+
+**Cleanup state.** `custom-armor-models` and `cargo-minecarts` are deleted, both being fully
+subsumed by `main`. The three `prereunion/*` tags are kept for now: they were to go once the push
+landed, and it has not. They mark nothing unique — `main` carries all 18 commits and
+`backup/pre-untangle` remains — so they can be dropped with one command whenever the remote question
+is settled.
 
 ## S2 — Converge planked-chests datagen on the typed vanilla API — **planned**
 
@@ -278,6 +289,16 @@ rather than the six lines of code. The supporting claims — `SpriteSourceList.l
 Re-check them before relying on the helper somewhere new.
 
 ## Open decisions
+
+**Where `rkcore` pushes now.** Its GitHub repository was deleted and the empty
+`RainbowKittyClub/Kalic0re` created in its place, so 19 commits of finished work exist only in this
+checkout. Three shapes, and they are not equivalent: repoint `origin` at `Kalic0re` and push over
+its lone initial commit (force, or an unrelated-histories merge); recreate `RainbowKittyClub/rkcore`
+and push the fast-forward as intended; or treat `Kalic0re` as a genuine re-scoping, in which case
+the mod id, Maven coordinate and `club.rainbowkitty.rkcore` package all move too and both consumers'
+`relocate` lines change with them. Settled by what the new repository was created *for*, which is
+not recoverable from the repository itself. Until it is settled, nothing off this machine has a copy
+of the armor or cargo-minecart frameworks.
 
 **Whether `planked-chests` moves to `client = true` datagen.** Settled by the probe at the top of
 S2, not by argument. If the typed builders load without a client instance the question never comes
