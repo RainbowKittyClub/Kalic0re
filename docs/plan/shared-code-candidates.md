@@ -525,7 +525,7 @@ the same jar — and the byte argument covers what it would have shown.
 That reference was stale from S3, which moved the method to `EntityModelBoxes`, and is now stale
 twice over. It is another plan document's prose, so it is flagged here rather than edited.
 
-## S7 — Extract the atlas-merge helper — **planned**
+## S7 — Extract the atlas-merge helper — **done**
 
 **Build.** Generalise `ShulkerAtlasProvider`'s technique into `common/datagen` as a small
 `AtlasSources` helper that appends `minecraft:single` sources to a named vanilla atlas. Writing
@@ -544,6 +544,45 @@ rather than the six lines of code. The supporting claims — `SpriteSourceList.l
 `ShulkerAtlasProvider`'s Javadoc and were verified when it was written, not re-verified here.
 Re-check them before relying on the helper somewhere new.
 
+### As built
+
+**All three supporting claims were re-verified before the Javadoc moved, as the Build text told this
+stage to do.** They had been checked when `ShulkerAtlasProvider` was written, and putting them in a
+shared library is the "relying on them somewhere new" the warning named. `SpriteSourceList.load`
+does iterate `resourceManager.getResourceStack(resourceId)` and `addAll` each pack's sources, so
+writing `minecraft:blocks` appends rather than replaces. Vanilla's own
+`assets/minecraft/atlases/blocks.json` does hold four sources, of which exactly two are
+`minecraft:single` — `entity/bell/bell_body` and `entity/enchantment/enchanting_table_book`. And
+`SingleFile#run` ends in `output.add(this.spriteId.orElse(this.resourceId), resource.get())`, so a
+source with no `sprite` key names the sprite after its `resource` verbatim.
+
+**A fourth fact turned up that the Build text did not have: `SingleFile` is
+`@Environment(EnvType.CLIENT)`, and so is the rest of `SpriteSources`.** The raw JSON here is
+therefore forced rather than chosen, for the same reason S2 found for models and S6 recorded on
+`PackJson` — a `client = false` datagen run cannot name those classes at all. That is now stated on
+`AtlasSources` instead of being left to look like a stylistic preference.
+
+**The split follows what is general and what is this mod's.** `AtlasSources` holds
+`singleFiles(Collection<Identifier>)` and `BLOCK_ATLAS`, plus the merge reasoning, the
+copying-is-worse argument and the sprite-naming rule. `ShulkerAtlasProvider` keeps why *shulker
+sheets* need it — they live on vanilla's `shulker_boxes` atlas, which only the special renderers
+read, and an item model can only name a sprite on the block atlas — and shrank to building a list of
+seventeen sheet ids.
+
+**Output is byte-identical across all 1532 files**, and `blocks.json` was additionally compared on
+its own with `cmp` rather than through a hash manifest. The provider's bytecode was checked too, per
+`docs/TESTING.md`: `javap` shows `invokestatic AtlasSources.singleFiles` and `getstatic
+AtlasSources.BLOCK_ATLAS`, so the no-difference result is about code that really ran. All three mods
+build, `checkstyleTarget` is clean, and the relocated `AtlasSources` is 1832 bytes in the shipped
+jar.
+
+**No in-world check.** Same reasoning as S3, S5 and S6 — byte-identical output, nothing resolving at
+runtime. The Done-when's cart-borne shulker box was last seen drawing correctly during S4's round,
+which is the last change that could have affected it.
+
+**Released as rkcore 0.9.0** with both pins moved. That is the fifth consecutive release in this
+run: 0.5.0 through 0.9.0, one per stage, each naming one set of bytes.
+
 ## Open decisions
 
 **What the `Kalic0re` re-scope covers, and whether it lands before or after S2–S7.**
@@ -557,13 +596,20 @@ the namespace through one `relocate` line each (`planked-chests/build.gradle`,
 `companions/build.gradle`), whereas renaming first freezes S2–S7 behind work whose shape is not yet
 decided. Worth deciding explicitly rather than by drift.
 
+The sequencing half is now answered by events: S2 through S7 are all done, so the re-scope can no
+longer land before them. What remains open is its content, and the bill it leaves behind is larger
+than it was — `common/datagen` now carries four shared classes rather than one, though still behind
+the same single `relocate` line per consumer.
+
 **No copy of this work exists off this machine.** A consequence of the above rather than a decision
 in itself, but it governs how much unpushed work should accumulate here before the migration
 happens. The armor and cargo-minecart frameworks are both finished, deployed-adjacent code with 20
 commits behind them and no remote.
 
 **Whether `planked-chests` moves to `client = true` datagen.** Settled by the probe at the top of
-S2, not by argument. If the typed builders load without a client instance the question never comes
+S2, not by argument — and the answer was no: the typed builders cannot be loaded in a server
+environment at all, so the raw JSON stayed and S6 and S7 both went on to share more of it. The rest
+of this entry is the reasoning as it stood before the probe ran. If the typed builders load without a client instance the question never comes
 up; if they do not, the trade is a client-booting datagen pass against deleting four hand-rolled
 JSON emitters, and the honest answer may be to keep the raw JSON and record why.
 
@@ -593,3 +639,7 @@ cost is the entire Shadow wiring for one small helper. Left undecided rather tha
 | `main` ≡ `origin/main` in content | six matching `git patch-id --stable` values, empty `git diff main origin/main`, committer timestamps the only delta |
 | `main` is an ancestor of `custom-armor-models`; `cargo-minecarts` forks from `main@0127d9b` | `git merge-base` against each branch |
 | `backup/pre-untangle` carries both armor and vehicle and mirrors `custom-armor-models` patch-for-patch | `git ls-tree -r --name-only`, `git log --graph --all` |
+| `SpriteSourceList.load` appends every pack's sources rather than replacing them | read `getResourceStack` loop + `loaders.addAll` in the 26.2 decompile |
+| Vanilla's `blocks.json` holds four sources, two of them `minecraft:single` entity textures | `unzip -p` the deobf jar's `assets/minecraft/atlases/blocks.json` |
+| `SingleFile#run` falls back to the resource id when no `sprite` is given | `output.add(this.spriteId.orElse(this.resourceId), …)` in the same decompile |
+| `SingleFile` and `SpriteSources` are `@Environment(CLIENT)` | class annotation in the 26.2 decompile |
