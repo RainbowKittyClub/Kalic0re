@@ -49,6 +49,11 @@ public final class PlayerEffectDispatcher {
     }
 
     private static void onEndTick(MinecraftServer server) {
+        // A mod may depend on rkcore for something else entirely and never register an effect;
+        // the scan allocates per player per tick, so don't start it for an empty list.
+        if (EFFECTS.isEmpty()) {
+            return;
+        }
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             update(player);
         }

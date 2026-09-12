@@ -44,9 +44,4 @@ public interface PlayerEffectSource {
     static PlayerEffectSource held(Item item) {
         return held(stack -> stack.getItem() == item);
     }
-
-    /** An arbitrary condition, for a source none of the other factories cover. */
-    static PlayerEffectSource custom(Predicate<ServerPlayer> active) {
-        return active::test;
-    }
 }
