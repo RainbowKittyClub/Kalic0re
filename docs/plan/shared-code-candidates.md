@@ -583,7 +583,7 @@ which is the last change that could have affected it.
 **Released as rkcore 0.9.0** with both pins moved. That is the fifth consecutive release in this
 run: 0.5.0 through 0.9.0, one per stage, each naming one set of bytes.
 
-## S8 — Hoist the cart-frame pose into CargoDisplayHolder — **planned**
+## S8 — Hoist the cart-frame pose into CargoDisplayHolder — **done**
 
 **Why this stage exists.** Found by a sweep after S7, not by the original survey. That survey was
 name-based and datagen-weighted — five of seven stages — and the runtime display side got one stage
@@ -620,7 +620,42 @@ Not in scope: `topAboveCentre` and the cross-class constant read at `ShulkerCart
 levelled against the chest cart's own figures so that changing either scale keeps the two tops
 level, which is a `planked-chests` fact and not a general one.
 
-## S9 — Hoist the display-element factory and the datagen sniff — **planned**
+### As built
+
+**Everything in the Build text moved, and the `turned` flag was the load-bearing part.** The holder
+now keeps `posedYaw`/`posedPitch` itself and hands `applyPose` a `turned` flag, owns `cartFrame` and
+`cargoOrigin` (with a no-arg reader for `ChestCartDisplay.placeHinge`), and defines `CARGO_TURN` and
+`PART_INTERPOLATION`. `ChestCartDisplay` went from 137 lines to 100, `ShulkerCartDisplay` from 170
+to 140, and each `applyPose` body is now four statements.
+
+**The hoist gave the shulker box an explanation it never had.** The roll-ordering comment and the
+swings-on-a-slope comment existed in `ChestCartDisplay` only; `ShulkerCartDisplay` carried a
+one-line abbreviation of the first and nothing of the second, despite running identical maths. That
+asymmetry is the usual shape of copied code: the copy keeps the statements and loses the reasons.
+
+**Verified at build level**, with generated output byte-identical across 1532 files — an absence of
+signal rather than a pass, since this stage touches no datagen. All three mods build,
+`checkstyleTarget` is clean, `javap` shows both subclasses calling the relocated `cartFrame` and
+`cargoOrigin`, and `CargoDisplayHolder` is 4311 bytes in the shipped jar.
+
+**The in-world round passed on every leg**, and it was the load-bearing kind: a placed chest, a
+double chest formed and broken, a chest cart on flat rail, the same cart on a slope, a cart through
+a curve at speed, and a cart-borne shulker box on both. The slope was the leg that mattered — the
+roll-ordering bug this code guards against is invisible on flat track — and the cargo stayed square
+to the cart.
+
+**One finding came out of the round, and it is not this stage's.** A vanilla client shows a slight
+flicker when a chest is placed. That is the barrier client state's ghost-placement prediction
+already recorded in `planked-chests.md`'s open decisions, not the element or model path:
+`ChestElementHolder:55-59` sets both items and the transform inside the constructor, before the
+holder can be attached, so no client ever holds an element without them. The placed-chest holder is
+not a `CargoDisplayHolder` either, so S8 never reached that path. That document's wording was
+widened to cover placing a chest itself rather than only placing a block against one.
+
+**Released as rkcore 0.10.0.** Not in scope and still not extracted, as the Build text said:
+`topAboveCentre` and the cross-class constant read behind `ShulkerCartDisplay.CARGO_CENTRE_Y`.
+
+## S9 — Hoist the display-element factory and the datagen sniff — **done**
 
 **Build.** Two small things the earlier stages left behind. `common/display` gains the
 model-carrying `ItemDisplayElement` factory duplicated at `ChestVisual:125-139` and
@@ -637,6 +672,35 @@ built` does not mention it.
 **Done when.** Both compile against the shared copies, generated output stays byte-identical, and
 the dev server still skips the woods whose optional mod is absent while datagen still emits all of
 them — which is the sniff's only job.
+
+### As built
+
+**The factory had to stay two pieces, which is why it is two methods.** `ItemDisplays.element()` and
+`ItemDisplays.modelStack(carrier, model)` are separate because the consumers are: a chest's model
+changes when it becomes half of a double chest, so `ChestVisual` builds its elements once and
+re-sends a stack on each change, while `ShulkerCartDisplay` sets both at construction and composes
+the two calls in a three-line helper of its own. A single combined factory would have served the
+cart and been unusable for the chest — the same shape of finding as S5's lid tween.
+
+**The carrier item stayed a parameter.** `Items.CHEST` and `Items.SHULKER_BOX` are what a client
+without the model falls back to drawing, which makes the choice content, not plumbing.
+`DEFAULT_INTERPOLATION` is shared at 2, the value both sites used.
+
+**The datagen sniff split along the same line as its comment.** `DatagenRun.ACTIVE` carries how the
+property is read and that `FabricDataGenHelper`'s bytecode exposes no constant for it; `ChestBlocks`
+keeps why *it* ignores the mod-presence gate under datagen, which is about its 15 modded woods and
+belongs nowhere else. This closes the instruction the not-extracted table gave S3.
+
+**Two incidental repairs.** `ChestVisual` still named `ItemDisplayContext` from a comment after the
+factory left, which `UnusedImports` counts as a non-use — the third time that rule has bitten in
+this run, and it is in `docs/TESTING.md` for exactly that reason. And its `applyTransforms` Javadoc
+still linked `{@link #orientation}`, a member S4 moved to `ItemDisplayPose`; that link has dangled
+since.
+
+**Verified**: generated output byte-identical across 1532 files, all three mods build,
+`checkstyleTarget` clean on every touched tree, and `ItemDisplays` (1667 bytes) and `DatagenRun`
+(602) both relocated in the shipped jar. Released as rkcore 0.11.0. The in-world round above covered
+this stage too, since it changed how every chest and shulker element is built.
 
 ## Open decisions
 
@@ -684,6 +748,8 @@ cost is the entire Shadow wiring for one small helper. Left undecided rather tha
 | `BuiltinDataPacks` | `planked-chests`, `rk-tweaks` | Two verbatim copies, but see Open decisions — the shading cost exceeds the saving. |
 | `registerCreativeTab` | `ChestBlocks.java:87` | One consumer. The knowledge is the value: vanilla-tab additions do not reliably sync to Polymer clients, a Polymer-registered tab does, and a vanilla client reaches it only through `/polymer creative`. |
 | `MOD_ID` / `id(path)` / `LOGGER` | every mod's entrypoint | A shared helper would need the namespace passed in anyway. |
+| `Ids.blockPath` | `planked-chests/datagen/Ids.java` | Three lines wrapping `BuiltInRegistries.BLOCK.getKey(block).getPath()`. One consumer package, and no knowledge in it. |
+| `topAboveCentre` + the cross-class `CARGO_CENTRE_Y` read | `ShulkerCartDisplay` | One caller for the formula, and the read is deliberate: the box is levelled against the chest cart's own figures so changing either scale keeps the two tops level. A `planked-chests` fact. |
 
 ## Reference: verified this session
 
