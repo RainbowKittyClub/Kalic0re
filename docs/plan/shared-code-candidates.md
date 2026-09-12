@@ -6,11 +6,11 @@ alone, after first repairing the branch state that makes `publishToMavenLocal` u
 Everything below was read out of the working trees this session and is cited by file and line. The
 vanilla signatures in S2 were checked with `javap`/`unzip -l` against
 `minecraft-merged-deobf-26.2.jar`; the class *existence* claims for `MultiVariantGenerator` and
-`BlockModelDefinitionGenerator` are from the jar index only — their constructors and builder shapes
-are **not** verified and S2 has to read them before committing to that route. Claims quoted from
-existing Javadoc (vanilla's atlas merge in S7, `ChestLidController`'s ramp rate in S4) were verified
-when that code was written, not re-verified here. Nothing in this document has been run: every stage
-past S1 is `planned`.
+`BlockModelDefinitionGenerator` are from the jar index only — their constructors and builder
+shapes are **not** verified and S2 has to read them before committing to that route. Claims quoted
+from existing Javadoc (vanilla's atlas merge in S7, `ChestLidController`'s ramp rate in S4) were
+verified when that code was written, not re-verified here. S1 has been built and verified; every
+stage after it is `planned` and unrun.
 
 S1 is the blocker and has nothing to do with the extractions — it repairs a split-branch state in
 which one innocent Gradle command breaks a sibling mod's compile. Do it first; no other stage's
@@ -88,7 +88,7 @@ not just the one that motivated the change.
 A stage is not finished until its "Done when" is observed. A failure at stage N implicates stage N
 and not the ones before it.
 
-## S1 — Reunite the split rkcore branches — **planned**
+## S1 — Reunite the split rkcore branches — **done**
 
 **Build.** Discard `main`'s content-free divergence (`git reset --hard origin/main`, safe per the
 patch-id finding). Then bring `custom-armor-models` and `cargo-minecarts` back together into one
@@ -104,14 +104,48 @@ that branch and `backup/pre-untangle` shows only the intended differences; a fre
 `~/.m2` jar's `unzip -l` lists `common/{armor,client,datagen,item,label,mixin,net,rule,vehicle}`;
 and `./gradlew build` exits 0 in all three mods with both consumers pinned to that version.
 
-Whether the reunion is a merge or a rebase is the caller's decision (see Open decisions) — the
-"Done when" holds either way. `backup/pre-untangle` should not be deleted as part of this stage;
-it is the only witness to the pre-split tree.
+`backup/pre-untangle` should not be deleted as part of this stage; it is the only witness to the
+pre-split tree.
 
 There is also an uncommitted Javadoc-only edit on
 `common/net/PolymerClientHandshake.java` — the caveat that handshake key parity does not imply
 registry-id parity, because Fabric's entrypoint order is hash-shuffled per launch. Commit it before
 any branch surgery so it cannot be lost to a reset.
+
+### As built
+
+**Rebase, not merge, and the choice was evidence rather than preference.** All five first-party
+mod repos have zero merge commits across 40 commits of history (`git log --merges` on each), so
+the house convention settled what the Build text had left to the caller. That removed the
+merge-or-rebase entry from Open decisions rather than resolving it by taste.
+
+**`main`'s divergence was discarded by moving the branch, not by force-pushing later.** `git
+branch -f main origin/main` threw away the six locally-rewritten commits, and both feature
+branches were then replayed on top with `git rebase --onto`. Because the rewritten commits' trees
+were identical to `origin/main`'s, nothing was lost, and `main` can now be pushed as a
+fast-forward — no force-push enters the picture at all. Worth preferring over `reset --hard` on a
+checked-out branch generally: the working tree was on `custom-armor-models` throughout.
+
+**The Build text understated the work: `custom-armor-models` carried 17 commits past the base, not
+the 8 the initial survey showed.** The eight-commit figure came from a `git log --graph` truncated
+at `-20`, and the mirror against `backup/pre-untangle` looked complete because both halves were
+cut at the same depth. `git rev-list --count` is the check that would have caught it. All 17
+replayed with zero conflicts, as did `cargo-minecarts`' single commit — unsurprising once `git
+diff --name-only` against the shared base showed the two siblings touch entirely disjoint file
+sets.
+
+**Verified after the reunion.** `main` is 18 commits past `origin/main` at `23f06a8`, carrying all
+nine `common/` packages and `mod_version = 0.4.0`. `git diff backup/pre-untangle main` shows exactly
+three files — this plan doc (new), the handshake Javadoc caveat (new), and the post-split head-model
+doc correction — so every line of shared *source* is identical to the tree that published the 0.4.0
+jar. The republished jar carries 7 `common/vehicle` classes and all nine packages.
+`planked-chests/gradle.properties:21` moved from `rkcore_version=0.2.0` to `0.4.0`, and
+`./gradlew build` exits 0 in `rkcore`, `planked-chests` and `companions`.
+
+**Not yet done:** `main` is unpushed, and the now-redundant `custom-armor-models` and
+`cargo-minecarts` branches still point into `main`'s history. Recovery tags `prereunion/main`,
+`prereunion/custom-armor-models` and `prereunion/cargo-minecarts` mark the pre-rebase heads and can
+go once the push lands.
 
 ## S2 — Converge planked-chests datagen on the typed vanilla API — **planned**
 
@@ -244,12 +278,6 @@ rather than the six lines of code. The supporting claims — `SpriteSourceList.l
 Re-check them before relying on the helper somewhere new.
 
 ## Open decisions
-
-**Merge or rebase for S1.** A merge commit records that the untangle happened and is honest about
-the topology; rebasing `cargo-minecarts` onto `custom-armor-models` gives a linear history matching
-how the rest of these repos read. Both satisfy S1's "Done when". Settled by preference, not by
-evidence — but decide before touching anything, because the two leave different reflogs to recover
-from.
 
 **Whether `planked-chests` moves to `client = true` datagen.** Settled by the probe at the top of
 S2, not by argument. If the typed builders load without a client instance the question never comes
