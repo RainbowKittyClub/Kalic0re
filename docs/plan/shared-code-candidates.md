@@ -100,6 +100,10 @@ a comment — `//` or Javadoc — is an error, not a use. When an extraction lea
 pointing at the class that moved, either write the name unqualified or fully qualify it in the text;
 do not add the import back.
 
+A fourth, from S5: `diff` is aliased to `-u` in this workspace's shell, so a manifest comparison that
+counts `^<` lines reports no differences however many there are. Compare with `diff -q`, or run
+`command diff` and count `^-`.
+
 A stage is not finished until its "Done when" is observed. A failure at stage N implicates stage N
 and not the ones before it.
 
@@ -380,7 +384,7 @@ cancels a corner offset rather than a baked rotation, and that mod shades no `rk
 fails `UnusedImports`. It surfaced here because `ChestVisual` still explains `HINGE`'s sign by
 naming `ItemDisplayPose`; the comments now name it unqualified.
 
-## S5 — Move image compositing into PngAssets — **planned**
+## S5 — Move image compositing into PngAssets — **done**
 
 **Build.** Add to `rkcore`'s existing `common/datagen/PngAssets`, beside `read` and `save`:
 `composite(base, overlay)` and its per-pixel `over` from `CartIcons:58,99`, and `sized(image, name)`
@@ -395,6 +399,52 @@ Low risk and small, but only two consumers exist and both are in one mod. `compa
 `SweaterTextureProvider` does its own `Graphics2D` tint pass and would not use `composite` as
 written. Worth doing because `PngAssets` is already the agreed home for datagen pixel work, not
 because a third caller is waiting.
+
+### As built
+
+**`composite` could not move as written, because `SIZE` was inside it.** `CartIcons.SIZE = 16` was
+both the loop bound and the allocated size, so a shared copy would have carried planked-chests' icon
+edge into `rkcore`. `PngAssets.composite` takes its dimensions from the base image instead and
+rejects an overlay that does not match, which is what let the same method serve a 16×16 cart icon
+and a 64×64 chest sheet. `sized` gained an `edge` parameter for the same reason; `CartIcons` keeps
+`SIZE` and a two-line `sized(image, name)` that binds it, so the three provider call sites are
+unchanged and the icon's own size stays in the mod that owns it.
+
+**`CUTOUT` became public with its reasoning attached**, as the Build text asked: transparency in an
+overlay already means "let the base show through", so cutting the base away entirely needs a
+reserved colour. The cart-specific half of the old comment — that no plank, shulker shell or barrel
+end holds that tone — stayed in `CartIcons`, where it is art guidance for whoever edits an overlay.
+
+**Output is byte-identical across all 1532 files**, with `src/main/generated` deleted first.
+`CartIcons` went from 136 lines to 73. `./gradlew build` passes in all three mods,
+`checkstyleTarget` is clean on `rkcore/src/main/java` and both of `planked-chests`' source sets, and
+the relocated `PngAssets` in the shipped jar carries `composite`, `sized`, `over` and `CUTOUT` (6740
+bytes against 6497 for `EntityModelBoxes` beside it). It ships unused, as it has since S1.
+
+**A third compositor exists, and measurement is why it stayed put.** `ChestTextureProvider:124` has
+its own private `composite(planks, overlay)` for the 64×64 chest sheets — two `Graphics2D.drawImage`
+calls, AWT's integer `SrcOver`, no chroma key — which the Build text does not mention. Pointing it
+at the shared compositor changed **73 of the trapped sheets: 131 pixels, every one off by exactly
+one on R, G or B, alpha never off at all**. That is a rounding disagreement, not a logic difference:
+`over` divides by the composited alpha in `double` and rounds, where AWT blends in integers, and
+only the trapped overlay's particular alpha values (49, 106, 126) land on the cases where the two
+disagree. Invisible in-world and still disqualifying, because this stage's test is byte-identity.
+The AWT version stays, with a comment saying why it is not the shared one.
+
+**Two false readings were caught on the way to that number**, both worth knowing for S6 and S7. A
+`cp` into an unset `$TMPDIR` failed ahead of the edit in a `&&` chain, so the first "experiment"
+regenerated unmodified code; and `diff` is aliased to `-u` in this shell, so counting `^<` lines
+reported zero differences from a unified diff that had 73. Compare with `diff -q`, or `command diff`
+and count `^-`, and verify the swap actually compiled — `javap` on `build/classes/java/datagen`
+showed the call really had moved to `PngAssets.composite`.
+
+**No in-world check was run, deliberately.** Byte-identical output means the game loads the same
+files, and nothing in `common/datagen` resolves at runtime, so this stage has no dev-server surface
+— the same argument S3 made. The S4 jar is still what the dev server is running.
+
+**Released as rkcore 0.7.0** with both pins moved. `companions` gains the new `PngAssets` members in
+its shaded copy and uses none of them: its `SweaterTextureProvider` tints through `Graphics2D` and
+composites nothing.
 
 ## S6 — Extract the Polymer real-block file set — **planned**
 
