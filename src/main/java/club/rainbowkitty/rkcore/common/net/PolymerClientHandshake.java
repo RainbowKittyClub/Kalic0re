@@ -114,6 +114,15 @@ public final class PolymerClientHandshake {
      * send real content. Anything sent by raw registry id — Polymer's own item and block sync
      * included — is only decodable when both sides agree on that id, and one absent mod shifts
      * every id after it, so a per-key answer is not enough to make a single key safe.
+     *
+     * <p>It is not <em>sufficient</em> for raw-id content either, and a caller sending any should
+     * know why. Key parity does not imply id parity: Fabric's entrypoint order is hash-shuffled per
+     * launch rather than sorted, and Polymer orders each registry's own entries by registration, so
+     * two sides running the <em>same</em> mod set can still disagree about every id after the first
+     * mod that registered in a different order. Observed, not theorised — it kicked a matching dev
+     * client on roughly half of all server launches, and only on the launches where the orders
+     * differed. Closing it needs an id fingerprint negotiated as a key, so that a reordering fails
+     * this gate instead of corrupting the stream.
      */
     public boolean supportsAll(@Nullable PacketContext context) {
         return has(context) && allKeysSupported(keyType -> versionFor(context, keyType));
