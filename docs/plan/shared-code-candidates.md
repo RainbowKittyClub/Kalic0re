@@ -94,6 +94,12 @@ the comparison independent of the cache. Separately, `lintAll` reaches neither m
 `mods` map lists only `src/main/java` per mod (`scripts/lint/build.gradle:15-20`), so a datagen
 stage needs `checkstyleTarget -PtargetDir=<mod>/src/datagen/java` run by hand.
 
+A third mechanic, found in S4 and applying to any stage that leaves a reference behind.
+Checkstyle's `UnusedImports` runs with `processJavadoc` at its default, so an import named only from
+a comment — `//` or Javadoc — is an error, not a use. When an extraction leaves explanatory prose
+pointing at the class that moved, either write the name unqualified or fully qualify it in the text;
+do not add the import back.
+
 A stage is not finished until its "Done when" is observed. A failure at stage N implicates stage N
 and not the ones before it.
 
@@ -296,7 +302,7 @@ per CLAUDE.md's dev loop, which left that coordinate holding different bytes tha
 elements. Renaming it touches four files and was not in the Build text, and S6 is the stage likely
 to move `variantModel` anyway, so that is the place to settle the name.
 
-## S4 — Extract the display-element pose constants — **planned**
+## S4 — Extract the display-element pose constants — **done**
 
 **Build.** Add `rkcore` `common/display` carrying the three things any `ItemDisplayElement` user
 re-derives: the 180° Y turn `ItemDisplayRenderer#submitInner` bakes into every `Display$ItemDisplay`
@@ -320,6 +326,59 @@ cancels a corner offset, where `ChestVisual` cancels a baked rotation. Do **not*
 two into one abstraction in this stage; put both facts in one package so the next person finds them
 together, and leave `LinkChain` alone. `minecart-tweaks` does not shade `rkcore` at all today, and
 making it a consumer is out of scope here.
+
+### As built
+
+**The tween turned out to be two facts with different consumer counts, not one.** The Build text
+describes a single unit — "`Mth.approach` ±0.1/tick then an ease-out cubic" — which is true of a
+chest. But `ShulkerCartDisplay:111` already held its own copy of the ramp, with its own `LID_STEP =
+0.1f`, and a comment recording that it deliberately applies *no* easing because
+`ShulkerBoxBlockEntity#updateAnimation` applies none where `ChestLidController` plus
+`ChestRenderer#submit` do. So the ramp has two consumers and the cubic has one. Extracted as one
+combined helper it would have served the chest and been unusable for the shulker box, so `LidTween`
+holds the progress and ramps it (`advance(boolean)`, returning whether the tick moved it so a caller
+can skip re-sending an unchanged pose) and exposes `easeOut` as a separate static the caller opts
+into.
+
+**Both consumers were converged, which is wider than the stage's stated scope.** The Build text
+names only `ChestVisual`. Leaving a verbatim second copy of the ramp in the same mod, three
+directories from the shared one, is the duplication this document exists to remove, so
+`ShulkerCartDisplay` lost `LID_STEP` and its `progress` field too, and reads `lidTween.progress()`
+at both use sites. Its uneased behaviour is unchanged; only the state and the step moved.
+
+**`ChestVisual` kept what the Build text said to keep** and shed 19 lines: gone are
+`RENDERER_YAW_OFFSET`, `orientation()`, the `openness` field and the `Mth`/`Quaternionf` imports;
+`HINGE` and the base/lid split stayed, being chest geometry. `ChestElementHolder` now calls
+`ItemDisplayPose.orientation(yaw)` directly, which is where the facing is actually decided. One
+`include` line was added to `planked-chests/build.gradle` as predicted.
+
+**Verification had to reach the bytecode, because this package loads at runtime.** Unlike S3's
+`common/datagen`, which ships unused, `common/display` is on the live pose path — and `runServer`
+runs the *un-relocated* classes off the compile classpath, so the dev server cannot test the move at
+all. The shipped jar carries
+`club/rainbowkitty/plankedchests/shaded/rkcore/display/ItemDisplayPose.class` (656 bytes) and
+`LidTween.class` (874), the `-unshaded` jar carries no `rkcore` entry at all, and `javap` shows
+`ChestElementHolder` referencing the shaded `ItemDisplayPose` and both `ChestVisual` and
+`ShulkerCartDisplay` the shaded `LidTween`.
+
+**Generated output is unchanged, and that is the absence of a test rather than a pass.** S4 touches
+no datagen, so the 1532 files still match the S3 baseline byte for byte — which means this
+document's governing test for S2–S7 produced no signal here, and the in-world leg carried the whole
+stage. It was run on that footing and the facing was correct: no chest or double-chest half faced
+backwards, a chest lid still eased off its closed position, and a cart-borne shulker box still rose
+and turned at a constant rate.
+
+**Released as rkcore 0.6.0 rather than republishing 0.5.0 in place**, continuing what S3 started, so
+each pin keeps naming one set of bytes. `companions` pins 0.6.0 but, unlike S3, gains nothing at
+all: its filter lists `common/item`, `common/datagen` and `common/armor`, so `common/display` never
+enters its jar.
+
+**`minecart-tweaks`' `LinkChain` was left alone**, as the Build text instructed. Its `MODEL_AXIS`
+cancels a corner offset rather than a baked rotation, and that mod shades no `rkcore` today.
+
+**A lint mechanic was added to "How these stages get tested"** — an import used only from a comment
+fails `UnusedImports`. It surfaced here because `ChestVisual` still explains `HINGE`'s sign by
+naming `ItemDisplayPose`; the comments now name it unqualified.
 
 ## S5 — Move image compositing into PngAssets — **planned**
 
