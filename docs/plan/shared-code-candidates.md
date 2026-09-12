@@ -664,9 +664,10 @@ commits behind them and no remote.
 **Whether `planked-chests` moves to `client = true` datagen.** Settled by the probe at the top of
 S2, not by argument — and the answer was no: the typed builders cannot be loaded in a server
 environment at all, so the raw JSON stayed and S6 and S7 both went on to share more of it. The rest
-of this entry is the reasoning as it stood before the probe ran. If the typed builders load without a client instance the question never comes
-up; if they do not, the trade is a client-booting datagen pass against deleting four hand-rolled
-JSON emitters, and the honest answer may be to keep the raw JSON and record why.
+of this entry is the reasoning as it stood before the probe ran. If the typed builders load without
+a client instance the question never comes up; if they do not, the trade is a client-booting datagen
+pass against deleting four hand-rolled JSON emitters, and the honest answer may be to keep the raw
+JSON and record why.
 
 **Whether `rk-tweaks` ever becomes an rkcore consumer.** Its `BuiltinDataPacks` is a verbatim twin
 of `planked-chests`' — same `ResourceLoader.registerBuiltinPack` shape, same `getModContainer`
