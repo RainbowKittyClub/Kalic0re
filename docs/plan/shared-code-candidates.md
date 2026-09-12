@@ -100,9 +100,9 @@ a comment — `//` or Javadoc — is an error, not a use. When an extraction lea
 pointing at the class that moved, either write the name unqualified or fully qualify it in the text;
 do not add the import back.
 
-A fourth, from S5: `diff` is aliased to `-u` in this workspace's shell, so a manifest comparison that
-counts `^<` lines reports no differences however many there are. Compare with `diff -q`, or run
-`command diff` and count `^-`.
+A fourth, from S5: `diff` is aliased to `batdiff` in this workspace's shell (`~/.zshrc:86`), whose
+output carries no `<`/`>` lines, so a manifest comparison that counts them reports no differences
+however many there are. Use `command diff`, `diff -q` or `cmp` — see `docs/TESTING.md`.
 
 A stage is not finished until its "Done when" is observed. A failure at stage N implicates stage N
 and not the ones before it.
@@ -433,10 +433,10 @@ The AWT version stays, with a comment saying why it is not the shared one.
 
 **Two false readings were caught on the way to that number**, both worth knowing for S6 and S7. A
 `cp` into an unset `$TMPDIR` failed ahead of the edit in a `&&` chain, so the first "experiment"
-regenerated unmodified code; and `diff` is aliased to `-u` in this shell, so counting `^<` lines
-reported zero differences from a unified diff that had 73. Compare with `diff -q`, or `command diff`
-and count `^-`, and verify the swap actually compiled — `javap` on `build/classes/java/datagen`
-showed the call really had moved to `PngAssets.composite`.
+regenerated unmodified code; and `diff` is aliased to `batdiff` here, so counting `^<` lines
+reported zero differences from a comparison that had 73. Compare with `command diff` or `diff -q`,
+and verify the swap actually compiled — `javap` on `build/classes/java/datagen` showed the call
+really had moved to `PngAssets.composite`.
 
 **No in-world check was run, deliberately.** Byte-identical output means the game loads the same
 files, and nothing in `common/datagen` resolves at runtime, so this stage has no dev-server surface
