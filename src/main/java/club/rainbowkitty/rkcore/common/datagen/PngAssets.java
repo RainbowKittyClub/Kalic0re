@@ -22,6 +22,16 @@ import net.minecraft.util.Util;
  * dependency (see each consuming mod's {@code build.gradle}).
  */
 public final class PngAssets {
+    /**
+     * The chroma key an overlay paints where the result should be nothing at all: magenta, which
+     * {@link #composite} erases to full transparency.
+     *
+     * <p>It has to be a colour rather than transparency because transparency already means
+     * something else in an overlay — let the base show through — so cutting the base away needs a
+     * reserved colour instead. Magenta is the conventional choice, being a tone art rarely holds.
+     */
+    public static final int CUTOUT = 0xFF00FF;
+
     private PngAssets() {
     }
 
@@ -85,6 +95,78 @@ public final class PngAssets {
             for (int x = 0; x < art.getWidth(); x++) {
                 out.setRGB(x, y, ARGB.multiply(art.getRGB(x, y), colour));
             }
+        }
+        return out;
+    }
+
+    /**
+     * Lays an overlay over a base image, honouring the {@link #CUTOUT} chroma key.
+     *
+     * <p>Straight source-over, so the base shows wherever the overlay does not cover it: a fully
+     * transparent overlay pixel is the base at its own colour, a fully opaque one is the overlay's
+     * own pixel, and anything between is shading over whatever is underneath. {@link #CUTOUT} is
+     * the one thing source-over cannot express, and is read off the overlay rather than off the
+     * result so that a base which happened to contain the same magenta could not punch holes in
+     * itself.
+     *
+     * @param base the image underneath, left untouched; the result takes its dimensions
+     * @param overlay the image on top, which must match {@code base}'s dimensions
+     */
+    public static BufferedImage composite(BufferedImage base, BufferedImage overlay) {
+        if (overlay.getWidth() != base.getWidth() || overlay.getHeight() != base.getHeight()) {
+            throw new IllegalArgumentException(
+                    "Overlay must be %d×%d to match its base, but is %d×%d".formatted(
+                            base.getWidth(), base.getHeight(),
+                            overlay.getWidth(), overlay.getHeight()));
+        }
+        BufferedImage out = new BufferedImage(
+                base.getWidth(), base.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < base.getHeight(); y++) {
+            for (int x = 0; x < base.getWidth(); x++) {
+                int top = overlay.getRGB(x, y);
+                boolean cutout = (top >>> 24) != 0 && (top & 0xFFFFFF) == CUTOUT;
+                out.setRGB(x, y, cutout ? 0 : over(base.getRGB(x, y), top));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Checks a source image is square at the size the caller works in, naming the file if not.
+     *
+     * <p>Art indexed pixel by pixel against a fixed size reads off the end of itself when it is not
+     * that size. Worth saying which file rather than letting an
+     * {@link ArrayIndexOutOfBoundsException} stand in for it: hand-edited art resaved at the wrong
+     * size is the likeliest way this ever breaks.
+     *
+     * @param image the image to check, returned unchanged so a {@link #read} can be wrapped where
+     *     it stands
+     * @param edge the width and height the caller requires
+     * @param name what to call the image if it fails, e.g. the resource path it was read from
+     */
+    public static BufferedImage sized(BufferedImage image, int edge, String name) {
+        if (image.getWidth() != edge || image.getHeight() != edge) {
+            throw new IllegalStateException("%s must be %d×%d, but is %d×%d".formatted(
+                    name, edge, edge, image.getWidth(), image.getHeight()));
+        }
+        return image;
+    }
+
+    // One pixel of source-over: `top` composited onto `base`, both premultiplied out again so the
+    // result is a plain ARGB pixel. Handles the fully transparent and fully opaque ends without
+    // special cases, which is why composite has none.
+    private static int over(int base, int top) {
+        double topAlpha = (top >>> 24) / 255.0;
+        double baseAlpha = (base >>> 24) / 255.0;
+        double alpha = topAlpha + baseAlpha * (1.0 - topAlpha);
+        if (alpha <= 0.0) {
+            return 0;
+        }
+        int out = (int) Math.round(alpha * 255.0) << 24;
+        for (int shift = 16; shift >= 0; shift -= 8) {
+            double mixed = ((top >> shift & 0xFF) * topAlpha
+                    + (base >> shift & 0xFF) * baseAlpha * (1.0 - topAlpha)) / alpha;
+            out |= (int) Math.round(mixed) << shift;
         }
         return out;
     }
