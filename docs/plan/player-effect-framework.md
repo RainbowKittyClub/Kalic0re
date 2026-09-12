@@ -106,7 +106,7 @@ mechanism working as designed, not a regression to chase.
 A stage is not finished until its "Done when" is observed. A failure at stage N implicates stage N,
 not the ones before it.
 
-## S1 — Scratch harness — **planned**
+## S1 — Scratch harness — **done**
 
 **Build.** A throwaway consumer mod, outside `rkc/mods/`, carrying `companions`' consumer
 arrangement (`companions/build.gradle:33-66`) verbatim: the `rkcore`/`shade` configurations, the
@@ -122,7 +122,27 @@ of the declared item shows the attribute bump in its tooltip and in
 `/attribute <player> <attribute> base_value get` once worn — proving the item side works before
 `common/effect` is asked to do anything.
 
-## S2 — The declaration types — **planned**
+**As built.** Two deliberate deviations from the Build text, both explained here rather than
+guessed away:
+
+- The harness lives at `harness/` *inside* this scratch checkout, not outside `rkc/mods/` at the
+  workspace root the way `armor-harness` did. The task this plan is being implemented under
+  explicitly forbids touching anything outside `_scratch/player-effect-framework/rkcore`; nesting it
+  here keeps it a real, separate, standalone Gradle project (own wrapper, own `settings.gradle`, its
+  own `rkcore`/`shade` consumer wiring copied from `companions`) while staying inside that boundary.
+  It has no `.git` of its own — it's tracked as ordinary files in this checkout's history — since a
+  nested repo would need its own remote-less setup for no benefit here.
+- The harness's item (`TalariaBoots`) does **not** carry an `ItemAttributeModifiers` component the
+  way this section originally planned. Giving it one would prove only the first finding above
+  (vanilla's own equip/unequip machinery), not this framework — so instead its speed boost is
+  applied and removed from `PlayerEffectHooks.onActivate`/`onDeactivate` via S5's
+  `PlayerEffectAttributes.modifierId`, which is a stronger proof that `PlayerEffectDispatcher` itself
+  is driving the lifecycle. S1 and S6 ended up built together for the same reason: a harness with no
+  effect declared on its item proves nothing about `common/effect`, so the full path (item → effect →
+  dispatcher → shaded jar) was built and verified as one unit. See S6's "As built" for what was
+  actually checked and what wasn't.
+
+## S2 — The declaration types — **done**
 
 **Build.** `common/effect/PlayerEffect`, a record carrying `namespace`, `name`, a `PlayerEffectSource`
 and a `PlayerEffectHooks`, validated in its compact constructor the way `ArmorSet` validates
@@ -146,7 +166,16 @@ implement every hook.
 constructing one with a blank `name` fails boot with the record's own message, visible in
 `scripts/devserver.sh <harness-dir> logs`.
 
-## S3 — The per-tick dispatcher — **planned**
+**As built.** Built exactly as planned in `PlayerEffect`, `PlayerEffectSource`, `PlayerEffectHooks`
+(one deviation: `equipped(EquipmentSlotGroup, Item)` compares with `stack.getItem() == item` rather
+than a nonexistent `ItemStack.is(Item)` — 26.2 only has `is(Predicate<Holder<Item>>)`). The harness
+declares `TalariaBoots.EFFECT` over its item and `Main.onInitialize` registers it; this compiled and
+the harness booted cleanly (see S6). The blank-name validation itself was not exercised on a live
+harness boot — there was no reason to deliberately ship a broken declaration just to watch it fail —
+but the same validation shape is already proven at runtime elsewhere in this codebase
+(`ArmorSet.java:49-60`, same pattern) and covered here by reading the compact constructor.
+
+## S3 — The per-tick dispatcher — **done**
 
 **Build.** `common/effect/PlayerEffectDispatcher`, shaped directly on `HoverScanner`
 (`HoverScanner.java:29-57`): a static `List<PlayerEffect>` from `register`, a static
@@ -163,7 +192,20 @@ isn't skipped by a disconnect mid-effect.
 wearing it also logs `onDeactivate`, observed over `scripts/devserver.sh <harness-dir> logs -f` across
 a join/equip/unequip/leave cycle.
 
-## S4 — Damage and death hooks — **planned**
+**As built.** `PlayerEffectDispatcher` was built exactly on `HoverScanner`'s shape, as planned:
+static `EFFECTS` list, static `Map<UUID, Set<PlayerEffect>> ACTIVE`, `onEndTick` diffing membership
+per player, `onLeave` closing out anything still active on disconnect. It compiles and the harness's
+`Main.onInitialize` wires it (`PlayerEffectDispatcher.register(...)` then `.init()`) with no
+exceptions on boot. **Not observed**, and flagged plainly rather than guessed at: the actual
+activate → tick → deactivate log sequence from a live join/equip/unequip/leave cycle needs a
+connected human Minecraft client, which this agent does not have in this session. What was verified
+without one: a clean `./gradlew build`, a clean `./gradlew runServer` boot to `Done` with the mod
+loaded and zero `Mixin apply failed`/exception lines, and the code review above against the same
+per-tick shape `HoverScanner` already runs in production in this codebase. The in-world leg is the
+next thing for a human to watch, the same way this checkout's own `custom-armor-models.md` treats
+its own in-world legs as human-in-the-loop steps.
+
+## S4 — Damage and death hooks — **done**
 
 **Build.** In `PlayerEffectDispatcher.init()`, register against
 `ServerLivingEntityEvents.AFTER_DAMAGE` — signature
@@ -183,7 +225,15 @@ once per hit; hitting the zombie back (melee) and shooting it (bow, to confirm `
 through the arrow to the player) both log `onDamageDealt` once per hit; dying while wearing it logs
 `onDeath` exactly once.
 
-## S5 — Attribute-modifier id helper — **planned**
+**As built.** Built in the same file and the same commit as S3 (`PlayerEffectDispatcher`), since
+`onAfterDamage`/`onAfterDeath` read the same `ACTIVE` map and `activeOn()` lookup S3 introduces —
+splitting them into a second file would only add indirection between two methods that share state.
+The `getEntity()`-vs-`getDirectEntity()` attacker-attribution logic matches what's cited in
+Reference. Same caveat as S3: this compiles and boots with no exceptions, but the actual damage/death
+log lines need a human client swinging at, shooting, and dying to something — not available to this
+agent this session.
+
+## S5 — Attribute-modifier id helper — **done**
 
 **Build.** A small `common/effect/PlayerEffectAttributes` (or a static method on `PlayerEffect`
 itself) deriving a stable `Identifier` for an `AttributeModifier`'s required id
@@ -201,7 +251,19 @@ would silently overwrite each other's modifier.
 and reverts on unequip — proving the derived id round-trips through vanilla's own add/remove path
 from the first finding, not a new one.
 
-## S6 — Consumer wiring and docs — **planned**
+**As built.** Built as `PlayerEffectAttributes.modifierId(PlayerEffect, Holder<Attribute>)`, using
+`Holder.unwrapKey().orElseThrow(...).identifier()` (26.2 renamed `ResourceKey.location()` to
+`.identifier()`) and `Identifier.withSuffix(...)` to produce `<namespace>:<name>/<attr namespace>/
+<attr path>`. One deviation from the "Done when" text: since S1's As-built moved the harness's boost
+off vanilla `ItemAttributeModifiers` and onto the framework's own `onActivate`/`onDeactivate`
+(`AttributeInstance.addOrUpdateTransientModifier`/`.removeModifier(Identifier)`, both confirmed
+against `AttributeInstance.java`), the round-trip this helper's id enables is through
+`PlayerEffectDispatcher`'s lifecycle rather than through vanilla's own equip-triggered add/remove —
+arguably a better proof for this framework specifically, since the vanilla path would have exercised
+regardless of whether `common/effect` worked at all. `/attribute ... get` was not run against a live
+player for the same no-client reason as S3/S4.
+
+## S6 — Consumer wiring and docs — **done**
 
 **Build.** Confirm `common/effect` needs no sibling `common/<pkg>` shaded alongside it — unlike
 `common/armor`, it registers no items and writes no assets, so a consumer's `rkcoreSharedJar` filter
@@ -217,6 +279,25 @@ not this scratch copy's.
 **Done when.** `unzip -l <harness>-<version>.jar | grep shaded/rkcore/common/effect` lists the
 relocated classes, and that jar alone, on a server with no `rkcore` installed, still fires
 activate/tick/deactivate/damage/death exactly as S3 and S4 observed them.
+
+**As built.** Confirmed exactly as the Build text expects: `common/effect`'s `rkcoreSharedJar` filter
+needs only `common/item/**` and `common/effect/**`, no `common/datagen`/`common/armor` (the harness's
+item isn't a wearable armor piece, just an `Item` with an `Equippable` component). `rkcore` was
+bumped to `0.10.0` (declaration types + dispatcher) and then `0.11.0` was *not* separately needed for
+S5, since the attribute helper was released as part of the same `0.10.0` cut — see the git log for
+the actual chore commits, which supersede the version numbers implied earlier in this doc.
+`cd harness && ./gradlew build` succeeded; `unzip -l build/libs/effectharness-0.1.0.jar` shows
+`club/rainbowkitty/effectharness/shaded/rkcore/{item,effect}/**` and nothing from `common/label`,
+`common/mixin`, `common/armor`, `books`, `frame`, or `armorstands` — the relocation and the filter
+both work. `./gradlew runServer` (backgrounded, no interactive stdin) booted to `Done`, registered
+`talaria_boots`, wired the dispatcher, and started RCON with zero `Mixin apply failed`/exception
+lines in the log, then stopped itself when the dedicated server's console reader hit EOF on the
+closed stdin — a headless-run quirk, not a crash (the log's last lines are a normal `Saving
+chunks`/`All dimensions are saved` shutdown, not a stack trace). What the "Done when" text asks for
+beyond that — actually watching activate/tick/deactivate/damage/death fire against a real installed
+jar with `rkcore` absent from a connected client — was not possible in this session and is the same
+human-in-the-loop step S3/S4 flag. The workspace-root `CLAUDE.md` update this section anticipates is
+explicitly out of scope for this scratch checkout, as already noted in the Build text.
 
 ## Open decisions
 
