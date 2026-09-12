@@ -2,8 +2,11 @@ package club.rainbowkitty.rkcore.common.vehicle;
 
 import java.util.Arrays;
 
+import com.mojang.math.Axis;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.GenericEntityElement;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
@@ -30,6 +33,24 @@ public abstract class CargoDisplayHolder extends ElementHolder {
      * entity type agreeing with it.
      */
     public static final float PASSENGER_ATTACHMENT_Y = 0.1875f;
+
+    /**
+     * The extra turn {@code AbstractMinecartRenderer#submit} gives the cargo inside the cart's own
+     * rotated frame, which is what leaves a container facing along the cart's body rather than
+     * across it.
+     */
+    public static final float CARGO_TURN = 90.0f;
+
+    /**
+     * Ticks a cargo's own moving part may ease over on a tick when the cart itself did not turn.
+     *
+     * <p>A part and the cart's rotation share one transform, and one interpolation setting with it,
+     * so they cannot be smoothed independently — but they can be smoothed at different *times*. A
+     * tick where the cart has not turned is a tick where the only thing that moved is the part, and
+     * easing that is free: there is no rotation for it to slide against. A tick where the cart
+     * turned snaps instead, which is what {@code turned} in {@link #applyPose} is for.
+     */
+    protected static final int PART_INTERPOLATION = 2;
 
     // A cart's movement reaches the client a few ticks late. The server accumulates one
     // MinecartStep per tick and flushes the batch on the tracker's updateInterval, 3 for a cart
@@ -79,6 +100,16 @@ public abstract class CargoDisplayHolder extends ElementHolder {
     private float shownYaw = Float.NaN;
     private float shownPitch = Float.NaN;
 
+    // The rotation the last pose was actually built from, which shownYaw/shownPitch cannot stand in
+    // for: markPoseDirty sets those to NaN, so without a second pair a dirty re-pose reads as a
+    // turn.
+    private float posedYaw = Float.NaN;
+    private float posedPitch = Float.NaN;
+
+    // Where the cargo's centre sits relative to the passenger point, recomputed each pose because
+    // it swings with the cart on a slope. Reused rather than reallocated; setTranslation copies.
+    private final Vector3f cargoOrigin = new Vector3f();
+
     /**
      * @param cart the cart this cargo rides, whose pose {@link #applyPose} is driven from
      */
@@ -116,12 +147,57 @@ public abstract class CargoDisplayHolder extends ElementHolder {
 
     /**
      * Applies the cart's rotation to the elements. Called on the first tick and then only when the
-     * cart has turned, so it is the place for the whole transform, not a delta.
+     * cart has turned or {@link #markPoseDirty} asked for it, so it is the place for the whole
+     * transform, not a delta.
      *
      * @param yaw the cart's yaw in degrees, delayed to match the cart the client is drawing
      * @param pitch the cart's pitch in degrees, likewise delayed; non-zero on a sloped rail
+     * @param turned whether the rotation differs from the one the last pose was built from — false
+     *     for a pose driven by the cargo's own shape changing, which is when a moving part may ease
+     *     over {@link #PART_INTERPOLATION} rather than snapping
      */
-    protected abstract void applyPose(float yaw, float pitch);
+    protected abstract void applyPose(float yaw, float pitch, boolean turned);
+
+    /**
+     * The cart's own frame, as {@code AbstractMinecartRenderer#submit} builds it: turn by the yaw,
+     * then roll by {@code -pitch} for the slope.
+     *
+     * <p>A cargo is drawn inside this, so the roll has to stay <em>between</em> that turn and the
+     * cargo's own {@link #CARGO_TURN}. Composing it after both leaves the roll about an axis 90°
+     * from the slope, which tips the cargo sideways — and only on a slope, so it cannot be seen on
+     * flat track.
+     */
+    protected static Quaternionf cartFrame(float yaw, float pitch) {
+        Quaternionf frame = Axis.YP.rotationDegrees(yaw);
+        frame.mul(Axis.ZP.rotationDegrees(-pitch));
+        return frame;
+    }
+
+    /**
+     * Where a cargo's centre sits, as an offset from the passenger point the client draws it at.
+     *
+     * <p>Vanilla's cargo rides inside the cart's frame, so its centre swings with the cart rather
+     * than staying vertically above it — on a slope an unturned offset walks the cargo out over the
+     * end of the cart. The passenger point it is measured from does not swing: an attachment of
+     * {@code (0, y, 0)} is yaw-invariant, and pitch never reaches it at all.
+     *
+     * @param cartFrame the frame from {@link #cartFrame}
+     * @param centreY where the cargo transform leaves the block's centre, above the cart's position
+     * @return a vector owned and reused by this holder, also readable later via
+     *     {@link #cargoOrigin()}
+     */
+    protected Vector3f cargoOrigin(Quaternionf cartFrame, float centreY) {
+        return cartFrame.transform(cargoOrigin.set(0.0f, centreY, 0.0f))
+                .sub(0.0f, PASSENGER_ATTACHMENT_Y, 0.0f);
+    }
+
+    /**
+     * The origin the last {@link #cargoOrigin(Quaternionf, float)} produced, for a callback that
+     * places something relative to it after {@link #applyPose} has run.
+     */
+    protected Vector3f cargoOrigin() {
+        return cargoOrigin;
+    }
 
     /**
      * Forces {@link #applyPose} on the next tick even if the cart has not turned. For a cargo that
@@ -175,7 +251,10 @@ public abstract class CargoDisplayHolder extends ElementHolder {
         if (yaw != shownYaw || pitch != shownPitch) {
             shownYaw = yaw;
             shownPitch = pitch;
-            applyPose(yaw, pitch);
+            boolean turned = yaw != posedYaw || pitch != posedPitch;
+            posedYaw = yaw;
+            posedPitch = pitch;
+            applyPose(yaw, pitch, turned);
         }
     }
 
