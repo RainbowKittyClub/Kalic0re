@@ -18,8 +18,11 @@ nothing here is observable without a consumer. S2 and S3 are independent of each
 compile against nothing but vanilla: S2 is the enchantment declaration, S3 is the custom-effect-type
 registry. S4 turns declared enchantments into a datapack entry and depends on S2. S5 makes that entry
 reachable in survival (enchanting-table tag, lang) and depends on S4. S6 is the in-world proof and is
-what makes the feature complete — it exercises a declared enchantment with at least one custom effect
-from S3, not just vanilla's own effect vocabulary, since that's the part nothing else has tested.
+what makes the feature complete — it exercises a declared enchantment with a custom
+`EnchantmentLocationBasedEffect` (equip/unequip), not just vanilla's own effect vocabulary or the
+hit/tick path, since equip/unequip is the exact mechanism a concrete target consumer needs (a flight
+enchantment that toggles a `ServerPlayer`'s fly ability while worn — see the Findings and Reference
+sections below) and is the one path nothing else here exercises.
 
 ## How these stages get tested
 
@@ -116,6 +119,28 @@ datagen time via the `HolderLookup.Provider` a `FabricDynamicRegistryProvider` i
 (`Enchantments.java:134` does the same thing with `context.lookup(Registries.ENCHANTMENT)` during its
 own bootstrap). So `EnchantSpec`'s factory, not its constructor, is where exclusivity gets resolved.
 
+**A `ServerPlayer`'s fly ability is a public mutable field, synced by one explicit call — confirmed
+reachable from a location-based effect with no mixin.** `Abilities` (`Abilities.java:15-19`) is a
+plain class with public `boolean mayfly`/`flying`/`invulnerable`/`instabuild`/`mayBuild` fields, held
+one-per-player at `Player.abilities` and returned by `Player.getAbilities()`
+(`Player.java:161,1303`). Setting `mayfly` does nothing to the client by itself — `ServerPlayer`
+overrides `onUpdateAbilities()` to send `new ClientboundPlayerAbilitiesPacket(this.getAbilities())`
+over `this.connection`, plus `updateInvisibilityStatus()` (`ServerPlayer.java:1750-1756`). This exact
+pattern — mutate the `Abilities` fields, then call `onUpdateAbilities()` — is what vanilla's own
+`ServerPlayerGameMode.changeGameModeForPlayer` does for the creative/spectator fly grant
+(`ServerPlayerGameMode.java:55-69`), including its one caveat: it does not unconditionally clear
+`flying` when `mayfly` is revoked, only when the player isn't already airborne over ground
+(`ServerPlayerGameMode.java:61-63`, `abilities.flying && gameModeForPlayer != GameType.SPECTATOR &&
+this.isInRangeOfGround()`) — so a future flight enchantment's `onDeactivated` has to make the same
+kind of call about whether to force landing, not assume clearing `mayfly` is enough on its own.
+`EnchantmentLocationBasedEffect.onChangedBlock`/`.onDeactivated` (`effects/EnchantmentLocationBasedEffect.java:26-30`)
+already hand over an `Entity entity`, exactly as `EnchantmentAttributeEffect` narrows it to
+`LivingEntity` (`effects/EnchantmentAttributeEffect.java:47-58`); narrowing further to `ServerPlayer`
+with an `instanceof` is the same shape and reaches `getAbilities()`/`onUpdateAbilities()` directly. No
+mixin, event, or packet-handling code is needed — this confirms the S3 hook shape is sufficient for
+the concrete flight use case the amendment is targeting, and the design in S1–S6 below is unchanged by
+this finding beyond swapping which effect interface the harness exercises.
+
 **Fabric API ships the exact datagen base class this needs.** Decompiling
 `net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider` out of
 `fabric-data-generation-api-v1-25.5.0+aed122aa9e.jar` (the version bundled by this repo's
@@ -137,10 +162,12 @@ with an `rkcoreSharedJar` filter for `common/item/**` and `common/enchant/**`, a
 `scripts/devserver.sh` can drive it. Ports 25605 (game) and 25582 (rcon) are free — they were
 `armor-harness`'s before that harness was folded into a real mod and removed; double check
 `rkc/mods/*/run/server.properties` and the sibling `player-effect-framework` scratch copy before
-booting, since both could pick a harness port around the same time. It declares one enchantment once
+booting, since both could pick a harness port around the same time. It declares two enchantments once
 S2 and S3 exist: a weapon enchantment with a vanilla-vocabulary effect (e.g. an `ATTRIBUTES` damage
-bump, to prove the plain path) and a second with a custom effect type registered through S3 (to prove
-the hook actually fires).
+bump, to prove the plain path) and an armor enchantment with a custom `EnchantmentLocationBasedEffect`
+registered through S3 — flipping a boolean (or logging) on `onChangedBlock`/`onDeactivated` — to prove
+the equip/unequip-triggered path specifically, since that is the mechanism a real flight enchantment
+will need and nothing else here exercises it.
 
 **Done when.** `scripts/devserver.sh enchant-harness start` boots and
 `scripts/devserver.sh enchant-harness rcon "list"` answers on the harness's own port.
@@ -169,17 +196,23 @@ this stage has nothing to run, only to compile against.
 `..._VALUE_EFFECT_TYPE`/`..._LOCATION_BASED_EFFECT_TYPE` counterparts, called once from a consumer's
 `onInitialize` — before any datapack reload, the same ordering constraint every other simple-registry
 entry already has. Alongside it, a convenience for the common case a full record+codec is overkill
-for: a stateless effect declared as a bare lambda (`SimpleEntityEffect`,
-matching `EnchantmentEntityEffect.apply(ServerLevel, int, EnchantedItemInUse, Entity, Vec3)`'s
-signature) wrapped in a `MapCodec.unit(...)`-style codec keyed by the same id it's registered under,
-so a consumer writing "on hit, do X" never has to hand-write a record and a `RecordCodecBuilder` for
-an effect with no configurable fields — only a genuinely parameterised effect (like `ApplyMobEffect`)
-needs the full record-and-codec shape `effects/ApplyMobEffect.java` demonstrates.
+for: a stateless effect declared as a bare lambda wrapped in a `MapCodec.unit(...)`-style codec keyed
+by the same id it's registered under, for each interface shape that matters —
+`SimpleEntityEffect` matching `EnchantmentEntityEffect.apply(ServerLevel, int, EnchantedItemInUse,
+Entity, Vec3)`, and `SimpleLocationBasedEffect` matching the pair
+`onChangedBlock(ServerLevel, int, EnchantedItemInUse, Entity, Vec3, boolean)`/
+`onDeactivated(EnchantedItemInUse, Entity, Vec3, int)` off
+`effects/EnchantmentLocationBasedEffect.java:26-30` — the second is what the equip/unequip use case
+(and the eventual flight enchantment) actually needs. A consumer writing "on hit, do X" or "on equip,
+do Y" never has to hand-write a record and a `RecordCodecBuilder` for an effect with no configurable
+fields; only a genuinely parameterised effect (like `ApplyMobEffect`) needs the full record-and-codec
+shape `effects/ApplyMobEffect.java` demonstrates.
 
-**Done when.** The harness registers one custom `EnchantmentEntityEffect` through this facility and
-one plain vanilla effect (`AddValue`, say) on two different declared enchantments, and both parse at
-datapack load with no `Unknown enchantment effect type` warning in `scripts/devserver.sh
-enchant-harness logs`. Nothing fires yet — that needs S4's JSON and S6's in-world test.
+**Done when.** The harness registers one custom `EnchantmentLocationBasedEffect` through
+`SimpleLocationBasedEffect` and one plain vanilla effect (`AddValue`, say) on two different declared
+enchantments, and both parse at datapack load with no `Unknown enchantment effect type` warning in
+`scripts/devserver.sh enchant-harness logs`. Nothing fires yet — that needs S4's JSON and S6's
+in-world test.
 
 ## S4 — Enchantment datapack datagen — **planned**
 
@@ -212,17 +245,18 @@ needed one.
 **Done when.** On the harness, both declared enchantments appear as candidates at an enchanting table
 (bookshelves present) and their names are readable rather than showing the raw translation key.
 
-## S6 — In-world proof of a custom effect — **planned**
+## S6 — In-world proof of a custom equip/unequip effect — **planned**
 
 **Build.** Nothing new — this stage is the in-world test that the rest of the framework was built
-to pass. `/give` an enchanted book carrying the custom-effect enchantment, apply it via anvil or
-`/enchant`, and trigger whatever the custom effect does (an on-hit effect needs a hit; a tick effect
-needs equipping and waiting).
+to pass. `/give` an enchanted book carrying the location-based custom-effect enchantment, apply it via
+anvil or `/enchant`, then equip and unequip the piece.
 
-**Done when.** The custom effect is observed firing in-world — not just parsing without a datapack
-warning, which S3 already confirmed. This is the stage that makes the feature complete: it is the
-first point anything here proves a mod's own Java code runs off a declared enchantment, rather than
-proving vanilla's existing vocabulary still works.
+**Done when.** The custom effect's `onChangedBlock` is observed firing on equip and its
+`onDeactivated` on unequip — not just parsing without a datapack warning, which S3 already confirmed.
+This is the stage that makes the feature complete: it is the first point anything here proves a mod's
+own Java code runs off a declared enchantment's equip/unequip transition, which is the exact
+mechanism a future flight enchantment needs (see Findings and the Reference section below) — not just
+that vanilla's existing vocabulary still works.
 
 ## Open decisions
 
@@ -267,6 +301,20 @@ trying to do, since the vanilla names don't sort that way:
 | Modify a numeric outcome (damage, knockback, durability loss, XP, fishing luck, ...) | `DAMAGE`, `DAMAGE_PROTECTION`, `KNOCKBACK`, `ITEM_DAMAGE`, `BLOCK_EXPERIENCE`, `MOB_EXPERIENCE`, etc. | `EnchantmentValueEffect` |
 | Grant outright immunity to a damage type | `DAMAGE_IMMUNITY` | fixed `DamageImmunity` type |
 | Nothing data-driven exists for this | (right-click use) | bridge via a Fabric event instead |
+
+## Reference: toggling a `ServerPlayer`'s fly ability from a location-based effect
+
+Verified for the flight-enchantment use case the S1/S3/S6 amendment targets; not implemented here —
+this framework stops at confirming the hook shape reaches it.
+
+| Step | Where |
+|---|---|
+| Per-player mutable ability flags (`mayfly`, `flying`, `invulnerable`, `instabuild`, `mayBuild`) | `Abilities.java:15-19`, held at `Player.abilities` |
+| Read/write access from any code holding the entity | `Player.getAbilities()`, `Player.java:1303` |
+| Push the changed flags to that player's client | `ServerPlayer.onUpdateAbilities()`, `ServerPlayer.java:1750-1756` — sends `ClientboundPlayerAbilitiesPacket(getAbilities())` over `this.connection` |
+| Vanilla's own precedent for this exact pattern | `ServerPlayerGameMode.changeGameModeForPlayer`, `ServerPlayerGameMode.java:55-69` |
+| Caveat vanilla's precedent demonstrates | Revoking `mayfly` does not by itself clear `flying`; vanilla only clears it when the player isn't airborne over ground (`ServerPlayerGameMode.java:61-63`) — a future flight enchantment's `onDeactivated` needs its own such call, not a default this framework makes for it |
+| Hook entry point | `EnchantmentLocationBasedEffect.onChangedBlock`/`.onDeactivated` (`effects/EnchantmentLocationBasedEffect.java:26-30`) hands over a plain `Entity`; narrow with `instanceof ServerPlayer` the same way `EnchantmentAttributeEffect` narrows to `LivingEntity` (`effects/EnchantmentAttributeEffect.java:47-58`) |
 
 ## Reference: registries this framework touches
 
