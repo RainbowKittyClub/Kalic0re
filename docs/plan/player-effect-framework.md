@@ -87,7 +87,7 @@ Left as an open decision below rather than built now, since nothing here needs i
 
 There's no consumer mod in this checkout — `kalic0re` registers no content — so S1 builds one first, a
 throwaway harness in the shape `custom-armor-models.md`'s `armor-harness` used: outside `rkc/mods/`,
-companions'/planked-chests' `kalic0re`/`shade` configuration and `kalic0reSharedJar` filter verbatim,
+companions'/sensible-storage' `kalic0re`/`shade` configuration and `kalic0reSharedJar` filter verbatim,
 `stopServer` wired so `scripts/devserver.sh` drives its lifecycle. Every later stage is watched on
 that harness's dev server via `scripts/devserver.sh <harness-dir> rcon "..."` and its logs — `/give`
 the effect item, equip or hold it, hit something, take a hit, die, and read what the harness's own
@@ -340,7 +340,7 @@ framework, not a unilateral abstraction from this side.
 | `LivingEntity.collectEquipmentChanges`/`stopLocationBasedEffects` apply and remove an item's `ItemAttributeModifiers` on any `EquipmentSlot` change, hands included | Read `LivingEntity.java:2936-2973,3838-3846` in `libs/decompiledjava/minecraft-26.2` |
 | `EquipmentSlotGroup.slots()`/`.test()` give the concrete `EquipmentSlot`s a group covers | Read `EquipmentSlotGroup.java:14-70` |
 | `LivingEntity.onEquipItem` is public and fires from every `setItemSlot`, hands included | Read `LivingEntity.java:689-713,2274-2276` |
-| `common/mixin` is excluded from every consumer's `kalic0reSharedJar` filter today | Read `companions/build.gradle:38-46`, `planked-chests/build.gradle` equivalent, and the workspace `CLAUDE.md`'s "Sharing code between mods" |
+| `common/mixin` is excluded from every consumer's `kalic0reSharedJar` filter today | Read `companions/build.gradle:38-46`, `sensible-storage/build.gradle` equivalent, and the workspace `CLAUDE.md`'s "Sharing code between mods" |
 | No equipment-change event exists in Fabric API 0.157.0+26.2 | `unzip -l` on `fabric-api-0.157.0+26.2.jar`'s `META-INF/jars/{fabric-entity-events-v1-5.0.5+06488ac19e,fabric-item-api-v1-14.4.0+49a69a7b9e,fabric-events-interaction-v0-5.2.7+515ac5339e}.jar`, cross-checked with `javap` against each extracted jar |
 | `ServerLivingEntityEvents`'s four callback shapes and exact parameter names | `scripts/decompile.sh net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents <extracted fabric-entity-events-v1 jar>` |
 | `ServerPlayer extends Player extends Avatar extends LivingEntity` | Read `ServerPlayer.java:209`, `Player.java:127`, `Avatar.java:13` |

@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.ChestType;
 public interface ChestSpriteSelector<T extends BlockEntity> {
     /**
      * Sprite id for this block entity and half, as it stitches into the blocks atlas, e.g.
-     * {@code plankedchests:block/chest/birch_left}.
+     * {@code sensiblestorage:block/chest/birch_left}.
      */
     Identifier sprite(T blockEntity, ChestType type);
 }

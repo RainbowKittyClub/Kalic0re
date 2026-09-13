@@ -1,6 +1,6 @@
-# Shared code candidates from planked-chests
+# Shared code candidates from sensible-storage
 
-Grows `kalic0re`'s `common/` shared surface with six patterns that `planked-chests` currently carries
+Grows `kalic0re`'s `common/` shared surface with six patterns that `sensible-storage` currently carries
 alone, after first repairing the branch state that makes `publishToMavenLocal` unsafe today.
 
 Everything below was read out of the working trees this session and is cited by file and line. The
@@ -16,17 +16,17 @@ S1 is the blocker and has nothing to do with the extractions — it repairs a sp
 which one innocent Gradle command breaks a sibling mod's compile. Do it first; no other stage's
 "Done when" is trustworthy until `kalic0re`'s published jar is reproducible from a branch.
 
-S2 runs before S3 and S6, because S2 decides whether `planked-chests`' datagen keeps hand-writing
+S2 runs before S3 and S6, because S2 decides whether `sensible-storage`' datagen keeps hand-writing
 JSON at all, and that answer determines how much of `ElementModels` (S3) and the blockstate emitter
 (S6) still exists to extract. S4, S5 and S7 are independent of everything and of each other. S2–S4
 are the substance; S5–S7 are small and can be dropped without losing the point of the exercise.
 
 ## Findings that reshape the work
 
-**The cargo-minecart framework was already extracted, and `planked-chests` already depends on it,
-but it lives on an unmerged branch — so the only thing making `planked-chests` compile is an
+**The cargo-minecart framework was already extracted, and `sensible-storage` already depends on it,
+but it lives on an unmerged branch — so the only thing making `sensible-storage` compile is an
 untracked `~/.m2` jar.** `kalic0re`'s `cargo-minecarts` branch head `fbb0af1` adds seven classes under
-`common/vehicle` (1027 lines). `planked-chests@main` imports four of them —
+`common/vehicle` (1027 lines). `sensible-storage@main` imports four of them —
 `cart/ChestCarts.java:34`, `cart/PlankedChestMinecart.java:30-31`, `cart/ChestMinecartItem.java:19`,
 `cart/ChestCartDisplay.java:10`, `cart/ShulkerCartDisplay.java:16` — and `build.gradle:56` lists
 `include 'club/rainbowkitty/kalic0re/common/vehicle/**'`. Neither `main` nor the checked-out
@@ -35,7 +35,7 @@ left behind by a branch switch. All three `~/.m2` jars (0.2.0, 0.3.0, 0.4.0) do 
 classes, so they were published from a tree that had them. `kalic0re/gradle.properties:18` declares
 `mod_version = 0.4.0`, which means `./gradlew publishToMavenLocal` from the current checkout
 overwrites the 0.4.0 jar `companions/gradle.properties:56` depends on, silently stripping
-`common/vehicle` and breaking `planked-chests`' compile. This is S1.
+`common/vehicle` and breaking `sensible-storage`' compile. This is S1.
 
 **The three branches are a deliberate untangle, and `backup/pre-untangle` is the tree the published
 jars came from.** `main@0127d9b` is an ancestor of `custom-armor-models@2fb507f`, and
@@ -53,16 +53,16 @@ origin/main` is empty, and author dates match to the second; only the committer 
 (`0127d9b` at 15:16 vs `fef1694` at 02:18 on 2026-09-10). A local rebase that changed no content.
 This removes what looks like the riskiest part of S1.
 
-**Half of what looks extractable from `planked-chests`' datagen is not a missing abstraction but a
+**Half of what looks extractable from `sensible-storage`' datagen is not a missing abstraction but a
 vanilla API that `kalic0re` already uses.** `ArmorModelProvider` builds item definitions and generated
 models through `ClientItem`/`ClientItem.CODEC` (`:68-69,76`), `ItemModelUtils.plainModel` (`:100`),
 `ModelTemplates.FLAT_ITEM` + `TextureMapping.layer0` (`:105`), and saves with
 `DataProvider.saveAll` (`:74-76`); `ArmorEquipmentProvider:62` does the same with
-`EquipmentClientInfo.CODEC`. `planked-chests` hand-writes all three shapes as raw `JsonObject` —
+`EquipmentClientInfo.CODEC`. `sensible-storage` hand-writes all three shapes as raw `JsonObject` —
 `ElementModels.itemDefinition:168`, `ElementModels.variantModel:156`, `CartIcons.generatedModel:87`,
 `ChestBlockStateProvider.variants:59` — and hand-rolls the save loop seven times. So S2 is a
 convergence, not a new base class. **But it is not free:** `companions/build.gradle:25` runs datagen
-with `client = true` and `planked-chests/build.gradle` deliberately runs `client = false`, giving
+with `client = true` and `sensible-storage/build.gradle` deliberately runs `client = false`, giving
 raw JSON as the reason in its own comment. The typed builders live under
 `net.minecraft.client.data.models.*` and `net.minecraft.client.renderer.item`, so S2 must establish
 whether those *load* without a booted client before it can proceed.
@@ -71,14 +71,14 @@ whether those *load* without a booted client before it can proceed.
 
 S1 is tested with git alone — branch topology, `git diff` against the reconstituted tree, and a
 `unzip -l` of the republished jar showing all shared packages present — plus a clean
-`./gradlew build` in each of `kalic0re`, `planked-chests` and `companions`.
+`./gradlew build` in each of `kalic0re`, `sensible-storage` and `companions`.
 
 S2–S7 are all datagen or asset changes, so the governing test is **byte-comparison of generated
 output before and after**: capture `src/main/generated` (and `companions`' equivalent), apply the
 stage, regenerate with `./gradlew clean generateAssets`, and diff. A stage that changes generated
 bytes has either found a real bug or broken something, and must say which. Behaviour beyond the
-files is checked on the `planked-chests` dev server via `scripts/devserver.sh
-rkc/mods/planked-chests restart` — a placed chest still animating its lid, a cart still showing its
+files is checked on the `sensible-storage` dev server via `scripts/devserver.sh
+rkc/mods/sensible-storage restart` — a placed chest still animating its lid, a cart still showing its
 cargo, zero mixin errors.
 
 Because every consumer builds against a `mavenLocal` jar, each stage that changes a shared package
@@ -114,7 +114,7 @@ patch-id finding). Then bring `custom-armor-models` and `cargo-minecarts` back t
 line of development so that a single branch carries both `common/armor` and `common/vehicle`, as
 `backup/pre-untangle` does. Keep `backup/pre-untangle` untouched as the reference tree until the
 merged result is confirmed to match it. Republish to `mavenLocal`, and lift
-`planked-chests/gradle.properties:21` off its stale `kalic0re_version=0.2.0` pin onto whatever the
+`sensible-storage/gradle.properties:21` off its stale `kalic0re_version=0.2.0` pin onto whatever the
 merged branch declares.
 
 **Done when.** One branch's `git ls-tree -r --name-only` lists both
@@ -158,11 +158,11 @@ nine `common/` packages and `mod_version = 0.4.0`. `git diff backup/pre-untangle
 three files — this plan doc (new), the handshake Javadoc caveat (new), and the post-split head-model
 doc correction — so every line of shared *source* is identical to the tree that published the 0.4.0
 jar. The republished jar carries 7 `common/vehicle` classes and all nine packages.
-`planked-chests/gradle.properties:21` moved from `kalic0re_version=0.2.0` to `0.4.0`, and
-`./gradlew build` exits 0 in `kalic0re`, `planked-chests` and `companions`.
+`sensible-storage/gradle.properties:21` moved from `kalic0re_version=0.2.0` to `0.4.0`, and
+`./gradlew build` exits 0 in `kalic0re`, `sensible-storage` and `companions`.
 
 **The reunited branch cannot be pushed: `kalic0re`'s remote no longer exists.** `git push origin
-main` fails with "Repository not found" while `planked-chests` pushes fine over an identical
+main` fails with "Repository not found" while `sensible-storage` pushes fine over an identical
 `ssh://git@github.com/RainbowKittyClub/...` URL, so it is the repository and not the credentials.
 `gh api repos/RainbowKittyClub/kalic0re` returns a bare 404 with no rename redirect, and a GitHub
 rename always leaves one — so the repo was deleted rather than renamed.
@@ -177,12 +177,12 @@ still leaves open.
 tags are all deleted, being fully subsumed by `main`. `backup/pre-untangle` remains as the only
 witness to the pre-split tree.
 
-## S2 — Converge planked-chests datagen on the typed vanilla API — **done**
+## S2 — Converge sensible-storage datagen on the typed vanilla API — **done**
 
-**Build.** First resolve the unknown: write a throwaway provider on `planked-chests`' existing
+**Build.** First resolve the unknown: write a throwaway provider on `sensible-storage`' existing
 `client = false` datagen source set that touches `ClientItem.CODEC` and `ModelTemplates.FLAT_ITEM`,
 and run `./gradlew runDatagen`. If those classes load, flip nothing; if they need a client instance,
-either move `planked-chests` to `client = true` or record that raw JSON stays and stop this stage
+either move `sensible-storage` to `client = true` or record that raw JSON stays and stop this stage
 after the `saveAll` half.
 
 Then, in dependency order: replace the seven hand-rolled save loops with
@@ -216,7 +216,7 @@ first was not sufficient evidence and pointed the wrong way: `ModelTemplates`, `
 coupling, and `ClientItem` is a plain codec record. Its `@Environment(EnvType.CLIENT)` annotation is
 the whole story, and only running it showed that.
 
-**Raw JSON stays, and `planked-chests` stays on `client = false`.** The Build text left the choice
+**Raw JSON stays, and `sensible-storage` stays on `client = false`.** The Build text left the choice
 between flipping to `client = true` and keeping raw JSON. Keeping it, because the conversion buys
 less than it first appeared: `ElementModels`' 239 lines emit arbitrary `elements[]` cuboids, which
 no vanilla builder produces, so the bulk of this mod's datagen would remain raw either way.
@@ -247,7 +247,7 @@ rather than inferring the package.
 **Build.** Move `ElementModels`' geometry half into `kalic0re` as `common/datagen/EntityModelBoxes`:
 the two `box` overloads (`:39`, `:59`), `invertedTwin:122`, `model:142` and `UV_SCALE:25`. Leave
 behind whatever S2 deleted. `common/datagen/**` is already shaded by both consumers
-(`planked-chests/build.gradle:53`, `companions/build.gradle:52`), so no build wiring changes.
+(`sensible-storage/build.gradle:53`, `companions/build.gradle:52`), so no build wiring changes.
 
 **Done when.** `ChestElementModelProvider` and `ShulkerElementModelProvider` both compile against
 the shaded copy, `./gradlew clean generateAssets` regenerates byte-identical output, and a placed
@@ -272,18 +272,18 @@ because each helper serves exactly one half: `putFace`, `element` and `vec` are 
 or promoted.
 
 **No build wiring changed, as the Build text predicted.** Both consumers already filtered
-`common/datagen/**` for `PngAssets`, and `planked-chests`' datagen source set already imported from
+`common/datagen/**` for `PngAssets`, and `sensible-storage`' datagen source set already imported from
 that package, so the whole consumer-side edit is one import line per provider plus the renamed call
 sites.
 
 **Output is byte-identical across 1532 files.** That is the same tree S2 counted as 1543; the
 difference is the 11 `.cache` hash files, one per provider, which this stage's manifest excludes.
 `src/main/generated` was deleted outright before regenerating (`written: 1532`) so the comparison
-did not rest on the cache. `./gradlew build` exits 0 in `kalic0re`, `planked-chests` and `companions`,
-and `checkstyleTarget` is clean on `kalic0re/src/main/java` and `planked-chests/src/datagen/java`.
+did not rest on the cache. `./gradlew build` exits 0 in `kalic0re`, `sensible-storage` and `companions`,
+and `checkstyleTarget` is clean on `kalic0re/src/main/java` and `sensible-storage/src/datagen/java`.
 
 **Relocation verified in the shipped jar**, not only on the compile classpath:
-`club/rainbowkitty/plankedchests/shaded/kalic0re/datagen/EntityModelBoxes.class`, 6497 bytes against
+`club/rainbowkitty/sensiblestorage/shaded/kalic0re/datagen/EntityModelBoxes.class`, 6497 bytes against
 6469 unrelocated, the delta being the rewritten class name in the constant pool. It ships unused,
 like `PngAssets`, because the datagen source set is not in the jar.
 
@@ -313,10 +313,10 @@ re-derives: the 180° Y turn `ItemDisplayRenderer#submitInner` bakes into every 
 (`ChestVisual.RENDERER_YAW_OFFSET:43`), the `orientation(float yaw)` helper that accounts for it
 (`:95-96`), and the vanilla lid tween — `Mth.approach` ±0.1/tick then an ease-out cubic, reproducing
 `ChestLidController` plus `ChestRenderer#submit` server-side (`tweenOpenness:115`). Keep
-`ChestVisual` itself in `planked-chests`: its `HINGE:52` offset and two-part base/lid split are
+`ChestVisual` itself in `sensible-storage`: its `HINGE:52` offset and two-part base/lid split are
 chest geometry, not a general pattern.
 
-`planked-chests/build.gradle` needs a new `include 'club/rainbowkitty/kalic0re/common/display/**'`
+`sensible-storage/build.gradle` needs a new `include 'club/rainbowkitty/kalic0re/common/display/**'`
 line alongside the existing five (`:52-56`).
 
 **Done when.** `ChestVisual` compiles against the shaded constants with its own copies deleted, and
@@ -354,13 +354,13 @@ at both use sites. Its uneased behaviour is unchanged; only the state and the st
 `RENDERER_YAW_OFFSET`, `orientation()`, the `openness` field and the `Mth`/`Quaternionf` imports;
 `HINGE` and the base/lid split stayed, being chest geometry. `ChestElementHolder` now calls
 `ItemDisplayPose.orientation(yaw)` directly, which is where the facing is actually decided. One
-`include` line was added to `planked-chests/build.gradle` as predicted.
+`include` line was added to `sensible-storage/build.gradle` as predicted.
 
 **Verification had to reach the bytecode, because this package loads at runtime.** Unlike S3's
 `common/datagen`, which ships unused, `common/display` is on the live pose path — and `runServer`
 runs the *un-relocated* classes off the compile classpath, so the dev server cannot test the move at
 all. The shipped jar carries
-`club/rainbowkitty/plankedchests/shaded/kalic0re/display/ItemDisplayPose.class` (656 bytes) and
+`club/rainbowkitty/sensiblestorage/shaded/kalic0re/display/ItemDisplayPose.class` (656 bytes) and
 `LidTween.class` (874), the `-unshaded` jar carries no `kalic0re` entry at all, and `javap` shows
 `ChestElementHolder` referencing the shaded `ItemDisplayPose` and both `ChestVisual` and
 `ShulkerCartDisplay` the shaded `LidTween`.
@@ -403,7 +403,7 @@ because a third caller is waiting.
 ### As built
 
 **`composite` could not move as written, because `SIZE` was inside it.** `CartIcons.SIZE = 16` was
-both the loop bound and the allocated size, so a shared copy would have carried planked-chests' icon
+both the loop bound and the allocated size, so a shared copy would have carried sensible-storage' icon
 edge into `kalic0re`. `PngAssets.composite` takes its dimensions from the base image instead and
 rejects an overlay that does not match, which is what let the same method serve a 16×16 cart icon
 and a 64×64 chest sheet. `sized` gained an `edge` parameter for the same reason; `CartIcons` keeps
@@ -417,7 +417,7 @@ end holds that tone — stayed in `CartIcons`, where it is art guidance for whoe
 
 **Output is byte-identical across all 1532 files**, with `src/main/generated` deleted first.
 `CartIcons` went from 136 lines to 73. `./gradlew build` passes in all three mods,
-`checkstyleTarget` is clean on `kalic0re/src/main/java` and both of `planked-chests`' source sets, and
+`checkstyleTarget` is clean on `kalic0re/src/main/java` and both of `sensible-storage`' source sets, and
 the relocated `PngAssets` in the shipped jar carries `composite`, `sized`, `over` and `CUTOUT` (6740
 bytes against 6497 for `EntityModelBoxes` beside it). It ships unused, as it has since S1.
 
@@ -455,7 +455,7 @@ element-less block model (`variants:59`, `particleModel:70`). Without those file
 while break and landing particles still match the material. Land it next to the
 `PolymerClientHandshake` and `PolymerChestRenderer` it completes.
 
-**Done when.** `planked-chests` generates the same 27 blockstates and models as before, and a
+**Done when.** `sensible-storage` generates the same 27 blockstates and models as before, and a
 handshake-capable dev client shows no missing-model cube behind a placed chest.
 
 Its companion fact is a one-liner and belongs in prose, not code: `ChestBlocks:150` sets
@@ -501,7 +501,7 @@ material.
 **Output is byte-identical across all 1532 files**, with `src/main/generated` deleted first. The
 Build text's "27 blockstates and models" is 27 particle-only models and 54 blockstates — plain and
 trapped share one model, which is why the provider writes two blockstates per wood. All three mods
-build, `checkstyleTarget` is clean on `kalic0re/src/main/java` and `planked-chests/src/datagen/java`,
+build, `checkstyleTarget` is clean on `kalic0re/src/main/java` and `sensible-storage/src/datagen/java`,
 and the relocated `PackJson` is 1698 bytes in the shipped jar.
 
 **The companion fact went into a `CLAUDE.md` section that did not exist.** The Build text said to
@@ -597,7 +597,7 @@ ramp, S5's third compositor, S6's `generatedModel`, and these two stages.
 `posedYaw`/`posedPitch` pair that answers it (`ChestCartDisplay:52-53`, `ShulkerCartDisplay:71-72`).
 The holder's existing `shownYaw`/`shownPitch` cannot answer it: `markPoseDirty` sets those to NaN,
 so a dirty re-pose is indistinguishable from a real turn without a second pair. Only two subclasses
-exist, both in `planked-chests` — kalic0re's other `common/vehicle` classes name the type without
+exist, both in `sensible-storage` — kalic0re's other `common/vehicle` classes name the type without
 extending it (`CartCargo:40`, `CargoMinecartChest:148`, `CartCargoSupport:73`) — so the signature
 change reaches nothing else.
 
@@ -618,7 +618,7 @@ non-zero.
 Not in scope: `topAboveCentre` and the cross-class constant read at `ShulkerCartDisplay`'s
 `CARGO_CENTRE_Y`. The formula has one caller, and the read is deliberate — the shulker box is
 levelled against the chest cart's own figures so that changing either scale keeps the two tops
-level, which is a `planked-chests` fact and not a general one.
+level, which is a `sensible-storage` fact and not a general one.
 
 ### As built
 
@@ -711,7 +711,7 @@ remote question is closed; what is open is the scope, and it has a sequencing co
 re-scope moves the mod id, the Maven coordinate and the `club.rainbowkitty.kalic0re` package, then
 every stage below either lands in the old namespace and gets rewritten, or waits. Extracting first
 is the cheaper order despite appearances: the moves are mechanical and both consumers already funnel
-the namespace through one `relocate` line each (`planked-chests/build.gradle`,
+the namespace through one `relocate` line each (`sensible-storage/build.gradle`,
 `companions/build.gradle`), whereas renaming first freezes S2–S7 behind work whose shape is not yet
 decided. Worth deciding explicitly rather than by drift.
 
@@ -725,7 +725,7 @@ in itself, but it governs how much unpushed work should accumulate here before t
 happens. The armor and cargo-minecart frameworks are both finished, deployed-adjacent code with 20
 commits behind them and no remote.
 
-**Whether `planked-chests` moves to `client = true` datagen.** Settled by the probe at the top of
+**Whether `sensible-storage` moves to `client = true` datagen.** Settled by the probe at the top of
 S2, not by argument — and the answer was no: the typed builders cannot be loaded in a server
 environment at all, so the raw JSON stayed and S6 and S7 both went on to share more of it. The rest
 of this entry is the reasoning as it stood before the probe ran. If the typed builders load without
@@ -734,7 +734,7 @@ pass against deleting four hand-rolled JSON emitters, and the honest answer may 
 JSON and record why.
 
 **Whether `rk-tweaks` ever becomes an kalic0re consumer.** Its `BuiltinDataPacks` is a verbatim twin
-of `planked-chests`' — same `ResourceLoader.registerBuiltinPack` shape, same `getModContainer`
+of `sensible-storage`' — same `ResourceLoader.registerBuiltinPack` shape, same `getModContainer`
 guard — and extracting it would save roughly ten lines. `rk-tweaks` shades nothing today, so the
 cost is the entire Shadow wiring for one small helper. Left undecided rather than rejected: if
 `rk-tweaks` gains a second reason to shade, this comes with it for free.
@@ -743,13 +743,13 @@ cost is the entire Shadow wiring for one small helper. Left undecided rather tha
 
 | Pattern | Where | Why it stays |
 | --- | --- | --- |
-| `WoodType` enum | `planked-chests/wood/WoodType.java` | The variant list is mod-specific. Only the optional-mod gate (`requiredModId:97`) and `ChestBlocks.DATAGEN:59` generalise, and both are a line each. |
+| `WoodType` enum | `sensible-storage/wood/WoodType.java` | The variant list is mod-specific. Only the optional-mod gate (`requiredModId:97`) and `ChestBlocks.DATAGEN:59` generalise, and both are a line each. |
 | `DATAGEN` sniff | `ChestBlocks.java:59` | `System.getProperty("fabric-api.datagen")`, found by reading `FabricDataGenHelper`'s bytecode — no public constant exposes it. One line; put it in `common/datagen` during S3 rather than building a framework around it. |
-| `BuiltinDataPacks` | `planked-chests`, `rk-tweaks` | Two verbatim copies, but see Open decisions — the shading cost exceeds the saving. |
+| `BuiltinDataPacks` | `sensible-storage`, `rk-tweaks` | Two verbatim copies, but see Open decisions — the shading cost exceeds the saving. |
 | `registerCreativeTab` | `ChestBlocks.java:87` | One consumer. The knowledge is the value: vanilla-tab additions do not reliably sync to Polymer clients, a Polymer-registered tab does, and a vanilla client reaches it only through `/polymer creative`. |
 | `MOD_ID` / `id(path)` / `LOGGER` | every mod's entrypoint | A shared helper would need the namespace passed in anyway. |
-| `Ids.blockPath` | `planked-chests/datagen/Ids.java` | Three lines wrapping `BuiltInRegistries.BLOCK.getKey(block).getPath()`. One consumer package, and no knowledge in it. |
-| `topAboveCentre` + the cross-class `CARGO_CENTRE_Y` read | `ShulkerCartDisplay` | One caller for the formula, and the read is deliberate: the box is levelled against the chest cart's own figures so changing either scale keeps the two tops level. A `planked-chests` fact. |
+| `Ids.blockPath` | `sensible-storage/datagen/Ids.java` | Three lines wrapping `BuiltInRegistries.BLOCK.getKey(block).getPath()`. One consumer package, and no knowledge in it. |
+| `topAboveCentre` + the cross-class `CARGO_CENTRE_Y` read | `ShulkerCartDisplay` | One caller for the formula, and the read is deliberate: the box is levelled against the chest cart's own figures so changing either scale keeps the two tops level. A `sensible-storage` fact. |
 
 ## Reference: verified this session
 

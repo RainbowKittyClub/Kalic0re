@@ -13,6 +13,6 @@ import net.minecraft.resources.Identifier;
  */
 @Environment(EnvType.CLIENT)
 public class PolymerChestRenderState extends ChestRenderState {
-    /** Resolved chest sprite id, e.g. {@code plankedchests:birch_left}. */
+    /** Resolved chest sprite id, e.g. {@code sensiblestorage:birch_left}. */
     public Identifier sprite;
 }

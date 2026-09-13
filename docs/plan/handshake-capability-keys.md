@@ -3,8 +3,8 @@
 Extends `PolymerClientHandshake` from a single per-connection "this client runs my mod too" flag into
 that flag plus a set of named capability keys, so a client-optional Polymer mod can decide *per piece
 of content* whether a given connection is able to decode it. It exists to fix a decode-failure
-regression in `planked-chests`, whose registered chest set varies with which wood-adding mods an
-installation happens to have (`planked-chests/.../block/ChestBlocks.java:95-99`) — a divergence that
+regression in `sensible-storage`, whose registered chest set varies with which wood-adding mods an
+installation happens to have (`sensible-storage/.../block/ChestBlocks.java:95-99`) — a divergence that
 nothing on the wire currently detects.
 
 Everything below about Polymer's networking, Fabric's registry sync and vanilla's chunk handling was
@@ -30,13 +30,13 @@ the wire, and leaves a client's creative tab listing woods its server never regi
 
 ## Findings that reshape the work
 
-**Nothing detects a `plankedchests` content mismatch today, which is why the symptom is a decode
+**Nothing detects a `sensiblestorage` content mismatch today, which is why the symptom is a decode
 failure rather than Fabric's readable "server requires…" screen.** Polymer marks every
 `PolymerObject` as a registry "server entry" as it is registered
 (`polymer-core/.../mixin/other/MappedRegistryMixin.java:39-47`), and `polymer-reg-sync-manipulator`
 wraps `Registry.getKey` inside Fabric's `createAndPopulateRegistryMap` to return `null` for those
 entries (`.../rsm/mixin/fabric/fabricSync_RegistrySyncManagerMixin.java:31-37`), so every
-`plankedchests:*` block and item is omitted from the id map the server sends and
+`sensiblestorage:*` block and item is omitted from the id map the server sends and
 `ClientRegistrySyncHandler.checkRemoteRemap` never sees the gap. Those ids are resolved instead
 through Polymer's own client tables, identifier-keyed
 (`polymer-core/.../impl/client/InternalClientRegistry.java:176-192`); when the client never
@@ -44,7 +44,7 @@ registered the identifier the decoder returns null and the lookup falls through 
 `instance.byIdOrThrow(i)` (`:193-201`), which throws. This is why the fix has to be an explicit
 negotiation and cannot be left to the platform. Note that the whole chain hangs off a `@Pseudo`
 mixin declared `require = 0` (`fabricSync_RegistrySyncManagerMixin.java:22,31`): if Fabric's internals
-drift, the mixin silently stops applying, `plankedchests:*` lands back in the sync map, and the
+drift, the mixin silently stops applying, `sensiblestorage:*` lands back in the sync map, and the
 symptom changes from a decode failure to a hard registry-sync kick. Confirmed applying against
 `fabric-registry-sync-v0-7.1.0` this session.
 
@@ -59,7 +59,7 @@ namespaces. Scanning the content jars alone is misleading — `WoodsAndMires-2.1
 external. The practical consequence is that a client on live missing *any* of the four gets past
 Fabric's registry sync and then fails on the 15 modded woods, which is the ordinary player
 configuration rather than an edge case. Both patch jars are staged in
-`rkc/mods/planked-chests/run/mods/disabled/`, and whichever wood mod S2 uses, its patch has to be
+`rkc/mods/sensible-storage/run/mods/disabled/`, and whichever wood mod S2 uses, its patch has to be
 installed on the server side alongside it or the asymmetry produces a registry-sync kick instead.
 
 **The capability set has to ride the handshake's own version map rather than Polymer's metadata
@@ -81,7 +81,7 @@ nothing.** Polymer filters chunk block entities through
 `PolymerSyncedObject.getPolymerReplacement(BlockEntityType, PacketContext)`
 (`PolymerSyncedObject.java:21`), called from
 `polymer-core/.../mixin/block/packet/ClientboundLevelChunkPacketDataMixin.java:18-27` with only the
-type and the connection — never a position or a block state. Both of `planked-chests`' families share
+type and the connection — never a position or a block state. Both of `sensible-storage`' families share
 one type each (`ChestBlocks.java:115-123`), so that decision stays connection-wide even after the
 block state decision becomes per-wood. The consequence was expected to be client-side log spam; it is
 not. A block entity arriving for a barrier is dropped in silence: chunk load goes
@@ -98,7 +98,7 @@ not a measurement.
 Compilation and style are local: `./gradlew build` in each mod, and
 `cd rkc/lint && ./gradlew checkstyleTarget -PtargetDir=../mods/<mod>/src/main/java` for the two mods
 here, neither of which is in `lintAll`'s wired-in map. After any edit under `kalic0re`'s `common/net`,
-`cd rkc/mods/kalic0re && ./gradlew publishToMavenLocal` has to run before `planked-chests` rebuilds, or
+`cd rkc/mods/kalic0re && ./gradlew publishToMavenLocal` has to run before `sensible-storage` rebuilds, or
 it compiles against a stale copy.
 
 Behaviour needs the S2 harness: one dev server and one dev client with deliberately different mod
@@ -138,7 +138,7 @@ side never registered.
 
 Two constraints belong in the Javadoc as well. The payload id is built from the runtime mod id
 string, so Shadow relocating `club.rainbowkitty.kalic0re.common` into
-`club.rainbowkitty.<mod>.shaded.kalic0re` (`planked-chests/build.gradle:86`) does not change what goes
+`club.rainbowkitty.<mod>.shaded.kalic0re` (`sensible-storage/build.gradle:86`) does not change what goes
 on the wire. And each key costs one entry in `HandshakePayload`'s `Map<Identifier, int[]>`
 (`polymer-networking/.../impl/packets/HandshakePayload.java:13-24`), which the client sends inside a
 `ServerboundCustomPayloadPacket` whose `MAX_PAYLOAD_SIZE` is 32767 bytes — 28 keys is roughly 1 KB
@@ -159,8 +159,8 @@ the two methods one mental model instead of two.
 
 The "Done when" as written was not observable from `kalic0re` alone: it needs a consumer to register a
 key, which is S3. A throwaway probe stood in — a temporary `HANDSHAKE.register("oak")` plus a
-`ServerPlayConnectionEvents.JOIN` log in `PlankedChests.onInitialize` — and was removed afterwards
-(`git diff` over `planked-chests/src` is empty). Anyone re-running this stage needs the same
+`ServerPlayConnectionEvents.JOIN` log in `SensibleStorage.onInitialize` — and was removed afterwards
+(`git diff` over `sensible-storage/src` is empty). Anyone re-running this stage needs the same
 scaffold; that is a flaw in the criterion, not in the code.
 
 Observed on a dev client joining the dev server at `localhost:25604` in offline mode:
@@ -186,7 +186,7 @@ Pick the wood mod from `run/mods/disabled/`, server side only, together with the
 Polymer-marks it — `polymer-patch-bundle-1.1.7+26.2.jar` for Woods and Mires, Terrestria or
 Cinderscapes; `enderscape-polymer-patch-3.0.1.1+26.2.jar` for Enderscape, which additionally needs
 `lithostitched`, `TrimPatcher` and `yet_another_config_lib_v3`, all already in `run/mods`. Boot on
-the current, unmodified `planked-chests`, place one of that mod's chests somewhere reachable, then
+the current, unmodified `sensible-storage`, place one of that mod's chests somewhere reachable, then
 join with `./gradlew runClient`.
 
 Expect one of two symptom shapes, because they arrive by different paths. A chunk carrying the chest
@@ -211,14 +211,14 @@ the failing packet arrives; note whether it does.
 Harness built with Woods and Mires, the mod originally reported: `run/client/mods` replaced with a
 real directory holding the six shared jars, `WoodsAndMires-2.1.3-rkc+26.2.jar` and
 `polymer-patch-bundle-1.1.7+26.2.jar` added to `run/mods` only. Three blocks placed near spawn for
-this and later stages — `plankedchests:pine_chest` at `8 -53 -5`, `plankedchests:oak_chest` at
+this and later stages — `sensiblestorage:pine_chest` at `8 -53 -5`, `sensiblestorage:oak_chest` at
 `10 -53 -5`, `woods_and_mires:pine_planks` at `6 -53 -5`.
 
 **Neither predicted symptom occurred, because the client never reaches world content.** It
 disconnects during login, before spawning:
 
 ```
-[Netty Epoll IO #0/ERROR] (Polymer) Failed to parse 'plankedchests:oak_chest' item! Invalid stack data!
+[Netty Epoll IO #0/ERROR] (Polymer) Failed to parse 'sensiblestorage:oak_chest' item! Invalid stack data!
 [Render thread/WARN] Client disconnected with reason: Internal Exception:
 io.netty.handler.codec.DecoderException: Failed to decode packet 'clientbound/minecraft:custom_payload'
 ```
@@ -242,7 +242,7 @@ is rerouted through `PolymerItemUtils.getPolymerItemStack` by
 `polymer-core/.../mixin/item/packet/ItemStackPacketCodecMixin.java:23-29`, which calls
 `getPolymerItem(stack, context)`. So this packet *is* governed by `PolymerModelBlockItem`'s
 `useRealItem` predicate, and S4 narrowing that predicate per wood reaches it. It is also why an
-ordinary Polymer client without `planked-chests` is unaffected: `has(context)` is false, every
+ordinary Polymer client without `sensible-storage` is unaffected: `has(context)` is false, every
 representation encodes as its vanilla fallback, and nothing needs resolving.
 
 **Flagged for S4.** Each entry's representation is its own item, so at decode time that entry is not
@@ -252,9 +252,9 @@ that holds only if the polymer tail base and ordering match on both sides, which
 own server-marked items may perturb. S4's observation is what settles whether per-wood negotiation
 is sufficient here or whether the supported woods trip the same entry-ordering problem.
 
-## S3 — `planked-chests` registers one key per wood — **planned**
+## S3 — `sensible-storage` registers one key per wood — **planned**
 
-**Build.** `PlankedChests.onInitialize` (`PlankedChests.java:27-34`) already calls
+**Build.** `SensibleStorage.onInitialize` (`SensibleStorage.java:27-34`) already calls
 `HANDSHAKE.register()` before `ChestBlocks.init()`. After `init()` returns, register one key per wood
 that actually got registered — `ChestBlocks.chests().keySet()` is exactly that set
 (`ChestBlocks.java:109`) — keyed by `WoodType.id()`.
@@ -264,7 +264,7 @@ The guard is not the defect; the defect is that its answer was never communicate
 it is the thing being advertised.
 
 **Done when.** With a temporary `LOGGER.info` in `onInitialize` listing the registered keys,
-`scripts/devserver.sh rkc/mods/planked-chests logs` shows 12 keys with no wood mod in `run/mods` and
+`scripts/devserver.sh rkc/mods/sensible-storage logs` shows 12 keys with no wood mod in `run/mods` and
 the right larger count with S2's wood mod present — 13 for Woods and Mires (1 wood), 14 for
 Cinderscapes (2), 15 for Enderscape (3), 21 for Terrestria (9). Remove the log line before S6.
 
@@ -273,7 +273,7 @@ Cinderscapes (2), 15 for Enderscape (3), 21 for Terrestria (9). Remove the log l
 **Build.** Three decisions move from the connection-wide `has` to the per-wood `supports`.
 `PlankedChestBlock.getPolymerBlockState` (`PlankedChestBlock.java:125-128`) already holds its
 `WoodType`, and `PlankedTrappedChestBlock` inherits it, so both families are covered by that one
-edit. `ChestBlocks.registerItem` (`:155-160`) passes `PlankedChests.HANDSHAKE::has` as
+edit. `ChestBlocks.registerItem` (`:155-160`) passes `SensibleStorage.HANDSHAKE::has` as
 `PolymerModelBlockItem`'s `useRealItem` predicate and needs the `WoodType` threaded in from the
 registration loop at `:107-108`. `ChestElementHolder.startWatching` (`ChestElementHolder.java:99-101`)
 needs the wood id, which it should take from the `PlankedChestBlock` already handed to its
@@ -316,7 +316,7 @@ content shifts the server's tail, so even a wood both installations have resolve
 per-wood answer can fix that, because the id is not ours to choose.
 
 **The granularity that works is per connection.** Real content only when the client's key set covers
-every wood the server registered, implemented for now as a temporary `PlankedChests.fullyDecodable`
+every wood the server registered, implemented for now as a temporary `SensibleStorage.fullyDecodable`
 over the three sites. With it the client joins and stays connected — the S2 regression, fixed.
 
 **And it costs nothing visually, which was the whole reason per-wood looked worth having.** With
@@ -336,7 +336,7 @@ any client-optional Polymer mod with installation-varying content needs the same
 promotion is the remaining work in this stage.
 
 **Done when (revised).** Unchanged in substance — the client joins, oak renders real, pine renders as
-a display entity — but the gate is `supportsAll`, in `kalic0re`, not a temporary in `planked-chests`.
+a display entity — but the gate is `supportsAll`, in `kalic0re`, not a temporary in `sensible-storage`.
 
 ### As built, part two — the promotion and its verification
 
@@ -344,7 +344,7 @@ a display entity — but the gate is `supportsAll`, in `kalic0re`, not a tempora
 `supports` in `PolymerClientHandshake`, answering true when the client registered every key this
 side did. They iterate `keyTypes.values()` directly rather than re-entering `supports`, which would
 re-check the base marker per key, and reduce to `has` when no keys are registered. All four
-`planked-chests` sites use them; the temporary helper and the per-wood call sites are gone, and the
+`sensible-storage` sites use them; the temporary helper and the per-wood call sites are gone, and the
 now-unused `WoodType` parameter on `registerItem` and `woodId` field on `ChestElementHolder` went
 with them.
 
@@ -410,29 +410,29 @@ icons look correct.
 That is `polymer-patch-bundle` doing what it is built to do. The patch converts W&M's content into
 Polymer blocks so that clients *without* the mod can see it, but it contains zero references to
 `PolymerClientDecoded` (checked against the jar's classes), which is the marker that tells Polymer to
-hand the real object back to a client that can decode it. `planked-chests` does implement it, which
+hand the real object back to a client that can decode it. `sensible-storage` does implement it, which
 is why its chests are restored client-side in exactly the same session. So the patch substitutes
 unconditionally, the client draws the substitute's display entity from the server-generated resource
 pack it does not have applied, and the real block shows through underneath.
 
 It is pre-existing and independent of this work: it affects any client that installs one of the
-patched content mods, with or without `planked-chests`. The live server's arrangement assumes clients
-install none of them, which is also why S2's first configuration — no content mods, `planked-chests`
+patched content mods, with or without `sensible-storage`. The live server's arrangement assumes clients
+install none of them, which is also why S2's first configuration — no content mods, `sensible-storage`
 only — is the one that matches the original bug report.
 
 ## S6 — Version bump, docs and deploy — **done**
 
 **Build.** Bump `mod_version` in both `rkc/mods/kalic0re/gradle.properties` and
-`rkc/mods/planked-chests/gradle.properties` off `0.1.0`, and update the `kalic0re_version` pin in
-`planked-chests`. Two identically named `plankedchests-0.1.0.jar` builds with different content is
+`rkc/mods/sensible-storage/gradle.properties` off `0.1.0`, and update the `kalic0re_version` pin in
+`sensible-storage`. Two identically named `sensiblestorage-0.1.0.jar` builds with different content is
 exactly how a client/server mismatch stays invisible, and this fix is worth much less if the jars
 cannot be told apart. `companions` shades only `common/item` and `common/datagen`, not `common/net`,
 so it needs no rebuild; `publishToMavenLocal` adds a version without removing `0.1.0`, so its pin
 keeps resolving either way. Bump it for hygiene or leave it, but decide rather than drift.
 
-Then `publishToMavenLocal` for kalic0re, `clean build` for `planked-chests`, install the unclassified
+Then `publishToMavenLocal` for kalic0re, `clean build` for `sensible-storage`, install the unclassified
 `shadowJar` output (not `-unshaded`) and deploy per CLAUDE.md's swap-never-stack rule. Finally, edit
-`planked-chests/docs/plan/modded-wood-types.md` — S1's `As built` describes the `isModLoaded` guard
+`sensible-storage/docs/plan/modded-wood-types.md` — S1's `As built` describes the `isModLoaded` guard
 and the `DATAGEN` escape as the whole story, and needs a sentence pointing here.
 
 **Done when.** The live server restarts clean (`docker compose logs mc | grep -icE 'Mixin apply
@@ -442,27 +442,27 @@ failure, every modded wood falling back to a display entity.
 
 ### As built
 
-Both mods went to `0.2.0` and `planked-chests`' `kalic0re_version` pin with them. `companions` was
+Both mods went to `0.2.0` and `sensible-storage`' `kalic0re_version` pin with them. `companions` was
 deliberately left pinned at `0.1.0`: it shades only `common/item` and `common/datagen`, neither of
 which changed, and `publishToMavenLocal` adds a version rather than replacing one, so the old pin
 still resolves. That is a decision, not drift — revisit it the next time `companions` is rebuilt for
 its own reasons.
 
 The shipped jar's relocation was checked before deploy, since dev runs never exercise it:
-`club/rainbowkitty/plankedchests/shaded/kalic0re/net/PolymerClientHandshake.class` carries
+`club/rainbowkitty/sensiblestorage/shaded/kalic0re/net/PolymerClientHandshake.class` carries
 `supportsAll`, and the jar contains zero unrelocated `club/rainbowkitty/kalic0re/` classes.
 
-Deployed both jars to live by swap (`plankedchests-0.1.0.jar` and `kalic0re-0.1.0.jar` deleted in the
+Deployed both jars to live by swap (`sensiblestorage-0.1.0.jar` and `kalic0re-0.1.0.jar` deleted in the
 same step), after `save-all`, with one player connected and the operator's go-ahead. On restart:
 zero `Mixin apply failed`/`InvalidInjectionException`, zero `DecoderException`/registry-sync errors,
-`Planked Chests loaded` once, and `plankedchests:pine_chest` accepted as a known block id — so the
+`Planked Chests loaded` once, and `sensiblestorage:pine_chest` accepted as a known block id — so the
 modded woods still register against the live server's WoodsAndMires.
 
 One thing rode along that this plan did not put there: the same build carries a
-`plankedchests:disable_vanilla_recipes` built-in data pack from separate in-flight work, registered
+`sensiblestorage:disable_vanilla_recipes` built-in data pack from separate in-flight work, registered
 `DEFAULT_ENABLED`, which overrides the vanilla chest and trapped-chest recipes so the plank ring
 yields this mod's chests instead. It is live and confirmed enabled in `datapack list`. Reversible
-with `/datapack disable "file/plankedchests:disable_vanilla_recipes"` — see
+with `/datapack disable "file/sensiblestorage:disable_vanilla_recipes"` — see
 `BuiltinDataPacks.java:15-22`.
 
 ## Open decisions
@@ -471,7 +471,7 @@ with `/datapack disable "file/plankedchests:disable_vanilla_recipes"` — see
 readable and reuses a proven path, but it scales against the 32767-byte payload cap (S1). A consumer
 needing hundreds of keys would want an ordered bitmask in a single id's version int, or Polymer's
 metadata channel with the timing caveat from Findings. Settled by the first consumer that exceeds the
-budget; `planked-chests`' 27 does not.
+budget; `sensible-storage`' 27 does not.
 
 ## Reference: verified Polymer handshake surface
 
@@ -508,7 +508,7 @@ The chain, for the record, since it is not obvious from any single file:
 3. Fabric's sync map is built by iterating the registry and skipping null keys
    (`RegistrySyncManager.createAndPopulateRegistryMap`); Polymer wraps `Registry.getKey` to return
    null for server entries — `.../rsm/mixin/fabric/fabricSync_RegistrySyncManagerMixin.java:31-37`.
-   So `plankedchests:*` never reaches `ClientRegistrySyncHandler.checkRemoteRemap`, and the client is
+   So `sensiblestorage:*` never reaches `ClientRegistrySyncHandler.checkRemoteRemap`, and the client is
    not rejected.
 4. The client decodes those ids through Polymer's identifier-keyed tables —
    `InternalClientRegistry.setDecoders()` at `:176-192`, hooking `Block.BLOCK_STATE_REGISTRY`,

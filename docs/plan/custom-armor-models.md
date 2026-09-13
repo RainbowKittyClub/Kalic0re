@@ -127,7 +127,7 @@ brings `runServer`/`stopServer` plus first-run seeding of `run/` (EULA, superfla
 So the only thing that had to be added was companions' shade arrangement; what had to be *removed*
 was more: bil and `fabric-permissions-api` with their Modrinth and Sponge repos, and the example
 block's `content/`/`polymer/` packages and assets. `mavenLocal()` stayed, now for kalic0re rather than
-for bil. Ports are 25605 game, 25582 rcon — mob-overhaul already holds 25599 and planked-chests
+for bil. Ports are 25605 game, 25582 rcon — mob-overhaul already holds 25599 and sensible-storage
 25604.
 
 The `kalic0reSharedJar` filter lists `common/armor/**` from the start, matching nothing until S2.
@@ -486,7 +486,7 @@ leaves it out. Settled by the first set that actually wants to break.
 in generated assets, is unverified — nothing here depends on it, so it is not a stage. Settled by
 trying one trim on the harness once S4 lands.
 
-**Creative tab.** `planked-chests` builds its own through `PolymerCreativeModeTabUtils`
+**Creative tab.** `sensible-storage` builds its own through `PolymerCreativeModeTabUtils`
 (`ChestBlocks.java:79-87`); `companions` registers no tab at all and its items are reachable only by
 command. Whether `ArmorSet` should carry an optional tab is a question about how content is found in
 game, not about rendering. Settled alongside the first decision above.
