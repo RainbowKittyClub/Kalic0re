@@ -51,8 +51,10 @@ inside `fabric-api-0.157.0+26.2.jar` at `META-INF/jars/`, matching this checkout
 none of which fire on "a stack now sits in this slot". The vanilla hook that does is
 `LivingEntity.onEquipItem(EquipmentSlot, ItemStack old, ItemStack new)`, public, called from every
 `setItemSlot` (`LivingEntity.java:2274-2276`, the hook itself at `:689-713`) — a clean `@Inject`
-target on its face. But a mixin can't be the mechanism here: `common/mixin` is the one package this
-workspace's `CLAUDE.md` says must never be moved into a consumer's shaded jar, and a *new* mixin
+target on its face. But a mixin can't be the mechanism here: mixins are the one thing this
+workspace's `CLAUDE.md` says is never shared code (at the time, as the `common/mixin` package that
+no consumer's filter took; since kalic0re went library-only that package is gone, and the rule is
+stated directly). A *new* mixin
 package under `common/effect` would need each consumer to hand-register it in their own
 `<modid>.mixins.json` against the post-relocation class name — an untested, per-consumer wiring step
 that reintroduces exactly the "does this actually work once shaded" risk the armor framework's S8
@@ -340,7 +342,7 @@ framework, not a unilateral abstraction from this side.
 | `LivingEntity.collectEquipmentChanges`/`stopLocationBasedEffects` apply and remove an item's `ItemAttributeModifiers` on any `EquipmentSlot` change, hands included | Read `LivingEntity.java:2936-2973,3838-3846` in `libs/decompiledjava/minecraft-26.2` |
 | `EquipmentSlotGroup.slots()`/`.test()` give the concrete `EquipmentSlot`s a group covers | Read `EquipmentSlotGroup.java:14-70` |
 | `LivingEntity.onEquipItem` is public and fires from every `setItemSlot`, hands included | Read `LivingEntity.java:689-713,2274-2276` |
-| `common/mixin` is excluded from every consumer's `kalic0reSharedJar` filter today | Read `companions/build.gradle:38-46`, `sensible-storage/build.gradle` equivalent, and the workspace `CLAUDE.md`'s "Sharing code between mods" |
+| No mixin is ever shaded into a consumer; the `@Mixin` class lives in the consumer instead | Read `companions/build.gradle:38-46`, `sensible-storage/build.gradle` equivalent, and the workspace `CLAUDE.md`'s "Sharing code between mods" (verified against `common/mixin`, which kalic0re no longer has) |
 | No equipment-change event exists in Fabric API 0.157.0+26.2 | `unzip -l` on `fabric-api-0.157.0+26.2.jar`'s `META-INF/jars/{fabric-entity-events-v1-5.0.5+06488ac19e,fabric-item-api-v1-14.4.0+49a69a7b9e,fabric-events-interaction-v0-5.2.7+515ac5339e}.jar`, cross-checked with `javap` against each extracted jar |
 | `ServerLivingEntityEvents`'s four callback shapes and exact parameter names | `scripts/decompile.sh net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents <extracted fabric-entity-events-v1 jar>` |
 | `ServerPlayer extends Player extends Avatar extends LivingEntity` | Read `ServerPlayer.java:209`, `Player.java:127`, `Avatar.java:13` |

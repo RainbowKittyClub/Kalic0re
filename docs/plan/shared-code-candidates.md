@@ -715,15 +715,16 @@ the namespace through one `relocate` line each (`sensible-storage/build.gradle`,
 `companions/build.gradle`), whereas renaming first freezes S2–S7 behind work whose shape is not yet
 decided. Worth deciding explicitly rather than by drift.
 
-The sequencing half is now answered by events: S2 through S7 are all done, so the re-scope can no
-longer land before them. What remains open is its content, and the bill it leaves behind is larger
-than it was — `common/datagen` now carries four shared classes rather than one, though still behind
-the same single `relocate` line per consumer.
+The sequencing half was answered by events: S2 through S7 all landed first, so the re-scope could
+not precede them.
 
-**No copy of this work exists off this machine.** A consequence of the above rather than a decision
-in itself, but it governs how much unpushed work should accumulate here before the migration
-happens. The armor and cargo-minecart frameworks are both finished, deployed-adjacent code with 20
-commits behind them and no remote.
+**Both halves are now settled.** The mod id, Maven coordinate and `club.rainbowkitty.kalic0re`
+package all stay as they are, so none of S2–S7 needed rewriting. The re-scope turned out to be
+subtractive rather than a rename: on 2026-09-13 the `books`, `frame` and `armorstands` features,
+`common/mixin` and `Main` moved to `sensible-storage`, leaving twelve `common/` packages, no
+entrypoint and no mixin config — the library the successor repo already described. Published as
+0.13.0; see `sensible-storage/docs/plan/hover-labels.md`. `origin` is
+`RainbowKittyClub/Kalic0re` and carries `main`, so the work is no longer local-only.
 
 **Whether `sensible-storage` moves to `client = true` datagen.** Settled by the probe at the top of
 S2, not by argument — and the answer was no: the typed builders cannot be loaded in a server
