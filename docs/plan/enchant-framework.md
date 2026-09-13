@@ -481,3 +481,41 @@ have no consumer yet: `artifacts`' flight ability went to `common/effect` instea
 enchantment is render-only. They are the framework's only runtime hook — without them a declared
 enchantment can carry vanilla effects and nothing else — so they stay, flagged as unexercised rather
 than removed.
+
+## S8 — Resource-pack-only held-item fallback — **done**
+
+**Build.** `common/enchant/HiddenItemModelFallback` (`item`, `enchantment`, `realModel`) declares one
+held item's fallback; `common/enchant/datagen/HiddenItemModelProvider` generates its
+`assets/<namespace>/items/<item>.json` as a `ConditionalItemModel` — `ComponentMatches` wrapping a
+`DataComponentPredicate.Single<EnchantmentsPredicate.Enchantments>` built from one
+`EnchantmentPredicate(Holder<Enchantment>, MinMaxBounds.Ints.ANY)` — picking `EmptyModel.Unbaked` when
+the stack carries the declared enchantment at any level, `ItemModelUtils.plainModel(realModel)`
+otherwise. `EnchantDatagen.addHiddenItemModelProvider(pack, fallbacks)` wires it in, kept as a
+separate method from `addProviders` rather than folded into it. This is `artifacts/docs/plan/
+shadow-vanilla-fallback.md`'s S1, moved here per its own "Open decisions" — the technique is generic
+to any `HideEquipmentModelEnchantments` entry, not specific to `Shadow`.
+
+**Done when.** `./gradlew build` and `checkstyleTarget` pass clean in `rkcore` for the two new
+classes, and every codec shape used — `ComponentMatches`, `DataComponentPredicate.Single`,
+`DataComponentPredicates.ENCHANTMENTS`, `EnchantmentsPredicate.enchantments`, `EnchantmentPredicate`,
+`EmptyModel.Unbaked`, `PackOutput.PathProvider#json(ResourceKey<?>)`, `DataProvider.saveAll` — is
+verified field-by-field against `libs/decompiledjava/minecraft-26.2`, not recalled or guessed. Actual
+generated JSON, and the visual effect on a real client, are a later consumer's stage, not this one:
+`rkcore` has no content of its own to generate ([[project_rkcore_framework_scratch]]'s own
+"cannot be tested alone" finding, unchanged since S1).
+
+### As built
+
+Matches the Build text with no deviation — the design was worked out against the decompiled codecs
+before any code was written, the same order as this section's own "Verify before writing" rule
+requires. `HiddenItemModelProvider` mirrors `common/armor/datagen/ArmorModelProvider`'s shape exactly
+(a raw `DataProvider`, `PackOutput.PathProvider`, `DataProvider.saveAll`), including the same
+`@Environment(CLIENT)`-typed-builder consequence: a consumer can only call
+`EnchantDatagen.addHiddenItemModelProvider` from a datagen source set built with Fabric Loom's
+`client = true`, which `artifacts/build.gradle` does not currently set — `companions/build.gradle` is
+the confirmed working example of that Gradle block. Publishing this required the usual
+`./gradlew publishToMavenLocal` in `rkcore` per the workspace's "Sharing code between mods" — done as
+part of this stage. Wiring `artifacts`' `Shadow` to actually consume this (adding `client = true` to
+its `build.gradle`, calling the new method from `ArtifactsDataGenerator`) is left to that mod's own
+plan doc, not done here, since it changes how that mod's datagen boots for every future run, not just
+this feature.
