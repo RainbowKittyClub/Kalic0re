@@ -4,8 +4,8 @@ plugins {
 	id 'maven-publish'
 }
 
-java.sourceCompatibility = JavaVersion.VERSION_25
-java.targetCompatibility = JavaVersion.VERSION_25
+java.sourceCompatibility = JavaVersion.toVersion(project.java_version)
+java.targetCompatibility = JavaVersion.toVersion(project.java_version)
 
 base {
 	archivesName.set(project.mod_id)
@@ -113,7 +113,7 @@ tasks.register('stopServer') {
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = "UTF-8"
-	options.release = 25
+	options.release = project.java_version.toInteger()
 }
 
 java {
