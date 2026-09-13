@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.minecraft.core.HolderLookup;
 
 import club.rainbowkitty.rkcore.common.enchant.EnchantSpec;
+import club.rainbowkitty.rkcore.common.enchant.HiddenItemModelFallback;
 
 /**
  * Adds every provider a declared enchantment needs to a datagen pack, so a mod's entrypoint names
@@ -32,5 +33,21 @@ public final class EnchantDatagen {
         pack.addProvider((FabricPackOutput output,
                 CompletableFuture<HolderLookup.Provider> registries) ->
                 new EnchantTagProvider(output, registries, declared));
+    }
+
+    /**
+     * Adds the resource-pack-only held-item fallback provider for the given fallbacks — see
+     * {@link HiddenItemModelFallback}. Separate from {@link #addProviders}, since this one needs
+     * client-environment typed builders: only call it from a datagen source set built with Fabric
+     * Loom's {@code client = true}, the same requirement {@code common.armor}'s
+     * {@code ArmorModelProvider} already has.
+     */
+    public static void addHiddenItemModelProvider(FabricDataGenerator.Pack pack,
+            List<HiddenItemModelFallback> fallbacks) {
+        List<HiddenItemModelFallback> declared = List.copyOf(fallbacks);
+
+        pack.addProvider((FabricPackOutput output,
+                CompletableFuture<HolderLookup.Provider> registries) ->
+                new HiddenItemModelProvider(output, registries, declared));
     }
 }
