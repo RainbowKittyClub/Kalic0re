@@ -1,6 +1,6 @@
 # Custom armor models
 
-A `common/armor` package in `rkcore` that sibling mods shade, turning one declaration of an armor set
+A `common/armor` package in `kalic0re` that sibling mods shade, turning one declaration of an armor set
 into its registered items, the Polymer wiring that makes them visible to vanilla clients, and the
 datagen that writes their equipment assets, item models and textures. Each slot picks its own render
 backend: a vanilla-shaped **layer** (a custom equipment asset — the path `companions`' wolf sweaters
@@ -13,7 +13,7 @@ Everything below about vanilla's render path and Polymer's item handling was rea
 sweater implementation under `rkc/mods/companions`; it is cited by file and line. Every stage is now
 `done`: the framework is built, both backends are confirmed in world, and `companions` runs on it.
 
-S1 was the harness, and came first because `rkcore` registers no content of its own and nothing here
+S1 was the harness, and came first because `kalic0re` registers no content of its own and nothing here
 could be seen without a consumer. S2 is the declaration every later stage compiles against. S3 makes
 the items exist; S4 and S5 together make a layer-backed piece visible; S5's item-model half plus S6
 make a head-model piece visible. The S4/S5 layer work and S6 are independent of each other. The
@@ -67,7 +67,7 @@ server's players, not about a piece of armor — so the framework's init helper 
 **`EquipmentClientInfo.LayerType` is client-only, so it cannot appear in the declaration.** The enum
 is annotated `@Environment(EnvType.CLIENT)` (`EquipmentClientInfo.java`), and a dedicated server has
 no `net.minecraft.client` classes to load it from. The declaration is read by the registration path,
-which runs on exactly that server, so layer targets are expressed as rkcore's own `ArmorLayerTarget`
+which runs on exactly that server, so layer targets are expressed as kalic0re's own `ArmorLayerTarget`
 enum mirroring the serialized names (`humanoid`, `humanoid_leggings`, `humanoid_baby`, `wolf_body`,
 `horse_body`, `llama_body`, `happy_ghast_body`, the saddles, `wings`), and mapped onto the vanilla
 enum inside the datagen subpackage only. This is the same split `common/client` already lives with.
@@ -85,12 +85,12 @@ copies.
 
 In-world, on the S1 harness's dev server, watched from the user's client — so every stage that
 changes what is drawn gets a plain-language "what you will see" before it runs. Nothing here has a
-test suite, and `rkcore` cannot be tested alone: it registers no content, so the harness is a
+test suite, and `kalic0re` cannot be tested alone: it registers no content, so the harness is a
 prerequisite and not a convenience.
 
 Three traps specific to this work:
 
-Dev mode never exercises the relocation. `runServer` in a consumer runs against rkcore's unrelocated
+Dev mode never exercises the relocation. `runServer` in a consumer runs against kalic0re's unrelocated
 classes off the compile classpath; only installing a real `shadowJar` output does. S8 is where a
 built jar goes into a server's `mods/` and the framework is confirmed to work under its shaded name.
 
@@ -109,8 +109,8 @@ rather than anything before it.
 
 **Build.** Copy `fabric_mod_skeleton/` to `armor-harness/` at the workspace root — outside
 `rkc/mods/`, since this is a throwaway and the workspace root is not a repo — with mod id
-`armorharness`. Give it companions' consumer arrangement verbatim: the `rkcore`/`shade`
-configurations and `rkcoreSharedJar` filter (`companions/build.gradle:38-66`), the
+`armorharness`. Give it companions' consumer arrangement verbatim: the `kalic0re`/`shade`
+configurations and `kalic0reSharedJar` filter (`companions/build.gradle:38-66`), the
 `fabricApi.configureDataGeneration { client = true; createSourceSet = true }` block (`:22-28`), and
 `stopServer` so `scripts/devserver.sh` can drive it. It declares one armor set per backend once S2
 exists: a four-piece humanoid layer set, a single wolf-body piece, and a head-slot item-model piece.
@@ -126,13 +126,13 @@ The skeleton already carried more than the Build text assumed: the `fabricApi` d
 brings `runServer`/`stopServer` plus first-run seeding of `run/` (EULA, superflat world, ops, rcon).
 So the only thing that had to be added was companions' shade arrangement; what had to be *removed*
 was more: bil and `fabric-permissions-api` with their Modrinth and Sponge repos, and the example
-block's `content/`/`polymer/` packages and assets. `mavenLocal()` stayed, now for rkcore rather than
+block's `content/`/`polymer/` packages and assets. `mavenLocal()` stayed, now for kalic0re rather than
 for bil. Ports are 25605 game, 25582 rcon — mob-overhaul already holds 25599 and planked-chests
 25604.
 
-The `rkcoreSharedJar` filter lists `common/armor/**` from the start, matching nothing until S2.
+The `kalic0reSharedJar` filter lists `common/armor/**` from the start, matching nothing until S2.
 `common/item` and `common/datagen` do match, and the built `armorharness-0.1.0.jar` carries them as
-`club/rainbowkitty/armorharness/shaded/rkcore/{item,datagen}/*.class`, so the relocation is known
+`club/rainbowkitty/armorharness/shaded/kalic0re/{item,datagen}/*.class`, so the relocation is known
 good before any framework code exists.
 
 One thing the harness gets for free that the testing section had assumed would need setting up:
@@ -364,8 +364,8 @@ each a single `BODY` piece on the `wolf_body` target with a plain base layer and
 business, not the framework's. `WolfSweater`'s public accessors (`name`, `key`, `item`, `assetId`)
 are used by the surviving providers, so keep them and point them at the framework's naming.
 
-Add `include 'club/rainbowkitty/rkcore/common/armor/**'` to `companions`' `rkcoreSharedJar` filter
-and bump its `rkcore_version` after rkcore publishes.
+Add `include 'club/rainbowkitty/kalic0re/common/armor/**'` to `companions`' `kalic0reSharedJar` filter
+and bump its `kalic0re_version` after kalic0re publishes.
 
 **Done when.** `./gradlew clean generateAssets build` in `companions` produces the same generated
 tree as before the migration — diff it against a copy taken first, and expect zero differences in the
@@ -399,29 +399,29 @@ is now a question about appearance alone.
 
 ## S8 — Consumer wiring, jar verification and docs — **done**
 
-**Build.** Bump rkcore's `mod_version`, `publishToMavenLocal`, and confirm the framework works under
-relocation: install `companions`' unclassified `shadowJar` output on a scratch server with rkcore
-*absent*, since dev mode never exercises the rename. Then document — rkcore's README layout list
-gains `common/armor`, and the workspace `CLAUDE.md` row for rkcore gains the framework, with the
+**Build.** Bump kalic0re's `mod_version`, `publishToMavenLocal`, and confirm the framework works under
+relocation: install `companions`' unclassified `shadowJar` output on a scratch server with kalic0re
+*absent*, since dev mode never exercises the rename. Then document — kalic0re's README layout list
+gains `common/armor`, and the workspace `CLAUDE.md` row for kalic0re gains the framework, with the
 shared-package list in "Sharing code between mods" extended to say that `common/armor` needs
 `common/item` and `common/datagen` shaded alongside it. Docs commit goes ahead of the source commits.
 
-**Done when.** `unzip -l companions-<version>.jar | grep shaded/rkcore/common/armor` lists the
-relocated classes, and that jar alone on a server with no rkcore installed yields a wearable,
+**Done when.** `unzip -l companions-<version>.jar | grep shaded/kalic0re/common/armor` lists the
+relocated classes, and that jar alone on a server with no kalic0re installed yields a wearable,
 correctly rendered sweater.
 
 ### As built
 
-rkcore is at 0.3.0 and `companions` pins it; its generated tree stayed byte-identical across the
+kalic0re is at 0.3.0 and `companions` pins it; its generated tree stayed byte-identical across the
 bump. The relocation was proven from the bytecode rather than from an environment: `WolfSweater` and
-`Main` reference only `club/rainbowkitty/companions/shaded/rkcore/...`, and no class in the jar names
+`Main` reference only `club/rainbowkitty/companions/shaded/kalic0re/...`, and no class in the jar names
 the unrelocated package at all. That is a stronger result than the planned clean-server run, which
-would only have shown that nothing *happened* to need rkcore — the installed jar cannot reach
-rkcore's classes even when they are on the classpath, which is the case on the harness server where
+would only have shown that nothing *happened* to need kalic0re — the installed jar cannot reach
+kalic0re's classes even when they are on the classpath, which is the case on the harness server where
 the sweaters were confirmed working.
 
-Documentation landed in three places rather than two: rkcore's README layout list, the workspace
-`CLAUDE.md` rkcore and companions rows, and a new paragraph in "Sharing code between mods" carrying
+Documentation landed in three places rather than two: kalic0re's README layout list, the workspace
+`CLAUDE.md` kalic0re and companions rows, and a new paragraph in "Sharing code between mods" carrying
 the two consumer-wiring traps from S4 — the typed `pack.addProvider` lambda and the `.cache/`
 exclusion — since both cost a build cycle to rediscover.
 
@@ -447,7 +447,7 @@ merged view ordinal-ordered by construction rather than by what vanilla happens 
 downstream.
 
 **`ArmorSet.Builder.allowedWearers`** was calling the deprecated `EntityType::builtInRegistryHolder`
-— an intrusive holder — which was the one deprecation warning in rkcore's build. Now
+— an intrusive holder — which was the one deprecation warning in kalic0re's build. Now
 `BuiltInRegistries.ENTITY_TYPE::wrapAsHolder`, the same route `companions` already takes for sounds.
 
 **What went in: `ArmorDatagen`.** Every consumer was repeating the same five `pack.addProvider`
@@ -457,7 +457,7 @@ sets, art)` is now the whole armour half of a consumer's datagen entrypoint, and
 one place a consumer never reads. `companions`' entrypoint lost fourteen lines to it; the generated
 tree stayed byte-identical across all 162 files.
 
-rkcore went to 0.4.0 for this — `defenseFor` coming out makes it a breaking change, however dead it
+kalic0re went to 0.4.0 for this — `defenseFor` coming out makes it a breaking change, however dead it
 was.
 
 ## Open decisions

@@ -97,8 +97,8 @@ not a measurement.
 
 Compilation and style are local: `./gradlew build` in each mod, and
 `cd rkc/lint && ./gradlew checkstyleTarget -PtargetDir=../mods/<mod>/src/main/java` for the two mods
-here, neither of which is in `lintAll`'s wired-in map. After any edit under `rkcore`'s `common/net`,
-`cd rkc/mods/rkcore && ./gradlew publishToMavenLocal` has to run before `planked-chests` rebuilds, or
+here, neither of which is in `lintAll`'s wired-in map. After any edit under `kalic0re`'s `common/net`,
+`cd rkc/mods/kalic0re && ./gradlew publishToMavenLocal` has to run before `planked-chests` rebuilds, or
 it compiles against a stale copy.
 
 Behaviour needs the S2 harness: one dev server and one dev client with deliberately different mod
@@ -112,7 +112,7 @@ The client opens a real window — this machine has a desktop session on `DISPLA
 every in-world "Done when" below is a manual observation, not something a script can assert.
 
 Dev mode runs against unrelocated classes off the compile classpath, so it never exercises Shadow's
-relocation of `club.rainbowkitty.rkcore.common`; only S6's real jar install does.
+relocation of `club.rainbowkitty.kalic0re.common`; only S6's real jar install does.
 
 A stage is not finished until its "Done when" is observed, so a failure at stage N implicates N and
 not the stages before it.
@@ -137,8 +137,8 @@ Two behaviours need pinning down rather than falling out: `supports` must return
 side never registered.
 
 Two constraints belong in the Javadoc as well. The payload id is built from the runtime mod id
-string, so Shadow relocating `club.rainbowkitty.rkcore.common` into
-`club.rainbowkitty.<mod>.shaded.rkcore` (`planked-chests/build.gradle:86`) does not change what goes
+string, so Shadow relocating `club.rainbowkitty.kalic0re.common` into
+`club.rainbowkitty.<mod>.shaded.kalic0re` (`planked-chests/build.gradle:86`) does not change what goes
 on the wire. And each key costs one entry in `HandshakePayload`'s `Map<Identifier, int[]>`
 (`polymer-networking/.../impl/packets/HandshakePayload.java:13-24`), which the client sends inside a
 `ServerboundCustomPayloadPacket` whose `MAX_PAYLOAD_SIZE` is 32767 bytes — 28 keys is roughly 1 KB
@@ -157,7 +157,7 @@ to hand a frozen copy off at. `supports` is a strict refinement of `has` — it 
 too, which is redundant in practice (a client that declared a key must be running the mod) but makes
 the two methods one mental model instead of two.
 
-The "Done when" as written was not observable from `rkcore` alone: it needs a consumer to register a
+The "Done when" as written was not observable from `kalic0re` alone: it needs a consumer to register a
 key, which is S3. A throwaway probe stood in — a temporary `HANDSHAKE.register("oak")` plus a
 `ServerPlayConnectionEvents.JOIN` log in `PlankedChests.onInitialize` — and was removed afterwards
 (`git diff` over `planked-chests/src` is empty). Anyone re-running this stage needs the same
@@ -331,12 +331,12 @@ this connection is safe to talk to at all.
 
 Two consequences for the rest of the document. S1 and S3 are unaffected and still required — the
 per-wood keys are exactly what the set comparison is computed from; only S4's use of them collapses.
-And the temporary helper belongs in `rkcore` beside `supports`, as a `supportsAll(context)`, since
+And the temporary helper belongs in `kalic0re` beside `supports`, as a `supportsAll(context)`, since
 any client-optional Polymer mod with installation-varying content needs the same predicate. That
 promotion is the remaining work in this stage.
 
 **Done when (revised).** Unchanged in substance — the client joins, oak renders real, pine renders as
-a display entity — but the gate is `supportsAll`, in `rkcore`, not a temporary in `planked-chests`.
+a display entity — but the gate is `supportsAll`, in `kalic0re`, not a temporary in `planked-chests`.
 
 ### As built, part two — the promotion and its verification
 
@@ -422,15 +422,15 @@ only — is the one that matches the original bug report.
 
 ## S6 — Version bump, docs and deploy — **done**
 
-**Build.** Bump `mod_version` in both `rkc/mods/rkcore/gradle.properties` and
-`rkc/mods/planked-chests/gradle.properties` off `0.1.0`, and update the `rkcore_version` pin in
+**Build.** Bump `mod_version` in both `rkc/mods/kalic0re/gradle.properties` and
+`rkc/mods/planked-chests/gradle.properties` off `0.1.0`, and update the `kalic0re_version` pin in
 `planked-chests`. Two identically named `plankedchests-0.1.0.jar` builds with different content is
 exactly how a client/server mismatch stays invisible, and this fix is worth much less if the jars
 cannot be told apart. `companions` shades only `common/item` and `common/datagen`, not `common/net`,
 so it needs no rebuild; `publishToMavenLocal` adds a version without removing `0.1.0`, so its pin
 keeps resolving either way. Bump it for hygiene or leave it, but decide rather than drift.
 
-Then `publishToMavenLocal` for rkcore, `clean build` for `planked-chests`, install the unclassified
+Then `publishToMavenLocal` for kalic0re, `clean build` for `planked-chests`, install the unclassified
 `shadowJar` output (not `-unshaded`) and deploy per CLAUDE.md's swap-never-stack rule. Finally, edit
 `planked-chests/docs/plan/modded-wood-types.md` — S1's `As built` describes the `isModLoaded` guard
 and the `DATAGEN` escape as the whole story, and needs a sentence pointing here.
@@ -442,17 +442,17 @@ failure, every modded wood falling back to a display entity.
 
 ### As built
 
-Both mods went to `0.2.0` and `planked-chests`' `rkcore_version` pin with them. `companions` was
+Both mods went to `0.2.0` and `planked-chests`' `kalic0re_version` pin with them. `companions` was
 deliberately left pinned at `0.1.0`: it shades only `common/item` and `common/datagen`, neither of
 which changed, and `publishToMavenLocal` adds a version rather than replacing one, so the old pin
 still resolves. That is a decision, not drift — revisit it the next time `companions` is rebuilt for
 its own reasons.
 
 The shipped jar's relocation was checked before deploy, since dev runs never exercise it:
-`club/rainbowkitty/plankedchests/shaded/rkcore/net/PolymerClientHandshake.class` carries
-`supportsAll`, and the jar contains zero unrelocated `club/rainbowkitty/rkcore/` classes.
+`club/rainbowkitty/plankedchests/shaded/kalic0re/net/PolymerClientHandshake.class` carries
+`supportsAll`, and the jar contains zero unrelocated `club/rainbowkitty/kalic0re/` classes.
 
-Deployed both jars to live by swap (`plankedchests-0.1.0.jar` and `rkcore-0.1.0.jar` deleted in the
+Deployed both jars to live by swap (`plankedchests-0.1.0.jar` and `kalic0re-0.1.0.jar` deleted in the
 same step), after `save-all`, with one player connected and the operator's go-ahead. On restart:
 zero `Mixin apply failed`/`InvalidInjectionException`, zero `DecoderException`/registry-sync errors,
 `Planked Chests loaded` once, and `plankedchests:pine_chest` accepted as a known block id — so the
@@ -467,7 +467,7 @@ with `/datapack disable "file/plankedchests:disable_vanilla_recipes"` — see
 
 ## Open decisions
 
-**Whether `rkcore` should offer a compact encoding for large key sets.** One packet id per key is
+**Whether `kalic0re` should offer a compact encoding for large key sets.** One packet id per key is
 readable and reuses a proven path, but it scales against the 32767-byte payload cap (S1). A consumer
 needing hundreds of keys would want an ordered bitmask in a single id's version int, or Polymer's
 metadata channel with the timing caveat from Findings. Settled by the first consumer that exceeds the

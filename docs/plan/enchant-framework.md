@@ -1,6 +1,6 @@
 # Enchantment framework
 
-A `common/enchant` package in `rkcore` that sibling mods use to declare an enchantment — its cost,
+A `common/enchant` package in `kalic0re` that sibling mods use to declare an enchantment — its cost,
 targets and effects — and get back a generated datapack entry, enchanting-table availability, and a
 place to register custom Java code that runs when the effect vocabulary vanilla ships isn't enough.
 Unlike `common/armor`, there is no render backend to choose and no mixin layer: an enchantment is
@@ -13,7 +13,7 @@ a decompile of the exact Fabric API jar this repo depends on
 S1 through S6 are now built and verified in-world on the harness's dev server — see each stage's "As
 built" note for what matched the plan and what didn't.
 
-S1 is the harness, for the same reason armor's S1 was: `rkcore` registers no content of its own, so
+S1 is the harness, for the same reason armor's S1 was: `kalic0re` registers no content of its own, so
 nothing here is observable without a consumer. S2 and S3 are independent of each other and both
 compile against nothing but vanilla: S2 is the enchantment declaration, S3 is the custom-effect-type
 registry. S4 turns declared enchantments into a datapack entry and depends on S2. S5 makes that entry
@@ -27,7 +27,7 @@ sections below) and is the one path nothing else here exercises.
 ## How these stages get tested
 
 In-world, on the S1 harness's dev server. Every stage that changes what can be observed gets a plain
-"what you'll see" before it runs, per house convention. `rkcore` cannot be tested alone — it
+"what you'll see" before it runs, per house convention. `kalic0re` cannot be tested alone — it
 registers no content — so S1 is a prerequisite, not a convenience.
 
 A stage is not finished until its "Done when" is observed. A failure at stage N then implicates N
@@ -157,8 +157,8 @@ This is a public, documented extension point — nothing here is a workaround th
 
 **Build.** A throwaway consumer mod, built the same way armor's S1 harness was: clone the smallest
 existing mod (`rk-tweaks`, per the workspace's own "no scaffold" guidance) rather than reconstruct one
-from scratch, give it the `rkcore`/`shade` consumer arrangement from `companions/build.gradle:38-66`
-with an `rkcoreSharedJar` filter for `common/item/**` and `common/enchant/**`, and `stopServer` so
+from scratch, give it the `kalic0re`/`shade` consumer arrangement from `companions/build.gradle:38-66`
+with an `kalic0reSharedJar` filter for `common/item/**` and `common/enchant/**`, and `stopServer` so
 `scripts/devserver.sh` can drive it. Ports 25605 (game) and 25582 (rcon) are free — they were
 `armor-harness`'s before that harness was folded into a real mod and removed; double check
 `rkc/mods/*/run/server.properties` and the sibling `player-effect-framework` scratch copy before
@@ -173,7 +173,7 @@ will need and nothing else here exercises it.
 `scripts/devserver.sh enchant-harness rcon "list"` answers on the harness's own port.
 
 **As built.** Lives at `_scratch/enchant-framework/enchant-harness`, sibling to this checkout, cloned
-from `companions/build.gradle` rather than `rk-tweaks` (the `rkcore`/`shade` consumer wiring was the
+from `companions/build.gradle` rather than `rk-tweaks` (the `kalic0re`/`shade` consumer wiring was the
 part worth copying verbatim). One deviation from the plan text: the vanilla-vocabulary enchantment
 ended up as a chest-armor `ATTRIBUTES` max-health bump rather than a weapon damage bump, so both
 harness enchantments share `EquipmentSlotGroup.CHEST` — simpler to prove equip/unequip against a
@@ -362,7 +362,7 @@ only via loot/trades) or a villager-trade-obtainable enchantment needs framework
 `EnchantSpec.inEnchantingTable = false` already allows is unverified, since nothing here has tried it.
 
 **Coordination with `player-effect-framework`.** A sibling agent is building a separate framework in
-the same rkcore codebase on another branch. The two are not designed to interact — an enchantment
+the same kalic0re codebase on another branch. The two are not designed to interact — an enchantment
 effect and a status-effect framework are different subsystems — but if that framework also touches
 `BuiltInRegistries` registration timing or `common/` package boundaries, the two branches should be
 diffed against each other before either merges, not assumed compatible.
@@ -460,7 +460,7 @@ held items — the only way to verify any of it, since a dedicated server never 
 
 ## Cleanup pass before merging to main
 
-Reviewed as a whole before landing in `rkcore`'s `main`, with `artifacts` as the first real consumer:
+Reviewed as a whole before landing in `kalic0re`'s `main`, with `artifacts` as the first real consumer:
 
 - **One `init` instead of two.** `HiddenEquipmentRendering` and `HiddenItemRendering` each had their
   own public `init`, their own copy of the depth-only `ColorTargetState`, their own namespace and
@@ -495,13 +495,13 @@ separate method from `addProviders` rather than folded into it. This is `artifac
 shadow-vanilla-fallback.md`'s S1, moved here per its own "Open decisions" — the technique is generic
 to any `HideEquipmentModelEnchantments` entry, not specific to `Shadow`.
 
-**Done when.** `./gradlew build` and `checkstyleTarget` pass clean in `rkcore` for the two new
+**Done when.** `./gradlew build` and `checkstyleTarget` pass clean in `kalic0re` for the two new
 classes, and every codec shape used — `ComponentMatches`, `DataComponentPredicate.Single`,
 `DataComponentPredicates.ENCHANTMENTS`, `EnchantmentsPredicate.enchantments`, `EnchantmentPredicate`,
 `EmptyModel.Unbaked`, `PackOutput.PathProvider#json(ResourceKey<?>)`, `DataProvider.saveAll` — is
 verified field-by-field against `libs/decompiledjava/minecraft-26.2`, not recalled or guessed. Actual
 generated JSON, and the visual effect on a real client, are a later consumer's stage, not this one:
-`rkcore` has no content of its own to generate ([[project_rkcore_framework_scratch]]'s own
+`kalic0re` has no content of its own to generate ([[project_kalic0re_framework_scratch]]'s own
 "cannot be tested alone" finding, unchanged since S1).
 
 ### As built
@@ -514,7 +514,7 @@ requires. `HiddenItemModelProvider` mirrors `common/armor/datagen/ArmorModelProv
 `EnchantDatagen.addHiddenItemModelProvider` from a datagen source set built with Fabric Loom's
 `client = true`, which `artifacts/build.gradle` does not currently set — `companions/build.gradle` is
 the confirmed working example of that Gradle block. Publishing this required the usual
-`./gradlew publishToMavenLocal` in `rkcore` per the workspace's "Sharing code between mods" — done as
+`./gradlew publishToMavenLocal` in `kalic0re` per the workspace's "Sharing code between mods" — done as
 part of this stage. Wiring `artifacts`' `Shadow` to actually consume this (adding `client = true` to
 its `build.gradle`, calling the new method from `ArtifactsDataGenerator`) is left to that mod's own
 plan doc, not done here, since it changes how that mod's datagen boots for every future run, not just

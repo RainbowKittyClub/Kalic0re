@@ -1,8 +1,8 @@
 # Bookshelf hover titles
 
-Design notes for the first rkcore-books feature. The label and raycast machinery is in
-`club.rainbowkitty.rkcore.common.label`; the shelf placement and book styling are in
-`club.rainbowkitty.rkcore.books`.
+Design notes for the first kalic0re-books feature. The label and raycast machinery is in
+`club.rainbowkitty.kalic0re.common.label`; the shelf placement and book styling are in
+`club.rainbowkitty.kalic0re.books`.
 
 ## Behaviour
 
@@ -277,5 +277,5 @@ chunk load — the wrong trade for something invisible almost all the time.
   `polymer-virtual-entity`. It compiles regardless because `polymer-bundled` puts it
   on the classpath, so this would only surface at load time.
 - Decide whether the feature is gated behind a game rule. Every rk-tweaks tweak is,
-  so it can be toggled live without a restart; rkcore-books has no rule registry yet.
+  so it can be toggled live without a restart; kalic0re-books has no rule registry yet.
 - Decide whether book-and-quill falls back to first-page text instead of the item name.

@@ -1,6 +1,6 @@
 # Armor stand hover labels
 
-Design notes for `club.rainbowkitty.rkcore.armorstands`. Behaviour mirrors the bookshelf
+Design notes for `club.rainbowkitty.kalic0re.armorstands`. Behaviour mirrors the bookshelf
 feature: one floating label follows the crosshair, showing whatever is equipped in the
 slot under it. Unlike item frames, there is no custom-name gate — any equipped item gets
 a label, empty slots show nothing, same as an empty bookshelf slot.

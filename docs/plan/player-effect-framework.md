@@ -1,6 +1,6 @@
 # Player-effect framework
 
-A `common/effect` package in `rkcore`, the player-as-subject counterpart to `common/armor`: a
+A `common/effect` package in `kalic0re`, the player-as-subject counterpart to `common/armor`: a
 sibling mod declares a **player effect** — a set of hook points that fire on a `ServerPlayer` while
 some condition holds — and gets the per-tick and per-event plumbing that keeps them firing without
 writing its own dispatcher. Where `common/armor` turns a declaration into registered items and
@@ -16,7 +16,7 @@ taken from memory of 1.21.x/Yarn shapes; two things that would have been wrong f
 called out in "Findings that reshape the work". Unverified: nothing in the source claims below, but
 every stage's "Done when" is still unobserved, since this plan has not been implemented.
 
-S1 is the harness, for the same reason `custom-armor-models.md`'s S1 was one: `rkcore` registers no
+S1 is the harness, for the same reason `custom-armor-models.md`'s S1 was one: `kalic0re` registers no
 content of its own, so nothing here can be watched happen without a throwaway consumer. S2 (the
 declaration types) is what every later stage compiles against. S3 (the per-tick dispatcher) is what
 makes `onActivate`/`onTick`/`onDeactivate` real; S4 (damage/death) is independent of S3 and could be
@@ -85,9 +85,9 @@ Left as an open decision below rather than built now, since nothing here needs i
 
 ## How these stages get tested
 
-There's no consumer mod in this checkout — `rkcore` registers no content — so S1 builds one first, a
+There's no consumer mod in this checkout — `kalic0re` registers no content — so S1 builds one first, a
 throwaway harness in the shape `custom-armor-models.md`'s `armor-harness` used: outside `rkc/mods/`,
-companions'/planked-chests' `rkcore`/`shade` configuration and `rkcoreSharedJar` filter verbatim,
+companions'/planked-chests' `kalic0re`/`shade` configuration and `kalic0reSharedJar` filter verbatim,
 `stopServer` wired so `scripts/devserver.sh` drives its lifecycle. Every later stage is watched on
 that harness's dev server via `scripts/devserver.sh <harness-dir> rcon "..."` and its logs — `/give`
 the effect item, equip or hold it, hit something, take a hit, die, and read what the harness's own
@@ -97,7 +97,7 @@ Two traps to watch for, both learned from the armor framework's own build:
 
 Dev mode never exercises the shade relocation — `runServer` runs a consumer's own unrelocated
 classes off the compile classpath. Nothing about a mixin-free, event-only package makes this less
-true; S6's "no mixin, no mod dependency" proof still needs a real installed jar with `rkcore` absent.
+true; S6's "no mixin, no mod dependency" proof still needs a real installed jar with `kalic0re` absent.
 
 A silent one-tick gap between "the stack changed" and "the scan notices" is expected, not a bug —
 see the second finding above. If a stage's "Done when" seems to lag by a tick, that is this
@@ -109,8 +109,8 @@ not the ones before it.
 ## S1 — Scratch harness — **done**
 
 **Build.** A throwaway consumer mod, outside `rkc/mods/`, carrying `companions`' consumer
-arrangement (`companions/build.gradle:33-66`) verbatim: the `rkcore`/`shade` configurations, the
-`rkcoreSharedJar` filter (listing `common/item/**` and, once it exists, `common/effect/**` — no
+arrangement (`companions/build.gradle:33-66`) verbatim: the `kalic0re`/`shade` configurations, the
+`kalic0reSharedJar` filter (listing `common/item/**` and, once it exists, `common/effect/**` — no
 `common/datagen` is needed unless the harness's own item wants generated art), and `stopServer` so
 `scripts/devserver.sh` can drive it. Declares one item through `common/item/ItemRegistration` — a
 plain `PolymerModelItem` boot or trinket, no datagen required if it borrows a vanilla texture — with
@@ -127,9 +127,9 @@ guessed away:
 
 - The harness lives at `harness/` *inside* this scratch checkout, not outside `rkc/mods/` at the
   workspace root the way `armor-harness` did. The task this plan is being implemented under
-  explicitly forbids touching anything outside `_scratch/player-effect-framework/rkcore`; nesting it
+  explicitly forbids touching anything outside `_scratch/player-effect-framework/kalic0re`; nesting it
   here keeps it a real, separate, standalone Gradle project (own wrapper, own `settings.gradle`, its
-  own `rkcore`/`shade` consumer wiring copied from `companions`) while staying inside that boundary.
+  own `kalic0re`/`shade` consumer wiring copied from `companions`) while staying inside that boundary.
   It has no `.git` of its own — it's tracked as ordinary files in this checkout's history — since a
   nested repo would need its own remote-less setup for no benefit here.
 - The harness's item (`TalariaBoots`) does **not** carry an `ItemAttributeModifiers` component the
@@ -266,28 +266,28 @@ player for the same no-client reason as S3/S4.
 ## S6 — Consumer wiring and docs — **done**
 
 **Build.** Confirm `common/effect` needs no sibling `common/<pkg>` shaded alongside it — unlike
-`common/armor`, it registers no items and writes no assets, so a consumer's `rkcoreSharedJar` filter
-needs only `include 'club/rainbowkitty/rkcore/common/effect/**'` plus whatever it already has for its
+`common/armor`, it registers no items and writes no assets, so a consumer's `kalic0reSharedJar` filter
+needs only `include 'club/rainbowkitty/kalic0re/common/effect/**'` plus whatever it already has for its
 own item (`common/item`, and `common/datagen`/`common/armor` if the grant is a wearable piece).
-Install the harness's shaded jar on a scratch server with `rkcore` absent, since dev mode never
+Install the harness's shaded jar on a scratch server with `kalic0re` absent, since dev mode never
 exercises the relocation (see "How these stages get tested"). This scratch checkout's own
 `docs/plan/custom-armor-models.md`-style documentation trail lives here; the workspace-root
-`CLAUDE.md` row for `rkcore` and its "Sharing code between mods" section are outside this checkout
-and are the real implementation's job to update once this plan lands in the actual `rkcore` checkout,
+`CLAUDE.md` row for `kalic0re` and its "Sharing code between mods" section are outside this checkout
+and are the real implementation's job to update once this plan lands in the actual `kalic0re` checkout,
 not this scratch copy's.
 
-**Done when.** `unzip -l <harness>-<version>.jar | grep shaded/rkcore/common/effect` lists the
-relocated classes, and that jar alone, on a server with no `rkcore` installed, still fires
+**Done when.** `unzip -l <harness>-<version>.jar | grep shaded/kalic0re/common/effect` lists the
+relocated classes, and that jar alone, on a server with no `kalic0re` installed, still fires
 activate/tick/deactivate/damage/death exactly as S3 and S4 observed them.
 
-**As built.** Confirmed exactly as the Build text expects: `common/effect`'s `rkcoreSharedJar` filter
+**As built.** Confirmed exactly as the Build text expects: `common/effect`'s `kalic0reSharedJar` filter
 needs only `common/item/**` and `common/effect/**`, no `common/datagen`/`common/armor` (the harness's
-item isn't a wearable armor piece, just an `Item` with an `Equippable` component). `rkcore` was
+item isn't a wearable armor piece, just an `Item` with an `Equippable` component). `kalic0re` was
 bumped to `0.10.0` (declaration types + dispatcher) and then `0.11.0` was *not* separately needed for
 S5, since the attribute helper was released as part of the same `0.10.0` cut — see the git log for
 the actual chore commits, which supersede the version numbers implied earlier in this doc.
 `cd harness && ./gradlew build` succeeded; `unzip -l build/libs/effectharness-0.1.0.jar` shows
-`club/rainbowkitty/effectharness/shaded/rkcore/{item,effect}/**` and nothing from `common/label`,
+`club/rainbowkitty/effectharness/shaded/kalic0re/{item,effect}/**` and nothing from `common/label`,
 `common/mixin`, `common/armor`, `books`, `frame`, or `armorstands` — the relocation and the filter
 both work. `./gradlew runServer` (backgrounded, no interactive stdin) booted to `Done`, registered
 `talaria_boots`, wired the dispatcher, and started RCON with zero `Mixin apply failed`/exception
@@ -295,7 +295,7 @@ lines in the log, then stopped itself when the dedicated server's console reader
 closed stdin — a headless-run quirk, not a crash (the log's last lines are a normal `Saving
 chunks`/`All dimensions are saved` shutdown, not a stack trace). What the "Done when" text asks for
 beyond that — actually watching activate/tick/deactivate/damage/death fire against a real installed
-jar with `rkcore` absent from a connected client — was not possible in this session and is the same
+jar with `kalic0re` absent from a connected client — was not possible in this session and is the same
 human-in-the-loop step S3/S4 flag. The workspace-root `CLAUDE.md` update this section anticipates is
 explicitly out of scope for this scratch checkout, as already noted in the Build text.
 
@@ -340,7 +340,7 @@ framework, not a unilateral abstraction from this side.
 | `LivingEntity.collectEquipmentChanges`/`stopLocationBasedEffects` apply and remove an item's `ItemAttributeModifiers` on any `EquipmentSlot` change, hands included | Read `LivingEntity.java:2936-2973,3838-3846` in `libs/decompiledjava/minecraft-26.2` |
 | `EquipmentSlotGroup.slots()`/`.test()` give the concrete `EquipmentSlot`s a group covers | Read `EquipmentSlotGroup.java:14-70` |
 | `LivingEntity.onEquipItem` is public and fires from every `setItemSlot`, hands included | Read `LivingEntity.java:689-713,2274-2276` |
-| `common/mixin` is excluded from every consumer's `rkcoreSharedJar` filter today | Read `companions/build.gradle:38-46`, `planked-chests/build.gradle` equivalent, and the workspace `CLAUDE.md`'s "Sharing code between mods" |
+| `common/mixin` is excluded from every consumer's `kalic0reSharedJar` filter today | Read `companions/build.gradle:38-46`, `planked-chests/build.gradle` equivalent, and the workspace `CLAUDE.md`'s "Sharing code between mods" |
 | No equipment-change event exists in Fabric API 0.157.0+26.2 | `unzip -l` on `fabric-api-0.157.0+26.2.jar`'s `META-INF/jars/{fabric-entity-events-v1-5.0.5+06488ac19e,fabric-item-api-v1-14.4.0+49a69a7b9e,fabric-events-interaction-v0-5.2.7+515ac5339e}.jar`, cross-checked with `javap` against each extracted jar |
 | `ServerLivingEntityEvents`'s four callback shapes and exact parameter names | `scripts/decompile.sh net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents <extracted fabric-entity-events-v1 jar>` |
 | `ServerPlayer extends Player extends Avatar extends LivingEntity` | Read `ServerPlayer.java:209`, `Player.java:127`, `Avatar.java:13` |
@@ -351,14 +351,14 @@ framework, not a unilateral abstraction from this side.
 
 ## Cleanup pass before merging to main
 
-The framework was reviewed as a whole before it landed in `rkcore`'s `main`, with `artifacts` as its
+The framework was reviewed as a whole before it landed in `kalic0re`'s `main`, with `artifacts` as its
 first real consumer. What changed from the as-built text above:
 
 - **`PlayerEffectSource.custom(Predicate<ServerPlayer>)` removed.** `PlayerEffectSource` is itself a
   functional interface, so the escape hatch was a rename of the lambda a consumer could already
   write. The `equipped`/`held` factories stay — those do real work, iterating `slot.slots()`.
 - **`PlayerEffectDispatcher.onEndTick` returns early when no effect is registered.** The per-tick
-  scan allocates per online player; a mod depending on `rkcore` for something else entirely should
+  scan allocates per online player; a mod depending on `kalic0re` for something else entirely should
   not pay for a framework it never used.
 - **`common/death` collapsed from two files to one.** `DeathMessageOverride` was a record pairing a
   `BiPredicate` condition with a message `Function`; it is now a single functional interface nested
@@ -366,10 +366,10 @@ first real consumer. What changed from the as-built text above:
   override already cleared a tracking map inside what was declared a predicate — one function makes
   that side effect obvious and runs it exactly once.
 - **The `harness/` scratch consumer was deleted.** It was an independent Gradle project inside this
-  checkout (`rootProject.name = 'effectharness'`), never referenced by `rkcore`'s own build, that
+  checkout (`rootProject.name = 'effectharness'`), never referenced by `kalic0re`'s own build, that
   existed to prove the shade/relocation path and the equip/unequip lifecycle. `artifacts` now
   exercises both as a real consumer, so keeping it would leave a second, never-built Gradle project
-  and a committed wrapper jar in `rkcore` permanently. Recoverable from history at `233899a`.
+  and a committed wrapper jar in `kalic0re` permanently. Recoverable from history at `233899a`.
 
 Unchanged and still true: the in-world verification each stage's "Done when" asks for was done on
 that harness, and nothing in this pass altered the dispatcher's scan semantics or the hook contract.

@@ -1,6 +1,6 @@
 # Shared code candidates from planked-chests
 
-Grows `rkcore`'s `common/` shared surface with six patterns that `planked-chests` currently carries
+Grows `kalic0re`'s `common/` shared surface with six patterns that `planked-chests` currently carries
 alone, after first repairing the branch state that makes `publishToMavenLocal` unsafe today.
 
 Everything below was read out of the working trees this session and is cited by file and line. The
@@ -14,7 +14,7 @@ stage after it is `planned` and unrun.
 
 S1 is the blocker and has nothing to do with the extractions — it repairs a split-branch state in
 which one innocent Gradle command breaks a sibling mod's compile. Do it first; no other stage's
-"Done when" is trustworthy until `rkcore`'s published jar is reproducible from a branch.
+"Done when" is trustworthy until `kalic0re`'s published jar is reproducible from a branch.
 
 S2 runs before S3 and S6, because S2 decides whether `planked-chests`' datagen keeps hand-writing
 JSON at all, and that answer determines how much of `ElementModels` (S3) and the blockstate emitter
@@ -25,14 +25,14 @@ are the substance; S5–S7 are small and can be dropped without losing the point
 
 **The cargo-minecart framework was already extracted, and `planked-chests` already depends on it,
 but it lives on an unmerged branch — so the only thing making `planked-chests` compile is an
-untracked `~/.m2` jar.** `rkcore`'s `cargo-minecarts` branch head `fbb0af1` adds seven classes under
+untracked `~/.m2` jar.** `kalic0re`'s `cargo-minecarts` branch head `fbb0af1` adds seven classes under
 `common/vehicle` (1027 lines). `planked-chests@main` imports four of them —
 `cart/ChestCarts.java:34`, `cart/PlankedChestMinecart.java:30-31`, `cart/ChestMinecartItem.java:19`,
 `cart/ChestCartDisplay.java:10`, `cart/ShulkerCartDisplay.java:16` — and `build.gradle:56` lists
-`include 'club/rainbowkitty/rkcore/common/vehicle/**'`. Neither `main` nor the checked-out
+`include 'club/rainbowkitty/kalic0re/common/vehicle/**'`. Neither `main` nor the checked-out
 `custom-armor-models` contains that package; the checkout's `common/vehicle/` is an empty directory
 left behind by a branch switch. All three `~/.m2` jars (0.2.0, 0.3.0, 0.4.0) do contain the seven
-classes, so they were published from a tree that had them. `rkcore/gradle.properties:18` declares
+classes, so they were published from a tree that had them. `kalic0re/gradle.properties:18` declares
 `mod_version = 0.4.0`, which means `./gradlew publishToMavenLocal` from the current checkout
 overwrites the 0.4.0 jar `companions/gradle.properties:56` depends on, silently stripping
 `common/vehicle` and breaking `planked-chests`' compile. This is S1.
@@ -54,7 +54,7 @@ origin/main` is empty, and author dates match to the second; only the committer 
 This removes what looks like the riskiest part of S1.
 
 **Half of what looks extractable from `planked-chests`' datagen is not a missing abstraction but a
-vanilla API that `rkcore` already uses.** `ArmorModelProvider` builds item definitions and generated
+vanilla API that `kalic0re` already uses.** `ArmorModelProvider` builds item definitions and generated
 models through `ClientItem`/`ClientItem.CODEC` (`:68-69,76`), `ItemModelUtils.plainModel` (`:100`),
 `ModelTemplates.FLAT_ITEM` + `TextureMapping.layer0` (`:105`), and saves with
 `DataProvider.saveAll` (`:74-76`); `ArmorEquipmentProvider:62` does the same with
@@ -71,7 +71,7 @@ whether those *load* without a booted client before it can proceed.
 
 S1 is tested with git alone — branch topology, `git diff` against the reconstituted tree, and a
 `unzip -l` of the republished jar showing all shared packages present — plus a clean
-`./gradlew build` in each of `rkcore`, `planked-chests` and `companions`.
+`./gradlew build` in each of `kalic0re`, `planked-chests` and `companions`.
 
 S2–S7 are all datagen or asset changes, so the governing test is **byte-comparison of generated
 output before and after**: capture `src/main/generated` (and `companions`' equivalent), apply the
@@ -82,7 +82,7 @@ rkc/mods/planked-chests restart` — a placed chest still animating its lid, a c
 cargo, zero mixin errors.
 
 Because every consumer builds against a `mavenLocal` jar, each stage that changes a shared package
-ends with `cd rkc/mods/rkcore && ./gradlew publishToMavenLocal` and a rebuild of **both** consumers,
+ends with `cd rkc/mods/kalic0re && ./gradlew publishToMavenLocal` and a rebuild of **both** consumers,
 not just the one that motivated the change.
 
 Two mechanics of that comparison, found in S3. `clean` does not clear the hash cache beside the
@@ -107,14 +107,14 @@ however many there are. Use `command diff`, `diff -q` or `cmp` — see `docs/TES
 A stage is not finished until its "Done when" is observed. A failure at stage N implicates stage N
 and not the ones before it.
 
-## S1 — Reunite the split rkcore branches — **done**
+## S1 — Reunite the split kalic0re branches — **done**
 
 **Build.** Discard `main`'s content-free divergence (`git reset --hard origin/main`, safe per the
 patch-id finding). Then bring `custom-armor-models` and `cargo-minecarts` back together into one
 line of development so that a single branch carries both `common/armor` and `common/vehicle`, as
 `backup/pre-untangle` does. Keep `backup/pre-untangle` untouched as the reference tree until the
 merged result is confirmed to match it. Republish to `mavenLocal`, and lift
-`planked-chests/gradle.properties:21` off its stale `rkcore_version=0.2.0` pin onto whatever the
+`planked-chests/gradle.properties:21` off its stale `kalic0re_version=0.2.0` pin onto whatever the
 merged branch declares.
 
 **Done when.** One branch's `git ls-tree -r --name-only` lists both
@@ -158,18 +158,18 @@ nine `common/` packages and `mod_version = 0.4.0`. `git diff backup/pre-untangle
 three files — this plan doc (new), the handshake Javadoc caveat (new), and the post-split head-model
 doc correction — so every line of shared *source* is identical to the tree that published the 0.4.0
 jar. The republished jar carries 7 `common/vehicle` classes and all nine packages.
-`planked-chests/gradle.properties:21` moved from `rkcore_version=0.2.0` to `0.4.0`, and
-`./gradlew build` exits 0 in `rkcore`, `planked-chests` and `companions`.
+`planked-chests/gradle.properties:21` moved from `kalic0re_version=0.2.0` to `0.4.0`, and
+`./gradlew build` exits 0 in `kalic0re`, `planked-chests` and `companions`.
 
-**The reunited branch cannot be pushed: `rkcore`'s remote no longer exists.** `git push origin
+**The reunited branch cannot be pushed: `kalic0re`'s remote no longer exists.** `git push origin
 main` fails with "Repository not found" while `planked-chests` pushes fine over an identical
 `ssh://git@github.com/RainbowKittyClub/...` URL, so it is the repository and not the credentials.
-`gh api repos/RainbowKittyClub/rkcore` returns a bare 404 with no rename redirect, and a GitHub
+`gh api repos/RainbowKittyClub/kalic0re` returns a bare 404 with no rename redirect, and a GitHub
 rename always leaves one — so the repo was deleted rather than renamed.
 `RainbowKittyClub/Kalic0re`, described as the "java library used by all RKC/Kalic0 mods", was
 created empty at 2026-09-12T03:39:19Z and pushed once a second later; fetching it read-only shows
 a single unrelated "Initial commit" sharing no history with this checkout. It is the confirmed
-successor — a rename plus a slight re-scope — and holds none of this work yet; leaving `rkcore`
+successor — a rename plus a slight re-scope — and holds none of this work yet; leaving `kalic0re`
 local-only is a deliberate choice, not an unresolved one. See Open decisions for what the re-scope
 still leaves open.
 
@@ -244,7 +244,7 @@ rather than inferring the package.
 
 ## S3 — Extract the entity-model box transcription — **done**
 
-**Build.** Move `ElementModels`' geometry half into `rkcore` as `common/datagen/EntityModelBoxes`:
+**Build.** Move `ElementModels`' geometry half into `kalic0re` as `common/datagen/EntityModelBoxes`:
 the two `box` overloads (`:39`, `:59`), `invertedTwin:122`, `model:142` and `UV_SCALE:25`. Leave
 behind whatever S2 deleted. `common/datagen/**` is already shaded by both consumers
 (`planked-chests/build.gradle:53`, `companions/build.gradle:52`), so no build wiring changes.
@@ -279,11 +279,11 @@ sites.
 **Output is byte-identical across 1532 files.** That is the same tree S2 counted as 1543; the
 difference is the 11 `.cache` hash files, one per provider, which this stage's manifest excludes.
 `src/main/generated` was deleted outright before regenerating (`written: 1532`) so the comparison
-did not rest on the cache. `./gradlew build` exits 0 in `rkcore`, `planked-chests` and `companions`,
-and `checkstyleTarget` is clean on `rkcore/src/main/java` and `planked-chests/src/datagen/java`.
+did not rest on the cache. `./gradlew build` exits 0 in `kalic0re`, `planked-chests` and `companions`,
+and `checkstyleTarget` is clean on `kalic0re/src/main/java` and `planked-chests/src/datagen/java`.
 
 **Relocation verified in the shipped jar**, not only on the compile classpath:
-`club/rainbowkitty/plankedchests/shaded/rkcore/datagen/EntityModelBoxes.class`, 6497 bytes against
+`club/rainbowkitty/plankedchests/shaded/kalic0re/datagen/EntityModelBoxes.class`, 6497 bytes against
 6469 unrelocated, the delta being the rewritten class name in the constant pool. It ships unused,
 like `PngAssets`, because the datagen source set is not in the jar.
 
@@ -293,7 +293,7 @@ so no render path could have moved. Observed anyway on the dev server (port 2560
 errors): a single chest's interior walls for `invertedTwin`, the double-chest seam for the `hidden`
 face, and a cart-borne shulker box for the `flippedY` branch.
 
-**Released as rkcore 0.5.0, with both consumer pins moved.** 0.4.0 was republished in place first,
+**Released as kalic0re 0.5.0, with both consumer pins moved.** 0.4.0 was republished in place first,
 per CLAUDE.md's dev loop, which left that coordinate holding different bytes than the jar
 `companions` had built against; 0.5.0 restores a pin that names a reproducible artifact. Nothing in
 `companions` uses the new class, but its shaded jar gains it, since its filter takes
@@ -308,7 +308,7 @@ to move `variantModel` anyway, so that is the place to settle the name.
 
 ## S4 — Extract the display-element pose constants — **done**
 
-**Build.** Add `rkcore` `common/display` carrying the three things any `ItemDisplayElement` user
+**Build.** Add `kalic0re` `common/display` carrying the three things any `ItemDisplayElement` user
 re-derives: the 180° Y turn `ItemDisplayRenderer#submitInner` bakes into every `Display$ItemDisplay`
 (`ChestVisual.RENDERER_YAW_OFFSET:43`), the `orientation(float yaw)` helper that accounts for it
 (`:95-96`), and the vanilla lid tween — `Mth.approach` ±0.1/tick then an ease-out cubic, reproducing
@@ -316,7 +316,7 @@ re-derives: the 180° Y turn `ItemDisplayRenderer#submitInner` bakes into every 
 `ChestVisual` itself in `planked-chests`: its `HINGE:52` offset and two-part base/lid split are
 chest geometry, not a general pattern.
 
-`planked-chests/build.gradle` needs a new `include 'club/rainbowkitty/rkcore/common/display/**'`
+`planked-chests/build.gradle` needs a new `include 'club/rainbowkitty/kalic0re/common/display/**'`
 line alongside the existing five (`:52-56`).
 
 **Done when.** `ChestVisual` compiles against the shaded constants with its own copies deleted, and
@@ -328,7 +328,7 @@ unmistakable in-world and invisible to any build check.
 `BlockDisplayElement` and hits a *sibling* quirk rather than the same one — its `MODEL_AXIS:40`
 cancels a corner offset, where `ChestVisual` cancels a baked rotation. Do **not** try to unify the
 two into one abstraction in this stage; put both facts in one package so the next person finds them
-together, and leave `LinkChain` alone. `minecart-tweaks` does not shade `rkcore` at all today, and
+together, and leave `LinkChain` alone. `minecart-tweaks` does not shade `kalic0re` at all today, and
 making it a consumer is out of scope here.
 
 ### As built
@@ -360,8 +360,8 @@ at both use sites. Its uneased behaviour is unchanged; only the state and the st
 `common/datagen`, which ships unused, `common/display` is on the live pose path — and `runServer`
 runs the *un-relocated* classes off the compile classpath, so the dev server cannot test the move at
 all. The shipped jar carries
-`club/rainbowkitty/plankedchests/shaded/rkcore/display/ItemDisplayPose.class` (656 bytes) and
-`LidTween.class` (874), the `-unshaded` jar carries no `rkcore` entry at all, and `javap` shows
+`club/rainbowkitty/plankedchests/shaded/kalic0re/display/ItemDisplayPose.class` (656 bytes) and
+`LidTween.class` (874), the `-unshaded` jar carries no `kalic0re` entry at all, and `javap` shows
 `ChestElementHolder` referencing the shaded `ItemDisplayPose` and both `ChestVisual` and
 `ShulkerCartDisplay` the shaded `LidTween`.
 
@@ -372,13 +372,13 @@ stage. It was run on that footing and the facing was correct: no chest or double
 backwards, a chest lid still eased off its closed position, and a cart-borne shulker box still rose
 and turned at a constant rate.
 
-**Released as rkcore 0.6.0 rather than republishing 0.5.0 in place**, continuing what S3 started, so
+**Released as kalic0re 0.6.0 rather than republishing 0.5.0 in place**, continuing what S3 started, so
 each pin keeps naming one set of bytes. `companions` pins 0.6.0 but, unlike S3, gains nothing at
 all: its filter lists `common/item`, `common/datagen` and `common/armor`, so `common/display` never
 enters its jar.
 
 **`minecart-tweaks`' `LinkChain` was left alone**, as the Build text instructed. Its `MODEL_AXIS`
-cancels a corner offset rather than a baked rotation, and that mod shades no `rkcore` today.
+cancels a corner offset rather than a baked rotation, and that mod shades no `kalic0re` today.
 
 **A lint mechanic was added to "How these stages get tested"** — an import used only from a comment
 fails `UnusedImports`. It surfaced here because `ChestVisual` still explains `HINGE`'s sign by
@@ -386,7 +386,7 @@ naming `ItemDisplayPose`; the comments now name it unqualified.
 
 ## S5 — Move image compositing into PngAssets — **done**
 
-**Build.** Add to `rkcore`'s existing `common/datagen/PngAssets`, beside `read` and `save`:
+**Build.** Add to `kalic0re`'s existing `common/datagen/PngAssets`, beside `read` and `save`:
 `composite(base, overlay)` and its per-pixel `over` from `CartIcons:58,99`, and `sized(image, name)`
 from `CartIcons:78`. Carry the magenta `CUTOUT` chroma-key convention as documented behaviour rather
 than a bare constant — it exists because full transparency already means "show the cargo
@@ -404,7 +404,7 @@ because a third caller is waiting.
 
 **`composite` could not move as written, because `SIZE` was inside it.** `CartIcons.SIZE = 16` was
 both the loop bound and the allocated size, so a shared copy would have carried planked-chests' icon
-edge into `rkcore`. `PngAssets.composite` takes its dimensions from the base image instead and
+edge into `kalic0re`. `PngAssets.composite` takes its dimensions from the base image instead and
 rejects an overlay that does not match, which is what let the same method serve a 16×16 cart icon
 and a 64×64 chest sheet. `sized` gained an `edge` parameter for the same reason; `CartIcons` keeps
 `SIZE` and a two-line `sized(image, name)` that binds it, so the three provider call sites are
@@ -417,7 +417,7 @@ end holds that tone — stayed in `CartIcons`, where it is art guidance for whoe
 
 **Output is byte-identical across all 1532 files**, with `src/main/generated` deleted first.
 `CartIcons` went from 136 lines to 73. `./gradlew build` passes in all three mods,
-`checkstyleTarget` is clean on `rkcore/src/main/java` and both of `planked-chests`' source sets, and
+`checkstyleTarget` is clean on `kalic0re/src/main/java` and both of `planked-chests`' source sets, and
 the relocated `PngAssets` in the shipped jar carries `composite`, `sized`, `over` and `CUTOUT` (6740
 bytes against 6497 for `EntityModelBoxes` beside it). It ships unused, as it has since S1.
 
@@ -442,7 +442,7 @@ really had moved to `PngAssets.composite`.
 files, and nothing in `common/datagen` resolves at runtime, so this stage has no dev-server surface
 — the same argument S3 made. The S4 jar is still what the dev server is running.
 
-**Released as rkcore 0.7.0** with both pins moved. `companions` gains the new `PngAssets` members in
+**Released as kalic0re 0.7.0** with both pins moved. `companions` gains the new `PngAssets` members in
 its shaded copy and uses none of them: its `SweaterTextureProvider` tints through `Graphics2D` and
 composites nothing.
 
@@ -501,7 +501,7 @@ material.
 **Output is byte-identical across all 1532 files**, with `src/main/generated` deleted first. The
 Build text's "27 blockstates and models" is 27 particle-only models and 54 blockstates — plain and
 trapped share one model, which is why the provider writes two blockstates per wood. All three mods
-build, `checkstyleTarget` is clean on `rkcore/src/main/java` and `planked-chests/src/datagen/java`,
+build, `checkstyleTarget` is clean on `kalic0re/src/main/java` and `planked-chests/src/datagen/java`,
 and the relocated `PackJson` is 1698 bytes in the shipped jar.
 
 **The companion fact went into a `CLAUDE.md` section that did not exist.** The Build text said to
@@ -518,7 +518,7 @@ resolves at runtime, so the check is confirmatory rather than load-bearing. The 
 handshake-capable client is also not something this round had available — it needs a client running
 the same jar — and the byte argument covers what it would have shown.
 
-**Released as rkcore 0.8.0** with both pins moved. `companions` writes no raw pack JSON and gains
+**Released as kalic0re 0.8.0** with both pins moved. `companions` writes no raw pack JSON and gains
 `PackJson` unused, as it did `EntityModelBoxes` in S3.
 
 **Noted, not fixed: `docs/plan/chest-minecarts.md:1179` still cites `ElementModels#invertedTwin`.**
@@ -580,7 +580,7 @@ jar.
 runtime. The Done-when's cart-borne shulker box was last seen drawing correctly during S4's round,
 which is the last change that could have affected it.
 
-**Released as rkcore 0.9.0** with both pins moved. That is the fifth consecutive release in this
+**Released as kalic0re 0.9.0** with both pins moved. That is the fifth consecutive release in this
 run: 0.5.0 through 0.9.0, one per stage, each naming one set of bytes.
 
 ## S8 — Hoist the cart-frame pose into CargoDisplayHolder — **done**
@@ -597,7 +597,7 @@ ramp, S5's third compositor, S6's `generatedModel`, and these two stages.
 `posedYaw`/`posedPitch` pair that answers it (`ChestCartDisplay:52-53`, `ShulkerCartDisplay:71-72`).
 The holder's existing `shownYaw`/`shownPitch` cannot answer it: `markPoseDirty` sets those to NaN,
 so a dirty re-pose is indistinguishable from a real turn without a second pair. Only two subclasses
-exist, both in `planked-chests` — rkcore's other `common/vehicle` classes name the type without
+exist, both in `planked-chests` — kalic0re's other `common/vehicle` classes name the type without
 extending it (`CartCargo:40`, `CargoMinecartChest:148`, `CartCargoSupport:73`) — so the signature
 change reaches nothing else.
 
@@ -652,7 +652,7 @@ holder can be attached, so no client ever holds an element without them. The pla
 not a `CargoDisplayHolder` either, so S8 never reached that path. That document's wording was
 widened to cover placing a chest itself rather than only placing a block against one.
 
-**Released as rkcore 0.10.0.** Not in scope and still not extracted, as the Build text said:
+**Released as kalic0re 0.10.0.** Not in scope and still not extracted, as the Build text said:
 `topAboveCentre` and the cross-class constant read behind `ShulkerCartDisplay.CARGO_CENTRE_Y`.
 
 ## S9 — Hoist the display-element factory and the datagen sniff — **done**
@@ -699,16 +699,16 @@ since.
 
 **Verified**: generated output byte-identical across 1532 files, all three mods build,
 `checkstyleTarget` clean on every touched tree, and `ItemDisplays` (1667 bytes) and `DatagenRun`
-(602) both relocated in the shipped jar. Released as rkcore 0.11.0. The in-world round above covered
+(602) both relocated in the shipped jar. Released as kalic0re 0.11.0. The in-world round above covered
 this stage too, since it changed how every chest and shulker element is built.
 
 ## Open decisions
 
 **What the `Kalic0re` re-scope covers, and whether it lands before or after S2–S7.**
-`RainbowKittyClub/rkcore` was deleted deliberately and `Kalic0re` is its intended successor — a
+`RainbowKittyClub/kalic0re` was deleted deliberately and `Kalic0re` is its intended successor — a
 rename plus a slight re-scope — with this checkout left local-only for now, on purpose. So the
 remote question is closed; what is open is the scope, and it has a sequencing consequence. If the
-re-scope moves the mod id, the Maven coordinate and the `club.rainbowkitty.rkcore` package, then
+re-scope moves the mod id, the Maven coordinate and the `club.rainbowkitty.kalic0re` package, then
 every stage below either lands in the old namespace and gets rewritten, or waits. Extracting first
 is the cheaper order despite appearances: the moves are mechanical and both consumers already funnel
 the namespace through one `relocate` line each (`planked-chests/build.gradle`,
@@ -733,7 +733,7 @@ a client instance the question never comes up; if they do not, the trade is a cl
 pass against deleting four hand-rolled JSON emitters, and the honest answer may be to keep the raw
 JSON and record why.
 
-**Whether `rk-tweaks` ever becomes an rkcore consumer.** Its `BuiltinDataPacks` is a verbatim twin
+**Whether `rk-tweaks` ever becomes an kalic0re consumer.** Its `BuiltinDataPacks` is a verbatim twin
 of `planked-chests`' — same `ResourceLoader.registerBuiltinPack` shape, same `getModContainer`
 guard — and extracting it would save roughly ten lines. `rk-tweaks` shades nothing today, so the
 cost is the entire Shadow wiring for one small helper. Left undecided rather than rejected: if
@@ -757,7 +757,7 @@ cost is the entire Shadow wiring for one small helper. Left undecided rather tha
 | --- | --- |
 | `DataProvider.saveAll` in three overloads, `saveStable` in three | `javap -cp minecraft-merged-deobf-26.2.jar net.minecraft.data.DataProvider` |
 | `MultiVariantGenerator`, `BlockModelDefinitionGenerator`, `ClientItem`, `ClientItem$Properties`, `ItemModelUtils` present | `unzip -l` on the same jar — **existence only, no signatures** |
-| All three `~/.m2` rkcore jars carry seven `common/vehicle` classes | `unzip -l ~/.m2/repository/club/rainbowkitty/rkcore/rkcore/<v>/rkcore-<v>.jar` |
+| All three `~/.m2` kalic0re jars carry seven `common/vehicle` classes | `unzip -l ~/.m2/repository/club/rainbowkitty/kalic0re/kalic0re/<v>/kalic0re-<v>.jar` |
 | `main` ≡ `origin/main` in content | six matching `git patch-id --stable` values, empty `git diff main origin/main`, committer timestamps the only delta |
 | `main` is an ancestor of `custom-armor-models`; `cargo-minecarts` forks from `main@0127d9b` | `git merge-base` against each branch |
 | `backup/pre-untangle` carries both armor and vehicle and mirrors `custom-armor-models` patch-for-patch | `git ls-tree -r --name-only`, `git log --graph --all` |
