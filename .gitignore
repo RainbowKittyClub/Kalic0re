@@ -42,3 +42,6 @@ logs/
 **/.claude/*
 !/.claude/settings.json
 .mcp.json
+
+# access tokens
+*.pat
