@@ -25,8 +25,11 @@ dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	implementation "eu.pb4:polymer-bundled:${project.polymer_version}"
+	// compileOnly, not implementation: this jar is never installed as a mod and never runs. Its
+	// common/ packages are moved into consumers, which declare fabric-api and Polymer themselves,
+	// so listing them here would only put a false runtime claim in the published metadata.
+	compileOnly "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	compileOnly "eu.pb4:polymer-bundled:${project.polymer_version}"
 }
 
 processResources {
