@@ -1,28 +1,56 @@
 # kalic0re
 
-Server-side Fabric mod library for Rainbow Kitty Club server. Targets MC 26.2. Fabric API + Polymer (core + resource pack) + BIL wired in.
+Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API + Polymer.
 
-## Layout
+**Never installed, never run.** There is no entrypoint and no mixin config. A consumer relocates the
+packages it wants into its own jar under `<its maven_group>.shaded.kalic0re`, so each mod still
+installs standalone and two consumers side by side never define the same class name. Fabric API and
+Polymer are `compileOnly` here (`library_only=true`), so a consumer inherits no runtime claim this
+jar cannot honour. See "Sharing code between mods" in the workspace `CLAUDE.md` for the arrangement.
 
-Each feature owns a top-level package, share raycast/label machinery in `common`:
+## Consuming it
 
-- `club.rainbowkitty.kalic0re.Main` — `ModInitializer` entrypoint.
-- `club.rainbowkitty.kalic0re.books` — chiseled-bookshelf hover titles.
-- `club.rainbowkitty.kalic0re.frame` — item-frame hover labels.
-- `club.rainbowkitty.kalic0re.armorstands` — armor-stand equipment hover labels.
-- `club.rainbowkitty.kalic0re.common.label` — shared per-player raycast + label machinery, all three feature build on this.
-- `club.rainbowkitty.kalic0re.common.item` — item registration + Polymer-model item/block-item helper, shared by sibling mod that shade it.
-- `club.rainbowkitty.kalic0re.common.armor` — custom-armor framework: one declaration per set
-  become registered items, their Polymer wiring, their generated assets. Not used by this mod own
-  features; exist for sibling mods that shade it (see `docs/plan/custom-armor-models.md`).
-- `club.rainbowkitty.kalic0re.common.effect` — player-effect framework, `common.armor` player-as-subject counterpart: declared effect get per-tick/per-event plumbing to keep firing without consumer write own dispatcher (see `docs/plan/player-effect-framework.md`).
-- `club.rainbowkitty.kalic0re.common.enchant` — enchantment framework: declare enchantment cost, targets, effects, get generated datapack entry plus place to register custom effect code (see `docs/plan/enchant-framework.md`). `common.enchant.client` and `common.enchant.datagen` hold render half and asset-generation half.
-- `club.rainbowkitty.kalic0re.common.vehicle` — cargo-minecart framework, shared by sibling mods that shade it.
-- `club.rainbowkitty.kalic0re.common.display` — shared item-display pose + lid-tween helper (`ItemDisplayPose`, `LidTween`, `ItemDisplays`) for chest- and cart-display elements.
-- `club.rainbowkitty.kalic0re.common.net` — `PolymerClientHandshake`, shared by sibling mods that shade it.
-- `club.rainbowkitty.kalic0re.common.client` — `@Environment(CLIENT)` renderer code (`PolymerChestRenderer` and friends), load only by consumer own client entrypoint.
-- `club.rainbowkitty.kalic0re.common.datagen` — shared datagen classes (`PngAssets`, `EntityModelBoxes`, `PackJson`, `AtlasSources`, `DatagenRun`); spit raw JSON since vanilla typed model builder no can load under `client = false` datagen.
-- `club.rainbowkitty.kalic0re.common.death` — shared registry for themed death-message override; the `@Mixin` that redirect into it live in each consumer mod.
-- `club.rainbowkitty.kalic0re.common.rule` — `ComponentGameRules`, register game rules scoped to one feature namespace instead of one flat `kalic0re:` prefix.
-- `club.rainbowkitty.kalic0re.common.mixin` — mixin package, registered via `src/main/resources/kalic0re.mixins.json`.
-- `docs/` — design notes, one file per feature.
+Two keys in the consumer's `gradle.properties` — the shared `build.gradle` does the rest:
+
+```properties
+kalic0re_version=0.13.0
+kalic0re_shared_packages=item,datagen,net,client,vehicle,display,label
+```
+
+Only the `common/` subpackages named there come across, so importing any other one fails to compile
+rather than silently bundling it. Run `./gradlew publishToMavenLocal` here after changing any of
+them, or consumers build against the stale copy.
+
+**Mixins are never shared.** A relocated mixin package name can be right in the shipped jar or right
+in dev, never both. So a framework keeps its registry here (`death`, `enchant`, `label`) and the thin
+`@Mixin` class lives in the consumer, with that consumer's own `$`-prefix.
+
+## Packages
+
+- `common.armor` — custom-armor framework, one declaration per set; needs `item` and `datagen`
+  alongside it (`docs/plan/custom-armor-models.md`).
+- `common.client` — `@Environment(CLIENT)` renderer code (`PolymerChestRenderer`,
+  `PolymerChestRenderState`, `ChestSpriteSelector`), loaded only by a consumer's own client
+  entrypoint and shipped unused on a dedicated server.
+- `common.datagen` — `PngAssets`, `EntityModelBoxes`, `PackJson`, `AtlasSources`, `DatagenRun`. Spit
+  raw JSON, since vanilla's typed model builders cannot load under `client = false` datagen.
+- `common.death` — registry for themed death-message overrides.
+- `common.display` — `ItemDisplayPose`, `LidTween`, `ItemDisplays`, for chest- and cart-display
+  elements.
+- `common.effect` — player-effect framework, the player-as-subject counterpart to `armor`: a declared
+  effect gets per-tick and per-event plumbing without the consumer writing its own dispatcher
+  (`docs/plan/player-effect-framework.md`).
+- `common.enchant` — enchantment framework: declare cost, targets and effects, get the generated
+  datapack entry plus somewhere to register custom effect code. `common.enchant.client` and
+  `common.enchant.datagen` hold the render and asset-generation halves
+  (`docs/plan/enchant-framework.md`).
+- `common.item` — `ItemRegistration`, `PolymerModelItem`, `PolymerModelBlockItem`.
+- `common.label` — per-player raycast and hover-label machinery (`HoverScanner`, `HoverLabel`,
+  `BlockLabels`, `EntityLabels`, `ItemText` and friends). A runtime package: it ticks per player, and
+  `runServer` runs the un-relocated classes, so only an installed jar tests the relocation.
+- `common.net` — `PolymerClientHandshake`, the per-connection "does this client run the mod too" flag.
+- `common.rule` — `ComponentGameRules`, registering rules as `<modId>.<component>:<path>` instead of
+  one flat per-mod prefix.
+- `common.vehicle` — cargo-minecart framework (`CargoMinecarts`, `CartCargo` and friends).
+
+`docs/plan/` holds the design notes.
