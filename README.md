@@ -12,8 +12,8 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 - `common.datagen` — `PngAssets`, `EntityModelBoxes`, `PackJson`, `AtlasSources`, `DatagenRun`. Spit
   raw JSON, since vanilla's typed model builders cannot load under `client = false` datagen.
 - `common.death` — registry for themed death-message overrides.
-- `common.display` — `ItemDisplayPose`, `LidTween`, `ItemDisplays`, for chest- and cart-display
-  elements.
+- `common.display` — `ItemDisplayPose`, `LidTween`, `ItemDisplays`, `RenderTrail`, for chest- and
+  cart-display elements.
 - `common.effect` — player-effect framework, the player-as-subject counterpart to `armor`: a declared
   effect gets per-tick and per-event plumbing without the consumer writing its own dispatcher.
 - `common.enchant` — enchantment framework: declare cost, targets and effects, get the generated
@@ -26,4 +26,5 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 - `common.net` — `PolymerClientHandshake`, the per-connection "does this client run the mod too" flag.
 - `common.rule` — `ComponentGameRules`, registering rules as `<modId>.<component>:<path>` instead of
   one flat per-mod prefix.
-- `common.vehicle` — cargo-minecart framework (`CargoMinecarts`, `CartCargo` and friends).
+- `common.vehicle` — cargo-minecart framework (`CargoMinecarts`, `CartCargo` and friends); needs
+  `display` alongside it.
