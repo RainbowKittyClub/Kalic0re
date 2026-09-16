@@ -1,16 +1,15 @@
 package club.rainbowkitty.kalic0re.common.vehicle;
 
-import java.util.Arrays;
-
 import com.mojang.math.Axis;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.GenericEntityElement;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.phys.Vec3;
+
+import club.rainbowkitty.kalic0re.common.display.RenderTrail;
 
 /**
  * The Polymer stand-in for a cargo the client cannot render: elements that ride the cart as
@@ -82,18 +81,14 @@ public abstract class CargoDisplayHolder extends ElementHolder {
      */
     protected static final double DEFAULT_RENDER_LAG = 2.8;
 
-    // The furthest back renderLag() may ask to look, and so how many samples the trail keeps —
-    // enough for both of the ticks that figure falls between.
+    // The furthest back renderLag() may ask to look, and so how far the trail keeps samples.
     private static final int MAX_RENDER_LAG = 8;
-    private static final int SAMPLES = MAX_RENDER_LAG + 2;
 
     private final AbstractMinecart cart;
 
-    // One sample of the cart's rotation per tick, oldest overwritten first, so the pose can be
-    // taken from where the cart is being drawn rather than from where it is.
-    private final float[] yaws = new float[SAMPLES];
-    private final float[] pitches = new float[SAMPLES];
-    private int next;
+    // The cart's recent placement, so the pose can be taken from where the cart is being drawn
+    // rather than from where it is.
+    private final RenderTrail trail;
 
     // NaN so the first tick always counts as a change and pushes the real pose, whatever the cart's
     // initial rotation happens to be.
@@ -115,10 +110,7 @@ public abstract class CargoDisplayHolder extends ElementHolder {
      */
     protected CargoDisplayHolder(AbstractMinecart cart) {
         this.cart = cart;
-        // Fill the trail so a cart that has not moved yet reads as standing still rather than as
-        // having just swung round from zero.
-        Arrays.fill(yaws, cart.getYRot());
-        Arrays.fill(pitches, cart.getXRot());
+        this.trail = new RenderTrail(cart, MAX_RENDER_LAG);
     }
 
     /** The cart this cargo rides. */
@@ -221,9 +213,7 @@ public abstract class CargoDisplayHolder extends ElementHolder {
 
     @Override
     protected void onTick() {
-        yaws[next] = cart.getYRot();
-        pitches[next] = cart.getXRot();
-        next = (next + 1) % SAMPLES;
+        trail.push(cart);
         pose();
     }
 
@@ -232,8 +222,8 @@ public abstract class CargoDisplayHolder extends ElementHolder {
      * drawing. Override only for a cart whose motion reaches the client differently from a rail
      * minecart's, or to make the figure tunable while it is being found.
      *
-     * @return ticks, clamped into the trail this holder keeps; fractional values mix the two
-     *     samples either side
+     * @return ticks, clamped into the {@link #MAX_RENDER_LAG} the trail keeps; fractional values
+     *     mix the two samples either side
      */
     protected double renderLag() {
         return DEFAULT_RENDER_LAG;
@@ -242,12 +232,10 @@ public abstract class CargoDisplayHolder extends ElementHolder {
     // Applies the cart's rotation as the client is currently drawing it, if that has moved since
     // the last time it was sent.
     private void pose() {
-        double lag = Mth.clamp(renderLag(), 0.0, MAX_RENDER_LAG);
-        int whole = (int) lag;
-        float fraction = (float) (lag - whole);
+        double lag = renderLag();
+        float yaw = trail.yaw(lag);
+        float pitch = trail.pitch(lag);
 
-        float yaw = Mth.rotLerp(fraction, yaws[index(whole)], yaws[index(whole + 1)]);
-        float pitch = Mth.rotLerp(fraction, pitches[index(whole)], pitches[index(whole + 1)]);
         if (yaw != shownYaw || pitch != shownPitch) {
             shownYaw = yaw;
             shownPitch = pitch;
@@ -256,10 +244,5 @@ public abstract class CargoDisplayHolder extends ElementHolder {
             posedPitch = pitch;
             applyPose(yaw, pitch, turned);
         }
-    }
-
-    // The sample taken `back` ticks ago, counting this tick's as zero.
-    private int index(int back) {
-        return Math.floorMod(next - 1 - back, SAMPLES);
     }
 }
