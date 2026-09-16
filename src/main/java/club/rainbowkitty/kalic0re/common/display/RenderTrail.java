@@ -41,8 +41,16 @@ public final class RenderTrail {
      * @param entity the entity to sample
      * @param maxLag the deepest readback this trail will be asked for, in ticks, which is what it
      *     keeps room for; anything deeper is clamped to it rather than reaching past the samples
+     * @throws IllegalArgumentException if {@code maxLag} is negative
      */
     public RenderTrail(Entity entity, double maxLag) {
+        // Negated so NaN is caught with the negatives. Either one survives construction only to
+        // surface at the first readback — as inverted clamp bounds, or as a silent zero-tick
+        // trail — a long way from whoever chose the figure.
+        if (!(maxLag >= 0.0)) {
+            throw new IllegalArgumentException("RenderTrail.maxLag must be >= 0, got " + maxLag);
+        }
+
         int size = (int) Math.ceil(maxLag) + MARGIN;
 
         this.positions = new Vec3[size];
@@ -65,10 +73,9 @@ public final class RenderTrail {
 
     /** Where the entity was {@code lag} ticks ago. */
     public Vec3 position(double lag) {
-        double delay = clamp(lag);
-        int whole = (int) delay;
+        int whole = whole(lag);
 
-        return Mth.lerp((float) (delay - whole), sample(whole), sample(whole + 1));
+        return Mth.lerp(fraction(lag), positions[index(whole)], positions[index(whole + 1)]);
     }
 
     /** The entity's yaw {@code lag} ticks ago, taken the short way round. */
@@ -81,18 +88,24 @@ public final class RenderTrail {
         return rotation(pitches, lag);
     }
 
-    // One delayed angle, mixed from the two samples the delay falls between.
+    // One delayed angle, mixed from the two samples the delay falls between. The cast is rotLerp's
+    // own signature, so it stays here rather than in fraction, which position needs full width.
     private float rotation(float[] samples, double lag) {
-        double delay = clamp(lag);
-        int whole = (int) delay;
+        int whole = whole(lag);
 
-        return Mth.rotLerp(
-                (float) (delay - whole), samples[index(whole)], samples[index(whole + 1)]);
+        return Mth.rotLerp((float) fraction(lag), samples[index(whole)], samples[index(whole + 1)]);
     }
 
-    // The position from `back` ticks ago.
-    private Vec3 sample(int back) {
-        return positions[index(back)];
+    // The newer of the two samples a readback mixes: how many whole ticks back it starts.
+    private int whole(double lag) {
+        return (int) clamp(lag);
+    }
+
+    // How far past that sample the readback lies, toward the older one.
+    private double fraction(double lag) {
+        double delay = clamp(lag);
+
+        return delay - (int) delay;
     }
 
     // Where the sample from `back` ticks ago sits in the ring, counting this tick's as zero.
