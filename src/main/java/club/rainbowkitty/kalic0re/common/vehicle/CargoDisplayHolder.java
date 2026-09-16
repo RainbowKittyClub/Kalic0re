@@ -81,8 +81,11 @@ public abstract class CargoDisplayHolder extends ElementHolder {
      */
     protected static final double DEFAULT_RENDER_LAG = 2.8;
 
-    // The furthest back renderLag() may ask to look, and so how far the trail keeps samples.
-    private static final int MAX_RENDER_LAG = 8;
+    /**
+     * The furthest back {@link #renderLag()} may ask to look, and so how far the trail keeps
+     * samples. An override returning more than this is clamped to it.
+     */
+    protected static final int MAX_RENDER_LAG = 8;
 
     private final AbstractMinecart cart;
 
@@ -222,8 +225,8 @@ public abstract class CargoDisplayHolder extends ElementHolder {
      * drawing. Override only for a cart whose motion reaches the client differently from a rail
      * minecart's, or to make the figure tunable while it is being found.
      *
-     * @return ticks, clamped into the {@link #MAX_RENDER_LAG} the trail keeps; fractional values
-     *     mix the two samples either side
+     * @return ticks back to look, clamped to {@link #MAX_RENDER_LAG}; fractional values mix the
+     *     two samples either side
      */
     protected double renderLag() {
         return DEFAULT_RENDER_LAG;
