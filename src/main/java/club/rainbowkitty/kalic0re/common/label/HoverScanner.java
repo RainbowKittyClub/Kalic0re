@@ -13,12 +13,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+
+import club.rainbowkitty.kalic0re.common.aim.Crosshair;
 
 /**
  * Shows one player-private label over whatever a player has under their crosshair.
@@ -71,39 +70,18 @@ public final class HoverScanner {
         LABELS.computeIfAbsent(player.getUUID(), HoverLabel::new).show(player, target);
     }
 
-    // An entity only counts when it is nearer than whatever block was hit, so one behind a wall
-    // stays silent.
     private static LabelTarget findTarget(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) {
             return null;
         }
 
-        // pick() clips to exactly the reach distance, so no further range filtering is needed.
-        double range = player.blockInteractionRange();
-        HitResult blockHit = player.pick(range, 1.0F, false);
-        Vec3 eye = player.getEyePosition();
-        double limit = blockHit.getType() == HitResult.Type.MISS
-                ? range * range
-                : eye.distanceToSqr(blockHit.getLocation());
+        Crosshair.Hit hit = Crosshair.of(player, HoverScanner::handled);
+        LabelTarget entity = hit.entity() == null ? null : fromEntity(level, hit.entity());
 
-        LabelTarget entity = fromEntity(player, level, eye, range, limit);
-        return entity != null ? entity : fromBlock(level, blockHit);
+        return entity != null ? entity : fromBlock(level, hit.block());
     }
 
-    private static LabelTarget fromEntity(ServerPlayer player, ServerLevel level, Vec3 eye,
-            double range, double limit) {
-        if (ENTITY_PROVIDERS.isEmpty()) {
-            return null;
-        }
-
-        Vec3 look = player.getViewVector(1.0F).scale(range);
-        AABB search = player.getBoundingBox().expandTowards(look).inflate(1.0);
-        EntityHitResult hit = ProjectileUtil.getEntityHitResult(player, eye, eye.add(look), search,
-                HoverScanner::handled, limit);
-        if (hit == null) {
-            return null;
-        }
-
+    private static LabelTarget fromEntity(ServerLevel level, EntityHitResult hit) {
         // Only the nearest handled entity is considered: something further along the ray is not
         // what the player is pointing at, even if the near one turns out to have no label.
         for (EntityLabels provider : ENTITY_PROVIDERS) {
