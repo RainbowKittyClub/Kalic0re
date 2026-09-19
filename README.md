@@ -4,6 +4,8 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 
 ## Packages
 
+- `common.aim` — `Crosshair`, what one player's crosshair is on, block and entity both,
+  resolved server-side against their own reach.
 - `common.armor` — custom-armor framework, one declaration per set; needs `item` and `datagen`
   alongside it.
 - `common.client` — `@Environment(CLIENT)` renderer code (`PolymerChestRenderer`,
@@ -19,6 +21,8 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 - `common.enchant` — enchantment framework: declare cost, targets and effects, get the generated
   datapack entry plus somewhere to register custom effect code. `common.enchant.client` and
   `common.enchant.datagen` hold the render and asset-generation halves.
+- `common.glow` — `PrivateGlow`, one entity outlined in one colour for one player, by telling
+  that client something the server does not hold. No server state and no access widener.
 - `common.item` — `ItemRegistration`, `PolymerModelItem`, `PolymerModelBlockItem`.
 - `common.label` — per-player raycast and hover-label machinery (`HoverScanner`, `HoverLabel`,
   `BlockLabels`, `EntityLabels`, `ItemText` and friends). A runtime package: it ticks per player, and
