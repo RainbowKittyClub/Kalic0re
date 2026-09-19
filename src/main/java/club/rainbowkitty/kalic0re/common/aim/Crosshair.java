@@ -51,6 +51,31 @@ public final class Crosshair {
     }
 
     /**
+     * The nearest entity of {@code type} under {@code player}'s crosshair, or null where they are
+     * pointing at anything else — a block standing in front of one counts as anything else.
+     *
+     * @param player the player whose crosshair to resolve
+     * @param type the only kind of entity worth hitting
+     */
+    public static <T extends Entity> @Nullable T entity(ServerPlayer player, Class<T> type) {
+        EntityHitResult hit = of(player, type::isInstance).entity();
+
+        return hit == null ? null : type.cast(hit.getEntity());
+    }
+
+    /**
+     * Whether {@code player} is pointing at nothing at all: no block inside their reach, and no
+     * entity in front of where that reach runs out.
+     *
+     * <p>What "use the item on empty air" means, which the game itself never asks on the server.
+     */
+    public static boolean onNothing(ServerPlayer player) {
+        Hit hit = of(player, entity -> true);
+
+        return hit.entity() == null && hit.block().getType() == HitResult.Type.MISS;
+    }
+
+    /**
      * One resolved crosshair.
      *
      * @param block the block hit, clipped to the player's reach; a miss rather than null where
