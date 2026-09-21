@@ -1,6 +1,7 @@
 package club.rainbowkitty.kalic0re.common.datagen;
 
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -96,6 +97,24 @@ public final class PngAssets {
                 out.setRGB(x, y, ARGB.multiply(art.getRGB(x, y), colour));
             }
         }
+        return out;
+    }
+
+    /**
+     * Rotates an image 45° about its own center, cropped back to its original dimensions —
+     * nearest-neighbour, so pixel-art edges stair-step instead of blurring.
+     *
+     * @param art the source image, left untouched; the result shares its dimensions
+     */
+    public static BufferedImage rotate45(BufferedImage art) {
+        BufferedImage out = new BufferedImage(
+                art.getWidth(), art.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = out.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g.rotate(Math.toRadians(45), art.getWidth() / 2.0, art.getHeight() / 2.0);
+        g.drawImage(art, 0, 0, null);
+        g.dispose();
         return out;
     }
 
