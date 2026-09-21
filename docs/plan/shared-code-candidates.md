@@ -421,15 +421,18 @@ end holds that tone — stayed in `CartIcons`, where it is art guidance for whoe
 the relocated `PngAssets` in the shipped jar carries `composite`, `sized`, `over` and `CUTOUT` (6740
 bytes against 6497 for `EntityModelBoxes` beside it). It ships unused, as it has since S1.
 
-**A third compositor exists, and measurement is why it stayed put.** `ChestTextureProvider:124` has
-its own private `composite(planks, overlay)` for the 64×64 chest sheets — two `Graphics2D.drawImage`
-calls, AWT's integer `SrcOver`, no chroma key — which the Build text does not mention. Pointing it
-at the shared compositor changed **73 of the trapped sheets: 131 pixels, every one off by exactly
-one on R, G or B, alpha never off at all**. That is a rounding disagreement, not a logic difference:
-`over` divides by the composited alpha in `double` and rounds, where AWT blends in integers, and
-only the trapped overlay's particular alpha values (49, 106, 126) land on the cases where the two
-disagree. Invisible in-world and still disqualifying, because this stage's test is byte-identity.
-The AWT version stays, with a comment saying why it is not the shared one.
+**A third compositor existed briefly, and measurement is why it took a second look.** For a while
+`ChestTextureProvider` kept its own private `composite(planks, overlay)` for the 64×64 chest
+sheets — two `Graphics2D.drawImage` calls, AWT's integer `SrcOver`, no chroma key — which the Build
+text does not mention. Pointing it at the shared compositor changed **73 of the trapped sheets: 131
+pixels, every one off by exactly one on R, G or B, alpha never off at all**. That is a rounding
+disagreement, not a logic difference: `over` divides by the composited alpha in `double` and rounds,
+where AWT blends in integers, and only the trapped overlay's particular alpha values (49, 106, 126)
+land on the cases where the two disagree — invisible in-world, but a byte difference, and this
+stage's own test is byte-identity. `ChestTextureProvider` now uses `PngAssets.composite` too: the
+chest overlay art moved to the magenta `CUTOUT` convention (`sensible-storage` 2026-09-20), which
+the AWT path had no way to honour, so keeping it split was no longer an option — the one-time
+131-pixel shift is the accepted cost of a working chroma key over a byte-identical broken one.
 
 **Two false readings were caught on the way to that number**, both worth knowing for S6 and S7. A
 `cp` into an unset `$TMPDIR` failed ahead of the edit in a `&&` chain, so the first "experiment"
