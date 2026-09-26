@@ -1,5 +1,7 @@
 package club.rainbowkitty.kalic0re.common.datagen;
 
+import java.util.Map;
+
 import com.google.gson.JsonObject;
 
 import net.minecraft.resources.Identifier;
@@ -28,11 +30,23 @@ public final class PackJson {
      * @param sprite the texture to bind to that key
      */
     public static JsonObject model(Identifier parent, String textureKey, Identifier sprite) {
-        JsonObject textures = new JsonObject();
-        textures.addProperty(textureKey, sprite.toString());
+        return model(parent, Map.of(textureKey, sprite));
+    }
+
+    /**
+     * A model that inherits another and binds several textures to it, for a parent that samples
+     * more than one key — {@code minecraft:block/cube}'s one key per face, say.
+     *
+     * @param parent the model to take geometry from, e.g. {@code minecraft:block/cube}
+     * @param textures each key that geometry samples, without the leading {@code #}, mapped to the
+     *     texture to bind to it
+     */
+    public static JsonObject model(Identifier parent, Map<String, Identifier> textures) {
+        JsonObject bound = new JsonObject();
+        textures.forEach((key, sprite) -> bound.addProperty(key, sprite.toString()));
         JsonObject root = new JsonObject();
         root.addProperty("parent", parent.toString());
-        root.add("textures", textures);
+        root.add("textures", bound);
         return root;
     }
 
