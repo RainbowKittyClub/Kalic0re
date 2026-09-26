@@ -3,7 +3,9 @@ package club.rainbowkitty.kalic0re.common.item;
 import java.util.function.Predicate;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
@@ -51,10 +53,15 @@ public class PolymerModelItem extends Item implements PolymerItem {
         return useRealItem.test(context) ? this : fallback;
     }
 
-    /** Returns the custom model, replacing the one the fallback item would otherwise use. */
+    /**
+     * The custom model for a client that can resolve it - one with this server's resource pack, or
+     * one running this mod and so carrying the assets itself - and none for any other, which leaves
+     * Polymer drawing the fallback item's own rather than a missing model.
+     */
     @Override
-    public Identifier getPolymerItemModel(ItemStack stack, PacketContext context,
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context,
             HolderLookup.Provider lookup) {
-        return model;
+        return useRealItem.test(context) || PolymerResourcePackUtils.hasMainPack(context)
+                ? model : null;
     }
 }

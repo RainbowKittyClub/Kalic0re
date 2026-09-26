@@ -18,9 +18,9 @@ import club.rainbowkitty.kalic0re.common.item.PolymerModelItem;
  * <p>Neither half of that happens on its own. A layer piece's custom asset is copied to the client
  * verbatim and resolves to an empty layer map on a client that cannot find it, which draws nothing
  * at all; and a custom item model is just as unresolvable. So both are withdrawn per connection:
- * the model by returning {@code null}, which leaves Polymer using the fallback item's own, and the
- * {@code equippable} component by replacing it with the fallback's after Polymer has copied ours
- * over.
+ * the model by {@link PolymerModelItem} itself, which leaves Polymer using the fallback item's own,
+ * and the {@code equippable} component here, by replacing it with the fallback's after Polymer has
+ * copied ours over.
  */
 public class PolymerArmorItem extends PolymerModelItem {
     private final Item fallback;
@@ -34,14 +34,6 @@ public class PolymerArmorItem extends PolymerModelItem {
     public PolymerArmorItem(Item fallback, Identifier model, Properties properties) {
         super(fallback, model, properties);
         this.fallback = fallback;
-    }
-
-    /** The custom model, or none for a connection that could not resolve it anyway. */
-    @Override
-    public Identifier getPolymerItemModel(ItemStack stack, PacketContext context,
-            HolderLookup.Provider lookup) {
-        return PolymerResourcePackUtils.hasMainPack(context)
-                ? super.getPolymerItemModel(stack, context, lookup) : null;
     }
 
     /**
