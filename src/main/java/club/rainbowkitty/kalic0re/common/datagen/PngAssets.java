@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import javax.imageio.ImageIO;
 
@@ -95,6 +96,87 @@ public final class PngAssets {
         for (int y = 0; y < art.getHeight(); y++) {
             for (int x = 0; x < art.getWidth(); x++) {
                 out.setRGB(x, y, ARGB.multiply(art.getRGB(x, y), colour));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * The per-channel median of an image's opaque pixels, as an opaque colour: each channel's
+     * median is taken on its own, so the result need not be any one pixel of the image. An even
+     * count takes the mean of the middle two, rounded down.
+     *
+     * @param art the image to sample, which must hold at least one opaque pixel
+     */
+    public static int medianColour(BufferedImage art) {
+        int[][] channels = new int[3][art.getWidth() * art.getHeight()];
+        int count = 0;
+        for (int y = 0; y < art.getHeight(); y++) {
+            for (int x = 0; x < art.getWidth(); x++) {
+                int argb = art.getRGB(x, y);
+                if (argb >>> 24 == 0xFF) {
+                    channels[0][count] = argb >> 16 & 0xFF;
+                    channels[1][count] = argb >> 8 & 0xFF;
+                    channels[2][count] = argb & 0xFF;
+                    count++;
+                }
+            }
+        }
+        if (count == 0) {
+            throw new IllegalArgumentException("Image has no opaque pixel to take a median of");
+        }
+        int median = 0xFF000000;
+        for (int c = 0; c < 3; c++) {
+            int[] sorted = Arrays.copyOf(channels[c], count);
+            Arrays.sort(sorted);
+            int value = count % 2 == 1
+                    ? sorted[count / 2] : (sorted[count / 2 - 1] + sorted[count / 2]) / 2;
+            median |= value << (16 - 8 * c);
+        }
+        return median;
+    }
+
+    /**
+     * Colours a grayscale image so that {@code referenceGray} becomes {@code colour} exactly and
+     * every other gray scales from it: each channel is {@code colour × gray / referenceGray},
+     * clamped to 255. Unlike {@link #tint}, which treats white as the colour, this keeps the gray
+     * that stood for the colour in the art, so art drawn as the luma of one colour can be
+     * recoloured to another with the same brightness relationships.
+     *
+     * <p>Transparent pixels and {@link #CUTOUT} magenta pass through untouched, so a following
+     * {@link #composite} still reads the chroma key.
+     *
+     * @param gray the source image, left untouched; every other pixel must be gray
+     * @param colour an opaque ARGB colour, e.g. from {@link #medianColour}
+     * @param referenceGray the gray level in {@code gray} that stands for {@code colour}
+     */
+    public static BufferedImage colourise(BufferedImage gray, int colour, int referenceGray) {
+        if (referenceGray <= 0) {
+            throw new IllegalArgumentException(
+                    "referenceGray must be positive, but is " + referenceGray);
+        }
+        BufferedImage out = new BufferedImage(
+                gray.getWidth(), gray.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < gray.getHeight(); y++) {
+            for (int x = 0; x < gray.getWidth(); x++) {
+                int argb = gray.getRGB(x, y);
+                int alpha = argb >>> 24;
+                if (alpha == 0 || (argb & 0xFFFFFF) == CUTOUT) {
+                    out.setRGB(x, y, argb);
+                    continue;
+                }
+                int level = argb >> 16 & 0xFF;
+                if ((argb >> 8 & 0xFF) != level || (argb & 0xFF) != level) {
+                    throw new IllegalArgumentException("Pixel (%d, %d) must be gray, but is #%06X"
+                            .formatted(x, y, argb & 0xFFFFFF));
+                }
+                int pixel = alpha << 24;
+                for (int shift = 16; shift >= 0; shift -= 8) {
+                    int scaled = (int) Math.round((colour >> shift & 0xFF) * level
+                            / (double) referenceGray);
+                    pixel |= Math.min(255, scaled) << shift;
+                }
+                out.setRGB(x, y, pixel);
             }
         }
         return out;
