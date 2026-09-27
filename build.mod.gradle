@@ -1,0 +1,22 @@
+// kalic0re-specific build logic. Applied last by the shared gradle/build.gradle.
+
+// The claim mods common/claim's probes call. compileOnly and non-transitive: each probe class is
+// loaded only when its mod is, and a consumer relocates common/claim in without any of these.
+// Modrinth and nucleoid are already repositories of the shared build; FTB publishes to its own.
+// FTB Chunks has no 26.2 build yet, so its probe compiles against 26.1.2's API and disables
+// itself if that has moved.
+repositories {
+	maven {
+		name = 'FTB'
+		url = 'https://maven.ftb.dev/releases'
+	}
+}
+
+dependencies {
+	compileOnly('maven.modrinth:goml-reserved:1.21.0+26.2') { transitive = false }
+	compileOnly('maven.modrinth:flan:26.2-1.12.8-fabric') { transitive = false }
+	compileOnly('maven.modrinth:open-parties-and-claims:fabric-26.2-0.31.6') { transitive = false }
+	compileOnly('dev.ftb.mods:ftb-chunks-fabric:26.1.2.8') { transitive = false }
+	compileOnly('dev.ftb.mods:ftb-teams-fabric:26.1.2.4') { transitive = false }
+	compileOnly('eu.pb4:common-protection-api:2.0.0') { transitive = false }
+}
