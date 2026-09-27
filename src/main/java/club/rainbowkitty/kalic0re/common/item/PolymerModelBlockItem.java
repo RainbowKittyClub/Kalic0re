@@ -48,6 +48,11 @@ public class PolymerModelBlockItem extends BlockItem implements PolymerItem {
         this.useRealItem = useRealItem;
     }
 
+    /** The item-model definition id this item is drawn with, where a client can resolve it. */
+    public Identifier model() {
+        return model;
+    }
+
     @Override
     public Item getPolymerItem(ItemStack stack, PacketContext context) {
         return useRealItem.test(context) ? this : fallback;

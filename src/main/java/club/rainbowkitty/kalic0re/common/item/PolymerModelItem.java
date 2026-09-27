@@ -47,6 +47,11 @@ public class PolymerModelItem extends Item implements PolymerItem {
         this.useRealItem = useRealItem;
     }
 
+    /** The item-model definition id this item is drawn with, where a client can resolve it. */
+    public Identifier model() {
+        return model;
+    }
+
     /** The vanilla item this is presented as, or itself for a client that also runs this mod. */
     @Override
     public Item getPolymerItem(ItemStack stack, PacketContext context) {
