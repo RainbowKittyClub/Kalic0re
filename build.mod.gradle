@@ -20,3 +20,21 @@ dependencies {
 	compileOnly('dev.ftb.mods:ftb-teams-fabric:26.1.2.4') { transitive = false }
 	compileOnly('eu.pb4:common-protection-api:2.0.0') { transitive = false }
 }
+
+// Zips each built-in pack to build/datapacks/<pack>.zip for a world's datapacks/ folder. Reads
+// processResources' output so pack.mcmeta arrives expanded.
+def datapackZips = (file('src/main/resources/resourcepacks').listFiles()?.findAll { it.directory } ?: [])
+	.collect { pack ->
+		tasks.register("datapackZip${pack.name.capitalize()}", Zip) {
+			dependsOn tasks.named('processResources')
+			from layout.buildDirectory.dir("resources/main/resourcepacks/${pack.name}")
+			archiveFileName = "${pack.name}.zip"
+			destinationDirectory = layout.buildDirectory.dir('datapacks')
+		}
+	}
+
+tasks.register('datapackZip') {
+	group = 'build'
+	description = 'Zips each built-in pack under resourcepacks/ into build/datapacks/.'
+	dependsOn datapackZips
+}
