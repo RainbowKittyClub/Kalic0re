@@ -1,4 +1,5 @@
-# As an active player: ends their run if it is on $(course), which is being deleted.
-data modify storage kalic0re:parkour tmp.ending.uuid set from entity @s UUID
-$data modify storage kalic0re:parkour tmp.ending.course set value "$(course)"
-function kalic0re:parkour/admin/course/end_run_if_on with storage kalic0re:parkour tmp.ending
+# As a runner on $(course), which is being deleted: exits now rather than on the next tick, when
+# the course and its lobby are gone.
+scoreboard players set @s kalic0re.parkour.isActive 0
+$function kalic0re:parkour/player/exit {uuid:$(uuid)}
+$tellraw @s {text:"Parkour course \"$(course)\" was deleted, so your run has ended.",color:"yellow"}
