@@ -1,0 +1,44 @@
+{
+  "//": "Opened by admin/course/open; Back is filled in with the course's management dialog.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.move_start.title",
+    "fallback": "Move a Course's Start",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "fallback": "Course: %s",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.move_start.details",
+        "fallback": "Its start will move to where you are standing now."
+      }
+    }
+  ],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.move_start.confirm",
+      "fallback": "Move Start Here"
+    },
+    "action": {
+      "type": "minecraft:run_command",
+      "command": "function kalic0re:parkour/admin/course/move_start {course:\"$(course)\"}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}

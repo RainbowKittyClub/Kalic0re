@@ -1,0 +1,58 @@
+{
+  "//": "Opened by admin/course/manage; Back is filled in with the Courses dialog.",
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "kalic0re.parkour.menu.manage.title",
+    "fallback": "Manage a Parkour Course",
+    "bold": true
+  },
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": {
+      "translate": "kalic0re.parkour.menu.course",
+      "fallback": "Course: %s",
+      "with": ["$(course)"]
+    }
+  },
+  "actions": [
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.manage.rename",
+        "fallback": "Rename…"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"rename\"}"
+      }
+    },
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.manage.move_start",
+        "fallback": "Move Start…"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"move_start\"}"
+      }
+    },
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.manage.delete",
+        "fallback": "Delete…"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"delete\"}"
+      }
+    }
+  ],
+  "columns": 1,
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}

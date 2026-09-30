@@ -1,0 +1,9 @@
+{
+  "//": "One course's button in the Courses dialog; admin/dialog/add_course_buttons adds one per course.",
+  "label": "$(course)",
+  "width": 250,
+  "action": {
+    "type": "minecraft:run_command",
+    "command": "function kalic0re:parkour/admin/course/manage {course:\"$(course)\"}"
+  }
+}

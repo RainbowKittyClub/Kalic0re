@@ -1,0 +1,56 @@
+{
+  "//": "Opened by admin/course/open; Back is filled in with the course's management dialog.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.rename.title",
+    "fallback": "Rename a Parkour Course",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "fallback": "Course: %s",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.rename.details",
+        "fallback": "Anyone running it carries on under its new name."
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "new_name",
+      "max_length": 128,
+      "initial": "$(course)",
+      "label": {
+        "translate": "kalic0re.parkour.menu.rename.name",
+        "fallback": "New name:"
+      }
+    }
+  ],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.rename.confirm",
+      "fallback": "Rename"
+    },
+    "action": {
+      "type": "minecraft:dynamic/run_command",
+      "template": "function kalic0re:parkour/admin/course/rename {course:\"$(course)\",new_name:\"$(new_name)\"}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}

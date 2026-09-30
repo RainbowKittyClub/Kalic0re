@@ -1,0 +1,34 @@
+{
+  "//": "Filled in by admin/dialog/build_courses: New Course's dialog, then a course_button.json per course.",
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "kalic0re.parkour.menu.courses.title",
+    "fallback": "Parkour Courses",
+    "bold": true
+  },
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": {
+      "translate": "kalic0re.parkour.menu.courses.details",
+      "fallback": "Pick a course to manage it."
+    }
+  },
+  "actions": [
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.courses.new_course",
+        "fallback": "New Course…"
+      },
+      "width": 250,
+      "action": {
+        "type": "minecraft:show_dialog"
+      }
+    }
+  ],
+  "columns": 1,
+  "exit_action": {
+    "label": {
+      "translate": "gui.done"
+    }
+  }
+}

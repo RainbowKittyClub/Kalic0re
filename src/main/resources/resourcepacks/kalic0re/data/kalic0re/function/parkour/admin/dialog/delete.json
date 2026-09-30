@@ -1,0 +1,52 @@
+{
+  "//": "Opened by admin/course/open; Back is filled in with the course's management dialog.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.delete.title",
+    "fallback": "Delete a Parkour Course",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "fallback": "Course: %s",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.delete.details",
+        "fallback": "Delete it, with its start and lobby? Anyone running it is sent to its lobby first.",
+        "extra": [
+          {
+            "translate": "kalic0re.parkour.menu.delete.warning",
+            "fallback": "\n\nThis can't be undone.",
+            "color": "red"
+          }
+        ]
+      }
+    }
+  ],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.delete.confirm",
+      "fallback": "Delete",
+      "color": "red"
+    },
+    "action": {
+      "type": "minecraft:run_command",
+      "command": "function kalic0re:parkour/admin/course/delete {course:\"$(course)\"}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}
