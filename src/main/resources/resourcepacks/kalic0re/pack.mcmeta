@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "Kalic0re: adventure-map helpers",
+    "min_format": ${datapack_format},
+    "max_format": ${datapack_format}
+  }
+}
