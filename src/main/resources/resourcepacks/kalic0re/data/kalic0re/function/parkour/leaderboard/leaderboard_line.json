@@ -1,0 +1,23 @@
+{
+  "//": "One leaderboard line: <rank>: <player> - <time>, the time in yellow on the viewer's own.",
+  "text": "",
+  "extra": [
+    {
+      "text": "$(rank): ",
+      "color": "gray"
+    },
+    {
+      "text": "$(player)",
+      "bold": true,
+      "color": "white"
+    },
+    {
+      "text": " - ",
+      "color": "gray"
+    },
+    {
+      "text": "$(tensOfMinutes)$(onesOfMinutes):$(tensOfSeconds)$(onesOfSeconds).$(tenthsOfSecond)",
+      "color": "$(color)"
+    }
+  ]
+}

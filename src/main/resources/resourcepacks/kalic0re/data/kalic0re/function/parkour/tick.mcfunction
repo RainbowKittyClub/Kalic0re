@@ -7,3 +7,6 @@ execute as @a[tag=kalic0re.parkour.playerInventorySaved] \
 execute as @a[tag=kalic0re.parkour.playerEffectsSaved] \
     unless score @s kalic0re.parkour.isActive matches 1 \
     at @s run function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/exit"}
+# The leaderboard trigger rests at -1, so any other value means it was used.
+execute as @a[scores={kalic0re.parkour.leaderboard=0..}] run function kalic0re:parkour/leaderboard/requested
+execute as @a[scores={kalic0re.parkour.leaderboard=..-2}] run function kalic0re:parkour/leaderboard/requested
