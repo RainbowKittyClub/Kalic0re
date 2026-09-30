@@ -1,0 +1,73 @@
+{
+  "//": "admin/new_course_named fills in the name box; admin/new_course keeps the initial name below.",
+  "type": "minecraft:confirmation",
+  "external_title": {
+    "translate": "kalic0re.parkour.menu.new_parkour",
+    "fallback": "New Parkour Course",
+    "bold": true
+  },
+  "title": {
+    "translate": "kalic0re.parkour.menu.new_parkour.title",
+    "fallback": "Create a New Parkour Course",
+    "bold": true
+  },
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": {
+      "translate": "",
+      "type": "translatable",
+      "extra": [
+        {
+          "translate": "kalic0re.parkour.menu.new_parkour.details.p1",
+          "fallback": "This must be unique! ",
+          "color": "yellow",
+          "bold": true,
+          "italic": true
+        },
+        {
+          "translate": "kalic0re.parkour.menu.new_parkour.details.p2",
+          "fallback": "Two courses cannot have the same name.",
+          "color": "#fcfcfc",
+          "italic": false,
+          "underlined": false
+        },
+        {
+          "translate": "kalic0re.parkour.menu.new_parkour.details.p3",
+          "fallback": "\n\nThe starting point of the course will be placed at your current location. If that's not where you want it, click \"Cancel\" and run this command again at the desired location.",
+          "color": "gold"
+        }
+      ]
+    }
+  },
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "course_name",
+      "max_length": 128,
+      "label": {
+        "translate": "kalic0re.parkour.menu.new_parkour.course_prompt_title",
+        "fallback": "Course name:"
+      },
+      "initial": "My Parkour Course"
+    }
+  ],
+  "can_close_with_escape": true,
+  "after_action": "close",
+  "pause": true,
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.new_parkour.confirm",
+      "fallback": "Confirm"
+    },
+    "action": {
+      "type": "minecraft:dynamic/run_command",
+      "template": "function kalic0re:parkour/admin/create {course:\"$(course_name)\"}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.new_parkour.cancel",
+      "fallback": "Cancel"
+    }
+  }
+}
