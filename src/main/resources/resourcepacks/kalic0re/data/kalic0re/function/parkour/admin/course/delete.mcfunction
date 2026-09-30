@@ -4,5 +4,6 @@ $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}] run re
 $execute as @a[scores={kalic0re.parkour.isActive=1}] at @s run \
     function kalic0re:parkour/admin/course/end_run {course:"$(course)"}
 data remove storage kalic0re:parkour tmp.ending
+$function kalic0re:parkour/course/remove_times {course:"$(course)"}
 $data remove storage kalic0re:parkour courses[{name:"$(course)"}]
 $tellraw @s {text:"Parkour course \"$(course)\" deleted.",color:"green"}

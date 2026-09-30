@@ -10,5 +10,6 @@ $execute if data storage kalic0re:parkour courses[{name:"$(new_name)"}] run retu
 # Guarded: a list filter that matches nothing adds a match, which here would be a record with no uuid.
 $execute if data storage kalic0re:parkour players[{course:"$(course)"}] run \
     data modify storage kalic0re:parkour players[{course:"$(course)"}].course set value "$(new_name)"
+$function kalic0re:parkour/course/retitle_times {course:"$(course)",new_name:"$(new_name)"}
 $data modify storage kalic0re:parkour courses[{name:"$(course)"}].name set value "$(new_name)"
 $tellraw @s {text:"Parkour course \"$(course)\" renamed to \"$(new_name)\".",color:"green"}
