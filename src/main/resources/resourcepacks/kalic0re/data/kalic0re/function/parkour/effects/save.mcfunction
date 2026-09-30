@@ -3,4 +3,5 @@ $execute if data storage kalic0re:parkour players[{uuid:$(uuid)}].effects run re
 # Storage does not tick, so durations pause for the run. Each entry keeps its hidden_effect chain.
 $data modify storage kalic0re:parkour players[{uuid:$(uuid)}].effects set value []
 $data modify storage kalic0re:parkour players[{uuid:$(uuid)}].effects set from entity @s active_effects
-effect clear @s
+# Clear only once the copy exists, so a failed save never costs the player their effects.
+$execute if data storage kalic0re:parkour players[{uuid:$(uuid)}].effects run effect clear @s
