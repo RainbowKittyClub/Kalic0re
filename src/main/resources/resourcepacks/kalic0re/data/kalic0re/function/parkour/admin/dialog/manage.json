@@ -44,6 +44,16 @@
         "type": "minecraft:run_command",
         "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"delete\"}"
       }
+    },
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.manage.times",
+        "fallback": "Clear Leaderboard…"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/times {course:\"$(course)\"}"
+      }
     }
   ],
   "columns": 1,

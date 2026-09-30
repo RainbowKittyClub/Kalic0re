@@ -1,0 +1,58 @@
+{
+  "//": "Opened by admin/course/confirm_clear_player; Back is filled in with the Clear Leaderboard dialog.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.clear_player.title",
+    "fallback": "Clear a Player's Time",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "fallback": "Course: %s",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.clear_player.details",
+        "fallback": "Clear %s's time from its leaderboard and scoreboard?",
+        "with": [
+          {
+            "text": "$(player)",
+            "bold": true
+          }
+        ],
+        "extra": [
+          {
+            "translate": "kalic0re.parkour.menu.clear.warning",
+            "fallback": "\n\nThis can't be undone.",
+            "color": "red"
+          }
+        ]
+      }
+    }
+  ],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.clear_player.confirm",
+      "fallback": "Clear",
+      "color": "red"
+    },
+    "action": {
+      "type": "minecraft:run_command",
+      "command": "function kalic0re:parkour/admin/course/clear_player {course:\"$(course)\",player:\"$(player)\"}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "//": "Filled in by admin/dialog/build_times: Back, and a time_button.json per time on the course.",
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "kalic0re.parkour.menu.times.title",
+    "fallback": "Clear Leaderboard",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "fallback": "Course: %s",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.times.details",
+        "fallback": "Clear every time on this course, or pick a player to clear theirs."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.times.clear_all",
+        "fallback": "Clear All Times",
+        "color": "red"
+      },
+      "width": 250,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/confirm_clear_all {course:\"$(course)\"}"
+      }
+    }
+  ],
+  "columns": 1,
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}

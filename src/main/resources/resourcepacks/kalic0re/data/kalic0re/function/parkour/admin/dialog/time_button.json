@@ -1,0 +1,24 @@
+{
+  "//": "One player's time in the Clear Leaderboard dialog; admin/dialog/add_time_buttons adds one per time.",
+  "label": {
+    "text": "",
+    "extra": [
+      {
+        "text": "$(player)",
+        "bold": true
+      },
+      {
+        "text": " - ",
+        "color": "gray"
+      },
+      {
+        "text": "$(tensOfMinutes)$(onesOfMinutes):$(tensOfSeconds)$(onesOfSeconds).$(tenthsOfSecond)"
+      }
+    ]
+  },
+  "width": 250,
+  "action": {
+    "type": "minecraft:run_command",
+    "command": "function kalic0re:parkour/admin/course/confirm_clear_player {course:\"$(course)\",player:\"$(player)\"}"
+  }
+}
