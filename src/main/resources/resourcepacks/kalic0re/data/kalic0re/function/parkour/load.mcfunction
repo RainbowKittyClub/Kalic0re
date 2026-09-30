@@ -6,6 +6,9 @@ scoreboard objectives add kalic0re.parkour.tmp dummy
 scoreboard objectives add kalic0re.parkour.runTicks dummy
 scoreboard objectives add kalic0re.parkour.courseBestTicks dummy
 scoreboard objectives add kalic0re.parkour.leaderboard trigger
+# /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:
+# /scoreboard players enable <player> kalic0re.parkour.admin
+scoreboard objectives add kalic0re.parkour.admin trigger
 # Divisors for splitting run ticks into minutes, seconds and tenths.
 scoreboard players set #2 kalic0re.parkour.tmp 2
 scoreboard players set #10 kalic0re.parkour.tmp 10
