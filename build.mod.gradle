@@ -21,6 +21,62 @@ dependencies {
 	compileOnly('eu.pb4:common-protection-api:2.0.0') { transitive = false }
 }
 
+// A <name>.json among a pack's functions is a dialog (or a piece of one), built into <name>.mcfunction:
+// a function that stores it in storage <namespace>:dialog at built.<name>. A $(key) naming one of its
+// own inputs is left for the client; any other $(arg) is filled from <namespace>:dialog args. The JSON
+// source stays out of the pack; keys named "//" are comments and are dropped.
+def dialogSources = fileTree('src/main/resources/resourcepacks') { include '*/data/*/function/**/*.json' }
+def dialogFunctions = layout.buildDirectory.dir('generated/datapackDialogs')
+def generateDatapackDialogs = tasks.register('generateDatapackDialogs') {
+	description = 'Builds each dialog .json among the built-in packs\' functions into its .mcfunction.'
+	inputs.files(dialogSources)
+	outputs.dir(dialogFunctions)
+	doLast {
+		def out = dialogFunctions.get().asFile
+		project.delete(out)
+		// SNBT reads JSON as is; unescaped, text like "…" also stays readable in the generated function.
+		def json = new groovy.json.JsonGenerator.Options().disableUnicodeEscaping().build()
+		def dropComments
+		dropComments = { node ->
+			node instanceof Map ? node.findAll { k, v -> k != '//' }.collectEntries { k, v -> [k, dropComments(v)] }
+				: node instanceof List ? node.collect(dropComments) : node
+		}
+		dialogSources.visit { source ->
+			if (source.directory) return
+			def dialog = dropComments(new groovy.json.JsonSlurper().parse(source.file, 'UTF-8'))
+			def text = json.toJson(dialog)
+			def segments = source.relativePath.segments // <pack>/data/<namespace>/function/<path>.json
+			def namespace = segments[2]
+			def name = source.name.replaceAll(/\.json$/, '')
+			def function = "${namespace}:${segments[4..-1].join('/').replaceAll(/\.json$/, '')}"
+			def store = "data modify storage ${namespace}:dialog built.${name} set value ${text}\n"
+			def header = "# Generated from ${source.name}; edit that instead.\n"
+			def base = source.relativePath.pathString.replaceAll(/\.json$/, '')
+			def write = { String path, String content ->
+				def target = new File(out, path)
+				target.parentFile.mkdirs()
+				target.setText(content, 'UTF-8')
+			}
+			def inputs = dialog instanceof Map && dialog.inputs instanceof List ? dialog.inputs*.key as Set : [] as Set
+			def placeholders = (text =~ /\$\(([A-Za-z0-9_]+)\)/).collect { it[1] } as Set
+			def args = placeholders - inputs
+			if (args.isEmpty()) {
+				write("${base}.mcfunction", header + store)
+				return
+			}
+			// A macro line would fill the inputs' $(key) too, so each goes in as an argument holding itself.
+			def keep = (placeholders - args).collect { "data modify storage ${namespace}:dialog args.${it} set value \"\$(${it})\"\n" }
+			write("${base}.mcfunction", header.replace('instead.', "instead. Reads ${args.collect { "\$(${it})" }.join(', ')} from ${namespace}:dialog args.")
+				+ keep.join('') + "function ${function}.macro with storage ${namespace}:dialog args\n")
+			write("${base}.macro.mcfunction", header + '$' + store)
+		}
+	}
+}
+tasks.named('processResources') {
+	exclude 'resourcepacks/*/data/*/function/**/*.json'
+	from(generateDatapackDialogs) { into 'resourcepacks' }
+}
+
 // Zips each built-in pack to build/datapacks/<pack>.zip for a world's datapacks/ folder. Reads
 // processResources' output so pack.mcmeta arrives expanded.
 def datapackZips = (file('src/main/resources/resourcepacks').listFiles()?.findAll { it.directory } ?: [])
