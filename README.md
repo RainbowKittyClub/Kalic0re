@@ -20,6 +20,9 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
   FTB Chunks, the Common Protection API) answering what it would say without its by-id exemptions,
   and a listener that lets a modded block stand in for a vanilla one. Compiled against those mods'
   jars `compileOnly` (`build.mod.gradle`); each probe loads only when its mod does.
+- `common.click` — `HandClicks`, which drops the rest of a right-click once the server has taken
+  it with one hand, where the client predicted a pass and went on to offer it to the other. The
+  consumer owns the mixin on `ServerGamePacketListenerImpl` that routes through it.
 - `common.craft` — a 3×3 crafting grid that keeps its contents (`CraftingGridBlockEntity`), the
   shared menu over it (`PersistentCraftingMenu`) and vanilla's per-player one at any block
   (`BlockCraftingMenu`). The consumer owns the mixin that reads `CraftingGridHandoff`.
