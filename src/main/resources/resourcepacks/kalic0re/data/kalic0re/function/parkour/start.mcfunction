@@ -3,4 +3,5 @@ $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}].start 
     function kalic0re:parkour/course/missing {course:"$(course)",point:"start"}
 $data modify storage kalic0re:parkour tmp.course set value "$(course)"
 function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/begin"}
+scoreboard players set @s kalic0re.parkour.runTicks 0
 scoreboard players set @s kalic0re.parkour.isActive 1
