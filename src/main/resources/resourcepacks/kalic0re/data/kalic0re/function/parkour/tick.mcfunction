@@ -11,3 +11,6 @@ execute as @a[tag=kalic0re.parkour.playerEffectsSaved] \
 execute as @a[scores={kalic0re.parkour.leaderboard=0..}] run function kalic0re:parkour/leaderboard/requested
 execute as @a[scores={kalic0re.parkour.leaderboard=..-2}] run function kalic0re:parkour/leaderboard/requested
 execute as @a[scores={kalic0re.parkour.admin=1..}] run function kalic0re:parkour/admin/requested
+# The course boundary wand's right-clicks; its left-clicks come through its enchantment instead.
+execute as @a[scores={kalic0re.parkour.courseBoundaryWandRightClick=1..}] at @s run \
+    function kalic0re:parkour/admin/course_boundary/wand/right_click

@@ -1,0 +1,31 @@
+{
+  "description": {
+    "translate": "kalic0re.parkour.enchantment.course_boundary_wand",
+    "fallback": "Parkour Boundary Wand"
+  },
+  "supported_items": "minecraft:warped_fungus_on_a_stick",
+  "weight": 1,
+  "max_level": 1,
+  "min_cost": {
+    "base": 1,
+    "per_level_above_first": 0
+  },
+  "max_cost": {
+    "base": 1,
+    "per_level_above_first": 0
+  },
+  "anvil_cost": 1,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {
+    "minecraft:post_piercing_attack": [
+      {
+        "effect": {
+          "type": "minecraft:run_function",
+          "function": "kalic0re:parkour/admin/course_boundary/wand/left_click"
+        }
+      }
+    ]
+  }
+}

@@ -57,6 +57,16 @@
     },
     {
       "label": {
+        "translate": "kalic0re.parkour.menu.manage.course_boundary_wand",
+        "fallback": "Get Parkour Boundary Wand"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course_boundary/give_wand {course:\"$(course)\"}"
+      }
+    },
+    {
+      "label": {
         "translate": "kalic0re.parkour.menu.manage.course_boundaries",
         "fallback": "List Course Boundaries"
       },

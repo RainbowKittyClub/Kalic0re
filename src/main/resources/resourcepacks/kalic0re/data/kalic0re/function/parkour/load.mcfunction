@@ -7,6 +7,8 @@ scoreboard objectives add kalic0re.parkour.runTicks dummy
 scoreboard objectives add kalic0re.parkour.courseBestTicks dummy
 # The id of the course a runner is on, for the per-tick course boundary check.
 scoreboard objectives add kalic0re.parkour.runningCourseId dummy
+# The boundary wand is a warped fungus on a stick, so its uses never count as parkour items'.
+scoreboard objectives add kalic0re.parkour.courseBoundaryWandRightClick minecraft.used:minecraft.warped_fungus_on_a_stick
 scoreboard objectives add kalic0re.parkour.leaderboard trigger
 # /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:
 # /scoreboard players enable <player> kalic0re.parkour.admin
