@@ -1,5 +1,5 @@
 # Gives $(course) a number the first time it needs one, at a start, a finish or in the Leaderboards
-# list, for its best-times scoreboard (names can't hold spaces), leaderboard trigger and zone check.
+# list, for its best-times scoreboard (names can't hold spaces), leaderboard trigger and boundary check.
 # lastCourseId is the last one handed out.
 $execute if data storage kalic0re:parkour courses[{name:"$(course)"}].id run return 0
 scoreboard players set #id kalic0re.parkour.tmp 0

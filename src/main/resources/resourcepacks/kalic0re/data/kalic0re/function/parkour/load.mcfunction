@@ -5,7 +5,7 @@ scoreboard objectives add kalic0re.parkour.tmp dummy
 # may set to a course's id to see its leaderboard, resting at -1.
 scoreboard objectives add kalic0re.parkour.runTicks dummy
 scoreboard objectives add kalic0re.parkour.courseBestTicks dummy
-# The id of the course a runner is on, for the per-tick inclusion zone check.
+# The id of the course a runner is on, for the per-tick course boundary check.
 scoreboard objectives add kalic0re.parkour.runningCourseId dummy
 scoreboard objectives add kalic0re.parkour.leaderboard trigger
 # /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:

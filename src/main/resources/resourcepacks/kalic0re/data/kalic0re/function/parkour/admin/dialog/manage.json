@@ -54,6 +54,16 @@
         "type": "minecraft:run_command",
         "command": "function kalic0re:parkour/admin/course/times {course:\"$(course)\"}"
       }
+    },
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.manage.course_boundaries",
+        "fallback": "List Course Boundaries"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course_boundary/list {course:\"$(course)\"}"
+      }
     }
   ],
   "columns": 1,
