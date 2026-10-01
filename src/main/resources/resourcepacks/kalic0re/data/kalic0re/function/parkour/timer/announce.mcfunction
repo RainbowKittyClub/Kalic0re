@@ -12,7 +12,7 @@ $execute if score #newBest kalic0re.parkour.tmp matches 1 run tellraw @s [ \
             {score:{name:"#tensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
             {score:{name:"#tensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
             {score:{name:"#tenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}]},{text:" "}, \
-    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true, \
+    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true,bold:true, \
         click_event:{action:"run_command",command:"/trigger kalic0re.parkour.leaderboard set $(id)"}, \
         hover_event:{action:"show_text",value:"/trigger kalic0re.parkour.leaderboard set $(id)"}}]
 $execute if score #newBest kalic0re.parkour.tmp matches 0 run tellraw @s [ \
@@ -25,6 +25,6 @@ $execute if score #newBest kalic0re.parkour.tmp matches 0 run tellraw @s [ \
             {score:{name:"#bestTensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
             {score:{name:"#bestTensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
             {score:{name:"#bestTenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}]},{text:" "}, \
-    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true, \
+    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true,bold:true, \
         click_event:{action:"run_command",command:"/trigger kalic0re.parkour.leaderboard set $(id)"}, \
         hover_event:{action:"show_text",value:"/trigger kalic0re.parkour.leaderboard set $(id)"}}]
