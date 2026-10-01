@@ -8,3 +8,5 @@ $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}].course
     data remove storage kalic0re:parkour courses[{name:"$(course)"}].courseBoundaryPredicate
 $tellraw @s {translate:"kalic0re.parkour.chat.course_boundary_removed",fallback:"Parkour course \"%s\": course boundary %s removed.", \
     with:["$(course)","$(boundary)"],color:"green"}
+# Wand holders see the course's boundaries in white, so show them it gone.
+execute as @a[tag=kalic0re.parkour.holdingBoundaryWand] at @s run function kalic0re:parkour/admin/course_boundary/wand/outline/show

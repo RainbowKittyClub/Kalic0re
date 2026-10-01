@@ -7,6 +7,11 @@ execute if data storage kalic0re:parkour tmp.wand{corner:"firstCorner"} run tell
     fallback:"First corner set at %s.",with:[{nbt:"tmp.wand.pos[]",storage:"kalic0re:parkour",separator:" "}],color:"green"}
 execute if data storage kalic0re:parkour tmp.wand{corner:"secondCorner"} run tellraw @s {translate:"kalic0re.parkour.chat.wand_second_corner", \
     fallback:"Second corner set at %s.",with:[{nbt:"tmp.wand.pos[]",storage:"kalic0re:parkour",separator:" "}],color:"green"}
+# Only the selection changed; a click before the outline came up brings it all now.
+execute if entity @s[tag=kalic0re.parkour.holdingBoundaryWand] run \
+    function kalic0re:parkour/admin/course_boundary/wand/outline/redraw_selection
+execute unless entity @s[tag=kalic0re.parkour.holdingBoundaryWand] run \
+    function kalic0re:parkour/admin/course_boundary/wand/outline/draw
 execute unless data storage kalic0re:parkour tmp.wand.held.firstCorner run return 0
 execute unless data storage kalic0re:parkour tmp.wand.held.secondCorner run return 0
 data modify storage kalic0re:parkour tmp.wand.args set value {}

@@ -31,3 +31,5 @@ $tellraw @s {translate:"kalic0re.parkour.chat.course_boundary_added",fallback:"P
     {nbt:"tmp.newCourseBoundary.boundary.min[]",storage:"kalic0re:parkour",separator:" "}, \
     {nbt:"tmp.newCourseBoundary.boundary.max[]",storage:"kalic0re:parkour",separator:" "}],color:"green"}
 data remove storage kalic0re:parkour tmp.newCourseBoundary
+# Wand holders see the course's boundaries in white, so show them the new one.
+execute as @a[tag=kalic0re.parkour.holdingBoundaryWand] at @s run function kalic0re:parkour/admin/course_boundary/wand/outline/show

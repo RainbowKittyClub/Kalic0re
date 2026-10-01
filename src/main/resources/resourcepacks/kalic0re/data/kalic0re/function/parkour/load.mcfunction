@@ -9,6 +9,14 @@ scoreboard objectives add kalic0re.parkour.courseBestTicks dummy
 scoreboard objectives add kalic0re.parkour.runningCourseId dummy
 # The boundary wand is a warped fungus on a stick, so its uses never count as parkour items'.
 scoreboard objectives add kalic0re.parkour.courseBoundaryWandRightClick minecraft.used:minecraft.warped_fungus_on_a_stick
+# Whose wand selection each outline display draws; the sweep clears ones left over from a restart.
+scoreboard objectives add kalic0re.parkour.boundaryOutlineOwner dummy
+# Ticks the wand has been in (or out of) the main hand without the outline following yet.
+scoreboard objectives add kalic0re.parkour.boundaryWandHandChangeTicks dummy
+# A holder's outline still being drawn: the course's id and the next of its boundaries to draw.
+scoreboard objectives add kalic0re.parkour.boundaryOutlineCourseId dummy
+scoreboard objectives add kalic0re.parkour.boundaryOutlineNextBoundary dummy
+schedule function kalic0re:parkour/admin/course_boundary/wand/outline/sweep 20t replace
 scoreboard objectives add kalic0re.parkour.leaderboard trigger
 # /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:
 # /scoreboard players enable <player> kalic0re.parkour.admin
