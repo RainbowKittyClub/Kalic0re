@@ -1,4 +1,4 @@
-# Each tick: four single-slot checks when the items sit where they were given.
+# Four single-slot checks when the items sit where they were given.
 execute if items entity @s hotbar.0 *[custom_data~{kalic0re:{parkour:{item:"checkpoint"}}}] \
     if items entity @s hotbar.4 *[custom_data~{kalic0re:{parkour:{item:"restart"}}}] \
     if items entity @s hotbar.8 *[custom_data~{kalic0re:{parkour:{item:"quit"}}}] \

@@ -7,6 +7,10 @@ scoreboard objectives add kalic0re.parkour.runTicks dummy
 scoreboard objectives add kalic0re.parkour.courseBestTicks dummy
 # The id of the course a runner is on, for the per-tick course boundary check.
 scoreboard objectives add kalic0re.parkour.runningCourseId dummy
+# Each runner's turn within every 2, 4 and 16 ticks, so their periodic work falls on different ticks.
+scoreboard objectives add kalic0re.parkour.runnerTickPhaseOf2 dummy
+scoreboard objectives add kalic0re.parkour.runnerTickPhaseOf4 dummy
+scoreboard objectives add kalic0re.parkour.runnerTickPhaseOf16 dummy
 # The boundary wand is a warped fungus on a stick, so its uses never count as parkour items'.
 scoreboard objectives add kalic0re.parkour.courseBoundaryWandRightClick minecraft.used:minecraft.warped_fungus_on_a_stick
 # Whose wand selection each outline display draws; the sweep clears ones left over from a restart.
@@ -21,8 +25,10 @@ scoreboard objectives add kalic0re.parkour.leaderboard trigger
 # /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:
 # /scoreboard players enable <player> kalic0re.parkour.admin
 scoreboard objectives add kalic0re.parkour.admin trigger
-# Divisors for splitting run ticks into minutes, seconds and tenths.
+# Divisors for splitting run ticks into minutes, seconds and tenths, and for runners' tick phases.
 scoreboard players set #2 kalic0re.parkour.tmp 2
+scoreboard players set #4 kalic0re.parkour.tmp 4
+scoreboard players set #16 kalic0re.parkour.tmp 16
 scoreboard players set #10 kalic0re.parkour.tmp 10
 scoreboard players set #60 kalic0re.parkour.tmp 60
 # How messages name a point, shown through an nbt component: a key built from $(point) could only

@@ -1,4 +1,4 @@
-# As a runner, each tick: "| Current Time: 00:00.0 | Best: 00:00.0 |" above the hotbar. The list
+# As a runner, every other tick: "| Current Time: 00:00.0 | Best: 00:00.0 |" above the hotbar. The list
 # starts with an empty element because the rest inherit the first element's style.
 execute if score @s kalic0re.parkour.courseBestTicks matches 0.. run function kalic0re:parkour/timer/split_best
 scoreboard players operation #ticks kalic0re.parkour.tmp = @s kalic0re.parkour.runTicks
