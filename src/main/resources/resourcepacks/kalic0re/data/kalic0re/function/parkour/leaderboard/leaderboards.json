@@ -1,0 +1,23 @@
+{
+  "//": "Built by leaderboard/list: a leaderboard_button.json per course.",
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "kalic0re.parkour.menu.leaderboards.title",
+    "fallback": "Parkour Leaderboards",
+    "bold": true
+  },
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": {
+      "translate": "kalic0re.parkour.menu.leaderboards.details",
+      "fallback": "Select a course to see its leaderboard."
+    }
+  },
+  "actions": [],
+  "columns": 1,
+  "exit_action": {
+    "label": {
+      "translate": "gui.done"
+    }
+  }
+}

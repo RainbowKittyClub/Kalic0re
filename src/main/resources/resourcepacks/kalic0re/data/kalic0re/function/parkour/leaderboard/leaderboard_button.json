@@ -1,0 +1,9 @@
+{
+  "//": "One course's button in the Leaderboards dialog. /trigger needs no permission, so it shows no prompt.",
+  "label": "$(course)",
+  "width": 250,
+  "action": {
+    "type": "minecraft:run_command",
+    "command": "trigger kalic0re.parkour.leaderboard set $(id)"
+  }
+}
