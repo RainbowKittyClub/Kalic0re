@@ -18,7 +18,7 @@
     {
       "label": {
         "translate": "kalic0re.parkour.menu.manage.rename",
-        "fallback": "Rename…"
+        "fallback": "Rename"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -28,7 +28,7 @@
     {
       "label": {
         "translate": "kalic0re.parkour.menu.manage.move_start",
-        "fallback": "Move Start…"
+        "fallback": "Move Start"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -38,7 +38,7 @@
     {
       "label": {
         "translate": "kalic0re.parkour.menu.manage.delete",
-        "fallback": "Delete…"
+        "fallback": "Delete"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -48,7 +48,7 @@
     {
       "label": {
         "translate": "kalic0re.parkour.menu.manage.times",
-        "fallback": "Clear Leaderboard…"
+        "fallback": "Clear Leaderboard"
       },
       "action": {
         "type": "minecraft:run_command",

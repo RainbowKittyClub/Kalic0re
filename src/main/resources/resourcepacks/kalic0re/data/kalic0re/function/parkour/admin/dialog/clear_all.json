@@ -19,7 +19,7 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.clear_all.details",
-        "fallback": "Clear every time from its leaderboard and scoreboard?",
+        "fallback": "Clear every time from the leaderboard?",
         "extra": [
           {
             "translate": "kalic0re.parkour.menu.clear.warning",

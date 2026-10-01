@@ -6,26 +6,25 @@ function kalic0re:parkour/timer/split
 # Resting at -1: see leaderboard/requested.
 scoreboard players set @s kalic0re.parkour.leaderboard -1
 scoreboard players enable @s kalic0re.parkour.leaderboard
-$execute if score #newBest kalic0re.parkour.tmp matches 1 run tellraw @s [{text:"Finished \"$(course)\" in ",color:"gold"}, \
-    {text:"",color:"yellow",extra:[ \
-        {score:{name:"#tensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
-        {score:{name:"#tensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
-        {score:{name:"#tenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}, \
-    {text:". New best! "}, \
-    {text:"Click here to see the leaderboard.",underlined:true, \
+$execute if score #newBest kalic0re.parkour.tmp matches 1 run tellraw @s [ \
+    {translate:"kalic0re.parkour.chat.finished_new_best",fallback:"Finished \"%s\" in %s. New best!",color:"gold",with:["$(course)", \
+        {text:"",color:"yellow",extra:[ \
+            {score:{name:"#tensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
+            {score:{name:"#tensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
+            {score:{name:"#tenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}]},{text:" "}, \
+    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true, \
         click_event:{action:"run_command",command:"/trigger kalic0re.parkour.leaderboard set $(id)"}, \
         hover_event:{action:"show_text",value:"/trigger kalic0re.parkour.leaderboard set $(id)"}}]
-$execute if score #newBest kalic0re.parkour.tmp matches 0 run tellraw @s [{text:"Finished \"$(course)\" in ",color:"gold"}, \
-    {text:"",color:"yellow",extra:[ \
-        {score:{name:"#tensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
-        {score:{name:"#tensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
-        {score:{name:"#tenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}, \
-    {text:". Your best is "}, \
-    {text:"",color:"yellow",extra:[ \
-        {score:{name:"#bestTensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
-        {score:{name:"#bestTensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
-        {score:{name:"#bestTenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}, \
-    {text:". "}, \
-    {text:"Click here to see the leaderboard.",underlined:true, \
+$execute if score #newBest kalic0re.parkour.tmp matches 0 run tellraw @s [ \
+    {translate:"kalic0re.parkour.chat.finished",fallback:"Finished \"%s\" in %s. Your best time is %s.",color:"gold",with:["$(course)", \
+        {text:"",color:"yellow",extra:[ \
+            {score:{name:"#tensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
+            {score:{name:"#tensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
+            {score:{name:"#tenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}, \
+        {text:"",color:"yellow",extra:[ \
+            {score:{name:"#bestTensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
+            {score:{name:"#bestTensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
+            {score:{name:"#bestTenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}]},{text:" "}, \
+    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true, \
         click_event:{action:"run_command",command:"/trigger kalic0re.parkour.leaderboard set $(id)"}, \
         hover_event:{action:"show_text",value:"/trigger kalic0re.parkour.leaderboard set $(id)"}}]

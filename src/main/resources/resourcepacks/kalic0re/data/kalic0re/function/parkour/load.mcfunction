@@ -13,3 +13,8 @@ scoreboard objectives add kalic0re.parkour.admin trigger
 scoreboard players set #2 kalic0re.parkour.tmp 2
 scoreboard players set #10 kalic0re.parkour.tmp 10
 scoreboard players set #60 kalic0re.parkour.tmp 60
+# How messages name a point, shown through an nbt component: a key built from $(point) could only
+# fall back to the point's own id.
+data modify storage kalic0re:parkour pointNames set value { \
+    start:{translate:"kalic0re.parkour.point.start",fallback:"restart point"}, \
+    lobby:{translate:"kalic0re.parkour.point.lobby",fallback:"lobby"}}

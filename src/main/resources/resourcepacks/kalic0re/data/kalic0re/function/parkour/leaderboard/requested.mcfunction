@@ -4,7 +4,8 @@ execute store result score #course kalic0re.parkour.tmp run scoreboard players g
 scoreboard players set @s kalic0re.parkour.leaderboard -1
 scoreboard players enable @s kalic0re.parkour.leaderboard
 execute unless score #course kalic0re.parkour.tmp matches 1.. run return run tellraw @s \
-    {text:"The leaderboard needs a course number. Use the link in a finish message, which has it.",color:"red"}
+    {translate:"kalic0re.parkour.chat.leaderboard_needs_number", \
+    fallback:"The leaderboard needs a course number. Use the link in a finish message, which has it.",color:"red"}
 execute store result storage kalic0re:parkour tmp.board.id int 1 run scoreboard players get #course kalic0re.parkour.tmp
 data modify storage kalic0re:parkour tmp.board.uuid set from entity @s UUID
 function kalic0re:parkour/leaderboard/show with storage kalic0re:parkour tmp.board

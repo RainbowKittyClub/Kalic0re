@@ -19,7 +19,7 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.rename.details",
-        "fallback": "Anyone running it carries on under its new name."
+        "fallback": "This changes the course name and does not affect anyone currently on it."
       }
     }
   ],

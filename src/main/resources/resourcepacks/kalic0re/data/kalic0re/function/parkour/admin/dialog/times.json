@@ -19,7 +19,7 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.times.details",
-        "fallback": "Clear every time on this course, or pick a player to clear theirs."
+        "fallback": "Select a player to clear (or reset the course leaderboard)."
       }
     }
   ],

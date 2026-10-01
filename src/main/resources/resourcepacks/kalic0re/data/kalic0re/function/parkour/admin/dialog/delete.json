@@ -19,7 +19,7 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.delete.details",
-        "fallback": "Delete it, with its start and lobby? Anyone running it is sent to its lobby first.",
+        "fallback": "Are you sure? Anyone running the course will be sent to its lobby.",
         "extra": [
           {
             "translate": "kalic0re.parkour.menu.delete.warning",

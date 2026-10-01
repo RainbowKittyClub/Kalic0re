@@ -10,7 +10,7 @@
     "type": "minecraft:plain_message",
     "contents": {
       "translate": "kalic0re.parkour.menu.courses.details",
-      "fallback": "Pick a course to manage it."
+      "fallback": "Select a course to manage."
     }
   },
   "actions": [

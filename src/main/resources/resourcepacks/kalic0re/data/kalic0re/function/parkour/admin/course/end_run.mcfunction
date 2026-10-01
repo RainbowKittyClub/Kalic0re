@@ -2,4 +2,4 @@
 # the course and its lobby are gone.
 scoreboard players set @s kalic0re.parkour.isActive 0
 $function kalic0re:parkour/player/exit {uuid:$(uuid)}
-$tellraw @s {text:"Parkour course \"$(course)\" was deleted, so your run has ended.",color:"yellow"}
+$tellraw @s {translate:"kalic0re.parkour.chat.run_ended_by_delete",fallback:"Parkour course \"%s\" was deleted, so your run has ended.",with:["$(course)"],color:"yellow"}
