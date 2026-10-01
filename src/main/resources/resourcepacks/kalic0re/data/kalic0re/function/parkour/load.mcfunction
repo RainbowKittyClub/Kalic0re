@@ -11,6 +11,21 @@ scoreboard objectives add kalic0re.parkour.runningCourseId dummy
 scoreboard objectives add kalic0re.parkour.runnerTickPhaseOf2 dummy
 scoreboard objectives add kalic0re.parkour.runnerTickPhaseOf4 dummy
 scoreboard objectives add kalic0re.parkour.runnerTickPhaseOf16 dummy
+# A runner's food exhaustion when the run began, and gained since, in hundredths: their carrier's
+# enchantment cancels what's gained, bit by bit, so a run leaves hunger where it was.
+scoreboard objectives add kalic0re.parkour.foodExhaustionAtRunStart dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionSinceRunStart dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit1 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit2 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit4 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit8 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit16 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit32 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit64 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit128 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit256 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit512 dummy
+scoreboard objectives add kalic0re.parkour.foodExhaustionCancelBit1024 dummy
 # The boundary wand is a warped fungus on a stick, so its uses never count as parkour items'.
 scoreboard objectives add kalic0re.parkour.courseBoundaryWandRightClick minecraft.used:minecraft.warped_fungus_on_a_stick
 # Whose wand selection each outline display draws; the sweep clears ones left over from a restart.

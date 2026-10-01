@@ -1,0 +1,207 @@
+{
+  "description": {
+    "translate": "kalic0re.parkour.enchantment.runner_food_exhaustion_cancel",
+    "fallback": "Parkour Runner Food Exhaustion Cancel"
+  },
+  "supported_items": "minecraft:barrier",
+  "weight": 1,
+  "max_level": 1,
+  "min_cost": {
+    "base": 1,
+    "per_level_above_first": 0
+  },
+  "max_cost": {
+    "base": 1,
+    "per_level_above_first": 0
+  },
+  "anvil_cost": 1,
+  "slots": [
+    "body"
+  ],
+  "effects": {
+    "minecraft:tick": [
+      {
+        "effect": {
+          "type": "minecraft:run_function",
+          "function": "kalic0re:parkour/player/measure_food_exhaustion"
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -10.24
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit1024": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -5.12
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit512": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -2.56
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit256": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -1.28
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit128": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -0.64
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit64": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -0.32
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit32": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -0.16
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit16": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -0.08
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit8": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -0.04
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit4": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -0.02
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit2": 1
+          }
+        }
+      },
+      {
+        "effect": {
+          "type": "minecraft:apply_exhaustion",
+          "amount": -0.01
+        },
+        "requirements": {
+          "condition": "minecraft:entity_scores",
+          "entity": "this",
+          "scores": {
+            "kalic0re.parkour.foodExhaustionSinceRunStart": {
+              "min": 1
+            },
+            "kalic0re.parkour.foodExhaustionCancelBit1": 1
+          }
+        }
+      }
+    ]
+  }
+}

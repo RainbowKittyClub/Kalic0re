@@ -11,4 +11,17 @@ scoreboard players reset @s kalic0re.parkour.runningCourseId
 scoreboard players reset @s kalic0re.parkour.runnerTickPhaseOf2
 scoreboard players reset @s kalic0re.parkour.runnerTickPhaseOf4
 scoreboard players reset @s kalic0re.parkour.runnerTickPhaseOf16
+scoreboard players reset @s kalic0re.parkour.foodExhaustionAtRunStart
+scoreboard players reset @s kalic0re.parkour.foodExhaustionSinceRunStart
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit1
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit2
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit4
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit8
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit16
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit32
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit64
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit128
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit256
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit512
+scoreboard players reset @s kalic0re.parkour.foodExhaustionCancelBit1024
 $data remove storage kalic0re:parkour players[{uuid:$(uuid)}]

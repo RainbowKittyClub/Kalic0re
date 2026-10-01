@@ -2,15 +2,15 @@
 execute if items entity @s hotbar.0 *[custom_data~{kalic0re:{parkour:{item:"checkpoint"}}}] \
     if items entity @s hotbar.4 *[custom_data~{kalic0re:{parkour:{item:"restart"}}}] \
     if items entity @s hotbar.8 *[custom_data~{kalic0re:{parkour:{item:"quit"}}}] \
-    if items entity @s armor.body *[custom_data~{kalic0re:{parkour:{item:"invulnerability"}}}] \
+    if items entity @s armor.body *[custom_data~{kalic0re:{parkour:{item:"runnerEnchantmentCarrier"}}}] \
     run return 0
 
-# /data can't set a player's Invulnerable, so the body slot, which no screen shows, holds an enchantment
-# whose damage_immunity stops the same hits. The slot only takes a body equippable; exit's clear empties it.
-execute unless items entity @s armor.body *[custom_data~{kalic0re:{parkour:{item:"invulnerability"}}}] run \
-    item replace entity @s armor.body with minecraft:barrier[custom_data={kalic0re:{parkour:{item:"invulnerability"}}}, \
+# The body slot, which no screen shows, carries the runner's enchantments: damage immunity, since /data
+# can't set a player's Invulnerable, and the exhaustion cancel. It only takes a body equippable.
+execute unless items entity @s armor.body *[custom_data~{kalic0re:{parkour:{item:"runnerEnchantmentCarrier"}}}] run \
+    item replace entity @s armor.body with minecraft:barrier[custom_data={kalic0re:{parkour:{item:"runnerEnchantmentCarrier"}}}, \
     equippable={slot:"body",equip_sound:"minecraft:intentionally_empty"}, \
-    enchantments={"kalic0re:parkour/runner_invulnerability":1}]
+    enchantments={"kalic0re:parkour/runner_invulnerability":1,"kalic0re:parkour/runner_food_exhaustion_cancel":1}]
 
 # A clear of 0 only counts, and it also sees the cursor, so an item being dragged is not given twice.
 execute store result score #have kalic0re.parkour.tmp run \
