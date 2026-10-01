@@ -7,4 +7,5 @@ $function kalic0re:parkour/timer/record {uuid:$(uuid)}
 $function kalic0re:parkour/player/goto {uuid:$(uuid),point:"lobby"}
 scoreboard players reset @s kalic0re.parkour.runTicks
 scoreboard players reset @s kalic0re.parkour.courseBestTicks
+scoreboard players reset @s kalic0re.parkour.runningCourseId
 $data remove storage kalic0re:parkour players[{uuid:$(uuid)}]
