@@ -7,6 +7,6 @@ $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}].course
     tellraw @s {translate:"kalic0re.parkour.chat.no_course_boundaries", \
     fallback:"Parkour course \"%s\" has no course boundaries, so its runners may go anywhere.",with:["$(course)"],color:"gray"}
 $function kalic0re:parkour/admin/course_boundary/list_kind {course:"$(course)",boundaries:"courseBoundaries", \
-    heading:"course_boundaries",headingName:"Course boundaries",remove:"remove"}
+    heading:"course_boundaries",remove:"remove"}
 $function kalic0re:parkour/admin/course_boundary/list_kind {course:"$(course)",boundaries:"courseExclusionBoundaries", \
-    heading:"exclusion_boundaries",headingName:"Exclusion boundaries",remove:"remove_exclusion"}
+    heading:"exclusion_boundaries",remove:"remove_exclusion"}

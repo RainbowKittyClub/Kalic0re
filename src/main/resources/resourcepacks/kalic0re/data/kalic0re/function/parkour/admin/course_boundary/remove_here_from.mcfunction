@@ -1,7 +1,7 @@
 # Tests the terms of $(course)'s $(boundaryPredicate) in order against this player's feet; removes the
 # first that holds them, and leaves tmp.boundaryHere.found set.
 $data modify storage kalic0re:parkour tmp.boundaryHere set value {course:"$(course)", \
-    boundaries:"$(boundaries)",boundaryPredicate:"$(boundaryPredicate)",key:"$(key)",name:"$(name)"}
+    boundaries:"$(boundaries)",boundaryPredicate:"$(boundaryPredicate)",key:"$(key)"}
 $data modify storage kalic0re:parkour tmp.boundaryHere.terms set from \
     storage kalic0re:parkour courses[{name:"$(course)"}].$(boundaryPredicate).terms
 scoreboard players set #boundaryIndex kalic0re.parkour.tmp 0
