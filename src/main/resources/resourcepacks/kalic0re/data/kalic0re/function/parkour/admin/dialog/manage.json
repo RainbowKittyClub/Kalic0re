@@ -69,6 +69,15 @@
     },
     {
       "label": {
+        "translate": "kalic0re.parkour.menu.manage.standing_block_chest"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/standing_block/chest {course:\"$(course)\"}"
+      }
+    },
+    {
+      "label": {
         "translate": "kalic0re.parkour.menu.manage.standing_blocks"
       },
       "action": {

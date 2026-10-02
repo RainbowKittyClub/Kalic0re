@@ -14,6 +14,8 @@ execute as @a[scores={kalic0re.parkour.admin=1..}] run function kalic0re:parkour
 # The course boundary wand's right-clicks; its left-clicks come through its enchantment instead.
 execute as @a[scores={kalic0re.parkour.courseBoundaryWandRightClick=1..}] at @s run \
     function kalic0re:parkour/admin/course_boundary/wand/right_click
+# Standing-blocks chests and their lists, kept in step while any is open.
+execute if data storage kalic0re:parkour standingBlockChests[0] run function kalic0re:parkour/admin/standing_block/chest/tick_all
 # Displays outlines left behind go a few boundaries' worth a tick, as outlines are drawn.
 execute if score #boundaryOutlineDisplaysToClear kalic0re.parkour.tmp matches 1 run \
     function kalic0re:parkour/admin/course_boundary/wand/outline/clear_queued_displays

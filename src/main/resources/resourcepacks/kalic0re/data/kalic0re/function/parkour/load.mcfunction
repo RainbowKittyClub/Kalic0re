@@ -37,6 +37,13 @@ scoreboard objectives add kalic0re.parkour.boundaryWandHandChangeTicks dummy
 scoreboard objectives add kalic0re.parkour.boundaryOutlineCourseId dummy
 scoreboard objectives add kalic0re.parkour.boundaryOutlineNextBoundary dummy
 schedule function kalic0re:parkour/admin/course_boundary/wand/outline/sweep 20t replace
+# Whose standing-blocks chest a chest minecart is, and its course. Chests close at a reload: their lists are
+# saved already, and one kept in an unloaded chunk would come back with old contents.
+scoreboard objectives add kalic0re.parkour.standingBlockChestOwner dummy
+scoreboard objectives add kalic0re.parkour.standingBlockChestCourseId dummy
+execute as @e[type=minecraft:chest_minecart,tag=kalic0re.parkour.standingBlockChest] run function kalic0re:parkour/admin/standing_block/chest/close
+kill @e[type=minecraft:block_display,tag=kalic0re.parkour.standingBlockChestSeat]
+data remove storage kalic0re:parkour standingBlockChests
 scoreboard objectives add kalic0re.parkour.leaderboard trigger
 # /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:
 # /scoreboard players enable <player> kalic0re.parkour.admin
@@ -52,13 +59,13 @@ scoreboard players set #60 kalic0re.parkour.tmp 60
 data modify storage kalic0re:parkour pointNames set value { \
     start:{translate:"kalic0re.parkour.point.start"}, \
     lobby:{translate:"kalic0re.parkour.point.lobby"}}
-# Standing blocks a runner can be inside, so their rule also tests the feet with inTerm. Powder snow can be
-# stood on as well, in leather boots.
+# Standing blocks a runner can be inside, so their rule also tests the feet with inTerm, and which the
+# standing-blocks chest takes as their bucket. Powder snow can be stood on as well, in leather boots.
 data modify storage kalic0re:parkour enterableStandingBlocks set value [ \
-    {block:"minecraft:water", \
+    {block:"minecraft:water",bucket:"minecraft:water_bucket", \
         inTerm:{condition:"minecraft:location_check",predicate:{fluid:{fluids:"#minecraft:water"}}}}, \
-    {block:"minecraft:lava", \
+    {block:"minecraft:lava",bucket:"minecraft:lava_bucket", \
         inTerm:{condition:"minecraft:location_check",predicate:{fluid:{fluids:"#minecraft:lava"}}}}, \
-    {block:"minecraft:powder_snow",standable:1b, \
+    {block:"minecraft:powder_snow",bucket:"minecraft:powder_snow_bucket",standable:1b, \
         inTerm:{condition:"minecraft:location_check",predicate:{block:{blocks:"minecraft:powder_snow"}}}}]
 function kalic0re:parkour/course/refresh_all_predicate_texts
