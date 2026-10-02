@@ -1,7 +1,7 @@
 # Shows course $(id)'s leaderboard to the player with $(uuid): their time with the 10 above and 10
 # below, the window shifted to stay inside the list; from the top if they have no time there.
 $execute unless data storage kalic0re:parkour courses[{id:$(id)}] run return run \
-    tellraw @s {translate:"kalic0re.parkour.chat.no_course_number",fallback:"No parkour course numbered %s.",with:["$(id)"],color:"red"}
+    tellraw @s {translate:"kalic0re.parkour.chat.no_course_number",with:["$(id)"],color:"red"}
 data modify storage kalic0re:dialog args set value {}
 $data modify storage kalic0re:dialog args.course set from storage kalic0re:parkour courses[{id:$(id)}].name
 function kalic0re:parkour/leaderboard/leaderboard
@@ -9,7 +9,7 @@ data modify storage kalic0re:parkour tmp.board.times set value []
 $data modify storage kalic0re:parkour tmp.board.times set from storage kalic0re:parkour courses[{id:$(id)}].times
 execute unless data storage kalic0re:parkour tmp.board.times[0] run \
     data modify storage kalic0re:dialog built.leaderboard.body.contents set value \
-    {translate:"kalic0re.parkour.menu.leaderboard.empty",fallback:"No times yet."}
+    {translate:"kalic0re.parkour.menu.leaderboard.empty"}
 $function kalic0re:parkour/leaderboard/find_viewer {uuid:$(uuid)}
 execute store result score #count kalic0re.parkour.tmp run data get storage kalic0re:parkour tmp.board.times
 execute if score #index kalic0re.parkour.tmp = #count kalic0re.parkour.tmp run scoreboard players set #index kalic0re.parkour.tmp 0

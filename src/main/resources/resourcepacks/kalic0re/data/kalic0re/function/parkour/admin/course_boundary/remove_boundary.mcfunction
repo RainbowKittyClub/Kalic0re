@@ -1,7 +1,7 @@
 # remove and remove_exclusion: number $(boundary) from the course's $(boundaries) and the any_of at
 # $(boundaryPredicate), told by the message/$(key)_* functions.
 $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}] run return run \
-    tellraw @s {translate:"kalic0re.parkour.chat.no_such_course",fallback:"There is no parkour course named \"%s\".",with:["$(course)"],color:"red"}
+    tellraw @s {translate:"kalic0re.parkour.chat.no_such_course",with:["$(course)"],color:"red"}
 # Numbered from 1; a list index below 0 would count from the end.
 $scoreboard players set #boundary kalic0re.parkour.tmp $(boundary)
 $execute unless score #boundary kalic0re.parkour.tmp matches 1.. run return run \

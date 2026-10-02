@@ -3,22 +3,19 @@
   "type": "minecraft:multi_action",
   "title": {
     "translate": "kalic0re.parkour.menu.manage.title",
-    "fallback": "Manage a Parkour Course",
     "bold": true
   },
   "body": {
     "type": "minecraft:plain_message",
     "contents": {
       "translate": "kalic0re.parkour.menu.course",
-      "fallback": "Course: %s",
       "with": ["$(course)"]
     }
   },
   "actions": [
     {
       "label": {
-        "translate": "kalic0re.parkour.menu.manage.rename",
-        "fallback": "Rename"
+        "translate": "kalic0re.parkour.menu.manage.rename"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -27,8 +24,7 @@
     },
     {
       "label": {
-        "translate": "kalic0re.parkour.menu.manage.move_start",
-        "fallback": "Move Start"
+        "translate": "kalic0re.parkour.menu.manage.move_start"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -37,8 +33,7 @@
     },
     {
       "label": {
-        "translate": "kalic0re.parkour.menu.manage.delete",
-        "fallback": "Delete"
+        "translate": "kalic0re.parkour.menu.manage.delete"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -47,8 +42,7 @@
     },
     {
       "label": {
-        "translate": "kalic0re.parkour.menu.manage.times",
-        "fallback": "Clear Leaderboard"
+        "translate": "kalic0re.parkour.menu.manage.times"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -57,8 +51,7 @@
     },
     {
       "label": {
-        "translate": "kalic0re.parkour.menu.manage.course_boundary_wand",
-        "fallback": "Get Parkour Boundary Wand"
+        "translate": "kalic0re.parkour.menu.manage.course_boundary_wand"
       },
       "action": {
         "type": "minecraft:run_command",
@@ -67,8 +60,7 @@
     },
     {
       "label": {
-        "translate": "kalic0re.parkour.menu.manage.course_boundaries",
-        "fallback": "List Course Boundaries"
+        "translate": "kalic0re.parkour.menu.manage.course_boundaries"
       },
       "action": {
         "type": "minecraft:run_command",

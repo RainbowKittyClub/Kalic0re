@@ -3,12 +3,10 @@
   "type": "minecraft:confirmation",
   "external_title": {
     "translate": "kalic0re.parkour.menu.new_parkour",
-    "fallback": "New Parkour Course",
     "bold": true
   },
   "title": {
     "translate": "kalic0re.parkour.menu.new_parkour.title",
-    "fallback": "Create a New Parkour Course",
     "bold": true
   },
   "body": {
@@ -19,21 +17,18 @@
       "extra": [
         {
           "translate": "kalic0re.parkour.menu.new_parkour.details.p1",
-          "fallback": "This must be unique! ",
           "color": "yellow",
           "bold": true,
           "italic": true
         },
         {
           "translate": "kalic0re.parkour.menu.new_parkour.details.p2",
-          "fallback": "Two courses cannot have the same name.",
           "color": "#fcfcfc",
           "italic": false,
           "underlined": false
         },
         {
           "translate": "kalic0re.parkour.menu.new_parkour.details.p3",
-          "fallback": "\n\nThe starting point of the course will be placed at your current location. If that's not where you want it, click \"Cancel\" and run this command again at the desired location.",
           "color": "gold"
         }
       ]
@@ -45,8 +40,7 @@
       "key": "course_name",
       "max_length": 128,
       "label": {
-        "translate": "kalic0re.parkour.menu.new_parkour.course_prompt_title",
-        "fallback": "Course name:"
+        "translate": "kalic0re.parkour.menu.new_parkour.course_prompt_title"
       },
       "initial": "My Parkour Course"
     }
@@ -56,8 +50,7 @@
   "pause": true,
   "yes": {
     "label": {
-      "translate": "kalic0re.parkour.menu.new_parkour.confirm",
-      "fallback": "Confirm"
+      "translate": "kalic0re.parkour.menu.new_parkour.confirm"
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
@@ -66,8 +59,7 @@
   },
   "no": {
     "label": {
-      "translate": "kalic0re.parkour.menu.new_parkour.cancel",
-      "fallback": "Cancel"
+      "translate": "kalic0re.parkour.menu.new_parkour.cancel"
     }
   }
 }

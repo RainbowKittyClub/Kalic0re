@@ -7,16 +7,16 @@ function kalic0re:parkour/timer/split
 scoreboard players set @s kalic0re.parkour.leaderboard -1
 scoreboard players enable @s kalic0re.parkour.leaderboard
 $execute if score #newBest kalic0re.parkour.tmp matches 1 run tellraw @s [ \
-    {translate:"kalic0re.parkour.chat.finished_new_best",fallback:"Finished \"%s\" in %s. New best!",color:"gold",with:["$(course)", \
+    {translate:"kalic0re.parkour.chat.finished_new_best",color:"gold",with:["$(course)", \
         {text:"",color:"yellow",extra:[ \
             {score:{name:"#tensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
             {score:{name:"#tensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
             {score:{name:"#tenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}]},{text:" "}, \
-    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true,bold:true, \
+    {translate:"kalic0re.parkour.chat.see_leaderboard",underlined:true,bold:true, \
         click_event:{action:"run_command",command:"/trigger kalic0re.parkour.leaderboard set $(id)"}, \
         hover_event:{action:"show_text",value:"/trigger kalic0re.parkour.leaderboard set $(id)"}}]
 $execute if score #newBest kalic0re.parkour.tmp matches 0 run tellraw @s [ \
-    {translate:"kalic0re.parkour.chat.finished",fallback:"Finished \"%s\" in %s. Your best time is %s.",color:"gold",with:["$(course)", \
+    {translate:"kalic0re.parkour.chat.finished",color:"gold",with:["$(course)", \
         {text:"",color:"yellow",extra:[ \
             {score:{name:"#tensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
             {score:{name:"#tensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#onesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
@@ -25,6 +25,6 @@ $execute if score #newBest kalic0re.parkour.tmp matches 0 run tellraw @s [ \
             {score:{name:"#bestTensOfMinutes",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfMinutes",objective:"kalic0re.parkour.tmp"}},{text:":"}, \
             {score:{name:"#bestTensOfSeconds",objective:"kalic0re.parkour.tmp"}},{score:{name:"#bestOnesOfSeconds",objective:"kalic0re.parkour.tmp"}},{text:"."}, \
             {score:{name:"#bestTenthsOfSecond",objective:"kalic0re.parkour.tmp"}}]}]},{text:" "}, \
-    {translate:"kalic0re.parkour.chat.see_leaderboard",fallback:"Click here to see the leaderboard.",underlined:true,bold:true, \
+    {translate:"kalic0re.parkour.chat.see_leaderboard",underlined:true,bold:true, \
         click_event:{action:"run_command",command:"/trigger kalic0re.parkour.leaderboard set $(id)"}, \
         hover_event:{action:"show_text",value:"/trigger kalic0re.parkour.leaderboard set $(id)"}}]

@@ -17,16 +17,16 @@ execute store result score #have kalic0re.parkour.tmp run \
     clear @s *[custom_data~{kalic0re:{parkour:{item:"checkpoint"}}}] 0
 execute if score #have kalic0re.parkour.tmp matches 0 run item replace entity @s hotbar.0 with \
     minecraft:carrot_on_a_stick[custom_data={kalic0re:{parkour:{item:"checkpoint"}}}, \
-    item_name={translate:"kalic0re.parkour.item.checkpoint",fallback:"Checkpoint"},item_model="minecraft:ender_pearl"]
+    item_name={translate:"kalic0re.parkour.item.checkpoint"},item_model="minecraft:ender_pearl"]
 
 execute store result score #have kalic0re.parkour.tmp run \
     clear @s *[custom_data~{kalic0re:{parkour:{item:"restart"}}}] 0
 execute if score #have kalic0re.parkour.tmp matches 0 run item replace entity @s hotbar.4 with \
     minecraft:carrot_on_a_stick[custom_data={kalic0re:{parkour:{item:"restart"}}}, \
-    item_name={translate:"kalic0re.parkour.item.restart",fallback:"Restart"},item_model="minecraft:clock"]
+    item_name={translate:"kalic0re.parkour.item.restart"},item_model="minecraft:clock"]
 
 execute store result score #have kalic0re.parkour.tmp run \
     clear @s *[custom_data~{kalic0re:{parkour:{item:"quit"}}}] 0
 execute if score #have kalic0re.parkour.tmp matches 0 run item replace entity @s hotbar.8 with \
     minecraft:carrot_on_a_stick[custom_data={kalic0re:{parkour:{item:"quit"}}}, \
-    item_name={translate:"kalic0re.parkour.item.quit",fallback:"Quit"},item_model="minecraft:barrier"]
+    item_name={translate:"kalic0re.parkour.item.quit"},item_model="minecraft:barrier"]

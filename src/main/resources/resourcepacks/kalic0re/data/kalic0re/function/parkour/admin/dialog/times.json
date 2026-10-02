@@ -3,7 +3,6 @@
   "type": "minecraft:multi_action",
   "title": {
     "translate": "kalic0re.parkour.menu.times.title",
-    "fallback": "Clear Leaderboard",
     "bold": true
   },
   "body": [
@@ -11,15 +10,13 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.course",
-        "fallback": "Course: %s",
         "with": ["$(course)"]
       }
     },
     {
       "type": "minecraft:plain_message",
       "contents": {
-        "translate": "kalic0re.parkour.menu.times.details",
-        "fallback": "Select a player to clear (or reset the course leaderboard)."
+        "translate": "kalic0re.parkour.menu.times.details"
       }
     }
   ],
@@ -27,7 +24,6 @@
     {
       "label": {
         "translate": "kalic0re.parkour.menu.times.clear_all",
-        "fallback": "Clear All Times",
         "color": "red"
       },
       "width": 250,

@@ -3,7 +3,6 @@
   "type": "minecraft:confirmation",
   "title": {
     "translate": "kalic0re.parkour.menu.rename.title",
-    "fallback": "Rename a Parkour Course",
     "bold": true
   },
   "body": [
@@ -11,15 +10,13 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.course",
-        "fallback": "Course: %s",
         "with": ["$(course)"]
       }
     },
     {
       "type": "minecraft:plain_message",
       "contents": {
-        "translate": "kalic0re.parkour.menu.rename.details",
-        "fallback": "This changes the course name and does not affect anyone currently on it."
+        "translate": "kalic0re.parkour.menu.rename.details"
       }
     }
   ],
@@ -30,15 +27,13 @@
       "max_length": 128,
       "initial": "$(course)",
       "label": {
-        "translate": "kalic0re.parkour.menu.rename.name",
-        "fallback": "New name:"
+        "translate": "kalic0re.parkour.menu.rename.name"
       }
     }
   ],
   "yes": {
     "label": {
-      "translate": "kalic0re.parkour.menu.rename.confirm",
-      "fallback": "Rename"
+      "translate": "kalic0re.parkour.menu.rename.confirm"
     },
     "action": {
       "type": "minecraft:dynamic/run_command",

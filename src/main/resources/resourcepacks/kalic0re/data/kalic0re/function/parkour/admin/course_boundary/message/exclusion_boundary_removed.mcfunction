@@ -1,2 +1,2 @@
-$tellraw @s {translate:"kalic0re.parkour.chat.exclusion_boundary_removed",fallback:"Parkour course \"%s\": exclusion boundary %s removed.", \
+$tellraw @s {translate:"kalic0re.parkour.chat.exclusion_boundary_removed", \
     with:["$(course)","$(boundary)"],color:"green"}

@@ -3,21 +3,18 @@
   "type": "minecraft:multi_action",
   "title": {
     "translate": "kalic0re.parkour.menu.courses.title",
-    "fallback": "Parkour Courses",
     "bold": true
   },
   "body": {
     "type": "minecraft:plain_message",
     "contents": {
-      "translate": "kalic0re.parkour.menu.courses.details",
-      "fallback": "Select a course to manage."
+      "translate": "kalic0re.parkour.menu.courses.details"
     }
   },
   "actions": [
     {
       "label": {
-        "translate": "kalic0re.parkour.menu.courses.new_course",
-        "fallback": "New Course…"
+        "translate": "kalic0re.parkour.menu.courses.new_course"
       },
       "width": 250,
       "action": {

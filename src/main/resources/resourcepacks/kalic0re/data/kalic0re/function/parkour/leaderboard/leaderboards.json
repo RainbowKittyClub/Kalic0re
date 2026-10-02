@@ -3,14 +3,12 @@
   "type": "minecraft:multi_action",
   "title": {
     "translate": "kalic0re.parkour.menu.leaderboards.title",
-    "fallback": "Parkour Leaderboards",
     "bold": true
   },
   "body": {
     "type": "minecraft:plain_message",
     "contents": {
-      "translate": "kalic0re.parkour.menu.leaderboards.details",
-      "fallback": "Select a course to see its leaderboard."
+      "translate": "kalic0re.parkour.menu.leaderboards.details"
     }
   },
   "actions": [],

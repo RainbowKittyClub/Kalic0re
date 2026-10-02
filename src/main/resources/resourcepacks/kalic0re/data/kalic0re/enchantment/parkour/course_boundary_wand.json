@@ -1,7 +1,6 @@
 {
   "description": {
-    "translate": "kalic0re.parkour.enchantment.course_boundary_wand",
-    "fallback": "Parkour Boundary Wand"
+    "translate": "kalic0re.parkour.enchantment.course_boundary_wand"
   },
   "supported_items": "minecraft:warped_fungus_on_a_stick",
   "weight": 1,

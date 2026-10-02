@@ -3,7 +3,6 @@
   "type": "minecraft:confirmation",
   "title": {
     "translate": "kalic0re.parkour.menu.clear_player.title",
-    "fallback": "Clear Player Time",
     "bold": true
   },
   "body": [
@@ -11,7 +10,6 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.course",
-        "fallback": "Course: %s",
         "with": ["$(course)"]
       }
     },
@@ -19,7 +17,6 @@
       "type": "minecraft:plain_message",
       "contents": {
         "translate": "kalic0re.parkour.menu.clear_player.details",
-        "fallback": "Clear %s's time from the leaderboard?",
         "with": [
           {
             "text": "$(player)",
@@ -29,7 +26,6 @@
         "extra": [
           {
             "translate": "kalic0re.parkour.menu.clear.warning",
-            "fallback": "\n\nThis can't be undone.",
             "color": "red"
           }
         ]
@@ -39,7 +35,6 @@
   "yes": {
     "label": {
       "translate": "kalic0re.parkour.menu.clear_player.confirm",
-      "fallback": "Clear",
       "color": "red"
     },
     "action": {

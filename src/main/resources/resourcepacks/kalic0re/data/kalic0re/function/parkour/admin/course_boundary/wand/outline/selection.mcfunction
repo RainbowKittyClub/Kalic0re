@@ -32,7 +32,7 @@ scoreboard players operation #lenSum kalic0re.parkour.tmp = #lenX kalic0re.parko
 scoreboard players operation #lenSum kalic0re.parkour.tmp += #lenY kalic0re.parkour.tmp
 scoreboard players operation #lenSum kalic0re.parkour.tmp += #lenZ kalic0re.parkour.tmp
 execute if score #lenSum kalic0re.parkour.tmp matches 513.. run return run tellraw @s \
-    {translate:"kalic0re.parkour.chat.wand_outline_too_large",fallback:"This selection is too large to outline.",color:"gray"}
+    {translate:"kalic0re.parkour.chat.wand_outline_too_large",color:"gray"}
 data modify storage kalic0re:parkour tmp.outline.args set value {}
 execute store result storage kalic0re:parkour tmp.outline.args.minX int 1 run scoreboard players get #minX kalic0re.parkour.tmp
 execute store result storage kalic0re:parkour tmp.outline.args.minY int 1 run scoreboard players get #minY kalic0re.parkour.tmp

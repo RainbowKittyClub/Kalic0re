@@ -77,6 +77,55 @@ tasks.named('processResources') {
 	from(generateDatapackDialogs) { into 'resourcepacks' }
 }
 
+// A pack's English is written once, in its lang/en_us.json: each {translate:"<key>"} of the pack's own
+// keys gets the text there as its fallback, SNBT or JSON alike, for clients without its resource pack.
+// A key missing from the file, a fallback written in a source, or a key built at run time fails the build.
+def packLangs = fileTree('src/main/resources/resourcepacks') { include '*/lang/en_us.json' }
+def usedEnglish = Collections.synchronizedSet(new HashSet<String>())
+def englishOf = [:].withDefault { String pack ->
+	def lang = file("src/main/resources/resourcepacks/${pack}/lang/en_us.json")
+	def english = lang.exists() ? new groovy.json.JsonSlurper().parse(lang, 'UTF-8') as Map : [:]
+	// A macro line would expand $( in the text.
+	english.each { key, text ->
+		if (text.contains('$(')) throw new GradleException("${lang}: ${key}'s English holds \$(, which a macro line would expand")
+	}
+	english
+}
+// A JSON string is an SNBT one too, escapes and all; a raw line break would end the function's line.
+def quoted = new groovy.json.JsonGenerator.Options().disableUnicodeEscaping().build()
+def withFallbacks = { String line, Map english, String where ->
+	if (line =~ /(?<![A-Za-z])"?fallback"?\s*:/) {
+		throw new GradleException("${where}: fallback text belongs in lang/en_us.json, not here: ${line.trim()}")
+	}
+	line.replaceAll(/("?)translate\1(\s*:\s*)"(kalic0re\.[^"]*)"/) { all, quote, colon, key ->
+		if (key.contains('$(')) throw new GradleException("${where}: ${key} is built at run time, so it has no English to fall back on")
+		def text = english[key]
+		if (text == null) throw new GradleException("${where}: ${key} has no English in lang/en_us.json")
+		usedEnglish << key
+		"${all},${quote}fallback${quote}${colon}${quoted.toJson(text)}"
+	}
+}
+tasks.named('processResources') {
+	inputs.files(packLangs)
+	exclude 'resourcepacks/*/lang/**'
+	filteringCharset = 'UTF-8'
+	doFirst { usedEnglish.clear() }
+	// By where each file lands: filesMatching tests the path in its source, which for the generated dialogs
+	// lacks resourcepacks/.
+	eachFile { details ->
+		if (!(details.path ==~ /resourcepacks\/[^\/]+\/data\/.+\.(mcfunction|json)/)) return
+		def english = englishOf[details.path.split('/')[1]]
+		def where = details.path
+		details.filter { String line -> withFallbacks(line, english, where) }
+	}
+	doLast {
+		packLangs.each { lang ->
+			def unused = (new groovy.json.JsonSlurper().parse(lang, 'UTF-8') as Map).keySet() - usedEnglish
+			if (unused) logger.warn("${lang}: English that no pack text uses: ${unused.sort().join(', ')}")
+		}
+	}
+}
+
 // Zips each built-in pack to build/datapacks/<pack>.zip for a world's datapacks/ folder. Reads
 // processResources' output so pack.mcmeta arrives expanded.
 def datapackZips = (file('src/main/resources/resourcepacks').listFiles()?.findAll { it.directory } ?: [])

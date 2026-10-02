@@ -1,7 +1,6 @@
 {
   "description": {
-    "translate": "kalic0re.parkour.enchantment.runner_food_exhaustion_cancel",
-    "fallback": "Parkour Runner Food Exhaustion Cancel"
+    "translate": "kalic0re.parkour.enchantment.runner_food_exhaustion_cancel"
   },
   "supported_items": "minecraft:barrier",
   "weight": 1,

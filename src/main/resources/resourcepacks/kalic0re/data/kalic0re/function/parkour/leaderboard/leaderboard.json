@@ -3,7 +3,6 @@
   "type": "minecraft:notice",
   "title": {
     "translate": "kalic0re.parkour.menu.leaderboard.title",
-    "fallback": "Parkour Leaderboard: %s",
     "with": ["$(course)"],
     "bold": true
   },
