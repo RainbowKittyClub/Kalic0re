@@ -27,7 +27,7 @@
   "kalic0re.parkour.chat.no_time": "%s has set no time on course: %s.",
   "kalic0re.parkour.chat.not_in_course_boundary": "You aren't inside any boundary of parkour course \"%s\".",
   "kalic0re.parkour.chat.point_set": "Parkour course \"%s\": %s set.",
-  "kalic0re.parkour.chat.remove_here_needs_wand": "Hold a Parkour Boundary Wand: the boundary removed is one of its course's.",
+  "kalic0re.parkour.chat.remove_here_needs_wand": "You must be holding a boundary wand set to the desired course to do this.",
   "kalic0re.parkour.chat.remove_it": "Click here to remove it.",
   "kalic0re.parkour.chat.renamed": "Parkour course \"%s\" renamed to \"%s\".",
   "kalic0re.parkour.chat.run_ended_by_delete": "Parkour course \"%s\" was deleted, so your run has ended.",
