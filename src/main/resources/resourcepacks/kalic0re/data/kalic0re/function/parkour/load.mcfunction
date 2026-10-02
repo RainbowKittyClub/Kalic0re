@@ -32,7 +32,8 @@ scoreboard objectives add kalic0re.parkour.courseBoundaryWandRightClick minecraf
 scoreboard objectives add kalic0re.parkour.boundaryOutlineOwner dummy
 # Ticks the wand has been in (or out of) the main hand without the outline following yet.
 scoreboard objectives add kalic0re.parkour.boundaryWandHandChangeTicks dummy
-# A holder's outline still being drawn: the course's id and the next of its boundaries to draw.
+# A holder's outline still being drawn: the course's id and the next of its boundaries to draw, or of
+# its exclusion boundaries once tagged boundaryOutlineDrawingExclusionBoundaries.
 scoreboard objectives add kalic0re.parkour.boundaryOutlineCourseId dummy
 scoreboard objectives add kalic0re.parkour.boundaryOutlineNextBoundary dummy
 schedule function kalic0re:parkour/admin/course_boundary/wand/outline/sweep 20t replace

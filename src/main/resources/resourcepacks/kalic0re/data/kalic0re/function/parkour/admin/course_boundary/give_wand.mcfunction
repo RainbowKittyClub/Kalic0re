@@ -7,7 +7,8 @@ $give @s minecraft:warped_fungus_on_a_stick[custom_data={kalic0re:{parkourCourse
     item_name={translate:"kalic0re.parkour.item.course_boundary_wand",fallback:"Parkour Boundary Wand"}, \
     lore=[{translate:"kalic0re.parkour.item.course_boundary_wand.course",fallback:"Course: %s",with:["$(course)"],color:"gray",italic:false}, \
         {translate:"kalic0re.parkour.item.course_boundary_wand.left",fallback:"Left-click a block: first corner",color:"gray",italic:false}, \
-        {translate:"kalic0re.parkour.item.course_boundary_wand.right",fallback:"Right-click a block: second corner",color:"gray",italic:false}], \
+        {translate:"kalic0re.parkour.item.course_boundary_wand.right",fallback:"Right-click a block: second corner",color:"gray",italic:false}, \
+        {translate:"kalic0re.parkour.item.course_boundary_wand.sneak",fallback:"Sneak while clicking: exclusion boundary",color:"gray",italic:false}], \
     piercing_weapon={deals_knockback:false}, \
     attack_range={max_reach:0,max_creative_reach:0,hitbox_margin:0}, \
     enchantments={"kalic0re:parkour/course_boundary_wand":1},enchantment_glint_override=false, \

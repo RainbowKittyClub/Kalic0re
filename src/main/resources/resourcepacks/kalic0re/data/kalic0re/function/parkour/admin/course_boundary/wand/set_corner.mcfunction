@@ -31,4 +31,7 @@ data modify storage kalic0re:parkour tmp.wand.args.z1 set from storage kalic0re:
 data modify storage kalic0re:parkour tmp.wand.args.x2 set from storage kalic0re:parkour tmp.wand.held.secondCorner[0]
 data modify storage kalic0re:parkour tmp.wand.args.y2 set from storage kalic0re:parkour tmp.wand.held.secondCorner[1]
 data modify storage kalic0re:parkour tmp.wand.args.z2 set from storage kalic0re:parkour tmp.wand.held.secondCorner[2]
-function kalic0re:parkour/admin/course_boundary/wand/offer_add with storage kalic0re:parkour tmp.wand.args
+# Sneaking at the click offers an exclusion boundary instead.
+execute unless predicate {condition:"minecraft:entity_properties",entity:"this",predicate:{flags:{is_sneaking:true}}} run \
+    return run function kalic0re:parkour/admin/course_boundary/wand/offer_add with storage kalic0re:parkour tmp.wand.args
+function kalic0re:parkour/admin/course_boundary/wand/offer_add_exclusion with storage kalic0re:parkour tmp.wand.args

@@ -7,7 +7,8 @@ execute store result score #y2 kalic0re.parkour.tmp run data get storage kalic0r
 execute store result score #z2 kalic0re.parkour.tmp run data get storage kalic0re:parkour tmp.outline.boundaries[0].max[2]
 function kalic0re:parkour/admin/course_boundary/build_boundary
 data remove storage kalic0re:parkour tmp.newCourseBoundary
-data modify storage kalic0re:parkour tmp.outline.box set value {}
+# Starting from the pane and glow of the list being drawn.
+data modify storage kalic0re:parkour tmp.outline.box set from storage kalic0re:parkour tmp.outline.next.colors
 execute store result storage kalic0re:parkour tmp.outline.box.minX int 1 run scoreboard players get #minX kalic0re.parkour.tmp
 execute store result storage kalic0re:parkour tmp.outline.box.minY int 1 run scoreboard players get #minY kalic0re.parkour.tmp
 execute store result storage kalic0re:parkour tmp.outline.box.minZ int 1 run scoreboard players get #minZ kalic0re.parkour.tmp

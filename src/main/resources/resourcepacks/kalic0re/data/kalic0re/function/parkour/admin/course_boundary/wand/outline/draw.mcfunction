@@ -1,5 +1,6 @@
 # As the wand's holder, with its data in tmp.wand.held: their selection in yellow now, and their course's
-# boundaries in white from the next tick, a few a tick. Owner scores find the displays again.
+# boundaries in white and exclusion boundaries in orange from the next tick, a few a tick. Owner scores
+# find the displays again.
 tag @s add kalic0re.parkour.holdingBoundaryWand
 scoreboard players reset @s kalic0re.parkour.boundaryWandHandChangeTicks
 effect give @s minecraft:night_vision 6 0 true
