@@ -27,6 +27,7 @@ $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}].$(boun
     kalic0re:parkour courses[{name:"$(course)"}].$(boundaryPredicate) set value {condition:"minecraft:any_of",terms:[]}
 $data modify storage kalic0re:parkour courses[{name:"$(course)"}].$(boundaryPredicate).terms append from \
     storage kalic0re:parkour tmp.newCourseBoundary.term
+$function kalic0re:parkour/course/refresh_predicate_texts {course:"$(course)"}
 $execute store result storage kalic0re:parkour tmp.newCourseBoundary.number int 1 run \
     data get storage kalic0re:parkour courses[{name:"$(course)"}].$(boundaries)
 $function kalic0re:parkour/admin/course_boundary/message/$(key)_added {course:"$(course)"}

@@ -52,3 +52,13 @@ scoreboard players set #60 kalic0re.parkour.tmp 60
 data modify storage kalic0re:parkour pointNames set value { \
     start:{translate:"kalic0re.parkour.point.start"}, \
     lobby:{translate:"kalic0re.parkour.point.lobby"}}
+# Standing blocks a runner can be inside, so their rule also tests the feet with inTerm. Powder snow can be
+# stood on as well, in leather boots.
+data modify storage kalic0re:parkour enterableStandingBlocks set value [ \
+    {block:"minecraft:water", \
+        inTerm:{condition:"minecraft:location_check",predicate:{fluid:{fluids:"#minecraft:water"}}}}, \
+    {block:"minecraft:lava", \
+        inTerm:{condition:"minecraft:location_check",predicate:{fluid:{fluids:"#minecraft:lava"}}}}, \
+    {block:"minecraft:powder_snow",standable:1b, \
+        inTerm:{condition:"minecraft:location_check",predicate:{block:{blocks:"minecraft:powder_snow"}}}}]
+function kalic0re:parkour/course/refresh_all_predicate_texts
