@@ -1,5 +1,6 @@
-# One stack of the chest, in tmp.chest.item. The pane in its slot is the mode, not an entry.
+# One stack of the chest, in tmp.chest.item. The pane and the campfire in their slots are controls, not entries.
 execute if data storage kalic0re:parkour tmp.chest.item{Slot:26b,components:{"minecraft:custom_data":{kalic0re:{standingBlockChest:"mode"}}}} run return 0
+execute if data storage kalic0re:parkour tmp.chest.item{Slot:25b,components:{"minecraft:custom_data":{kalic0re:{standingBlockChest:"burning"}}}} run return 0
 # Slot is a byte, which a macro would write with its b.
 data modify storage kalic0re:parkour tmp.chest.entry set value {}
 execute store result storage kalic0re:parkour tmp.chest.entry.slot int 1 run data get storage kalic0re:parkour tmp.chest.item.Slot

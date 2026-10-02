@@ -1,10 +1,10 @@
 # /function kalic0re:parkour/admin/standing_block/chest {course:"<name>"}
-# A chest minecart at eye level holding the course's standing blocks, one token each, and the mode's pane.
-# chest/tick keeps it and the list in step until its owner walks away.
+# A chest minecart at eye level holding the course's standing blocks, one token each, the burning campfire and
+# the mode's pane. chest/tick keeps it and the course in step until its owner walks away.
 $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.no_such_course",with:["$(course)"],color:"red"}
-# 26 slots for blocks; the 27th holds the pane.
-$execute if data storage kalic0re:parkour courses[{name:"$(course)"}].standingBlocks[26] run return run \
+# 25 slots for blocks; the last two hold the campfire and the pane.
+$execute if data storage kalic0re:parkour courses[{name:"$(course)"}].standingBlocks[25] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.standing_blocks_too_many",with:["$(course)"],color:"red"}
 $function kalic0re:parkour/course/ensure_id {course:"$(course)"}
 $execute store result score #standingBlockChestCourseId kalic0re.parkour.tmp run data get storage kalic0re:parkour courses[{name:"$(course)"}].id

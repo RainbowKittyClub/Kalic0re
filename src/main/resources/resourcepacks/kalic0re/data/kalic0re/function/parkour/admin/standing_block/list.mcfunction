@@ -1,6 +1,18 @@
 # /function kalic0re:parkour/admin/standing_block/list {course:"<name>"}
 $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.no_such_course",with:["$(course)"],color:"red"}
+# Burning first, as the chest keeps its campfire beside the standing blocks.
+$execute if data storage kalic0re:parkour courses[{name:"$(course)",burningMode:"allow"}] run tellraw @s [ \
+    {translate:"kalic0re.parkour.chat.burning_allowed",with:["$(course)"]},{text:" "}, \
+    {translate:"kalic0re.parkour.chat.burning_make_denied",underlined:true,bold:true, \
+        click_event:{action:"run_command",command:"/function kalic0re:parkour/admin/course/burning {course:\"$(course)\",mode:\"deny\"}"}, \
+        hover_event:{action:"show_text",value:"/function kalic0re:parkour/admin/course/burning {course:\"$(course)\",mode:\"deny\"}"}}]
+$execute unless data storage kalic0re:parkour courses[{name:"$(course)",burningMode:"allow"}] run tellraw @s [ \
+    {translate:"kalic0re.parkour.chat.burning_denied", \
+        with:["$(course)"]},{text:" "}, \
+    {translate:"kalic0re.parkour.chat.burning_make_allowed",underlined:true,bold:true, \
+        click_event:{action:"run_command",command:"/function kalic0re:parkour/admin/course/burning {course:\"$(course)\",mode:\"allow\"}"}, \
+        hover_event:{action:"show_text",value:"/function kalic0re:parkour/admin/course/burning {course:\"$(course)\",mode:\"allow\"}"}}]
 $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}].standingBlocks[0] run return run tellraw @s [ \
     {translate:"kalic0re.parkour.chat.no_standing_blocks",with:["$(course)"],color:"gray"},{text:" "}, \
     {translate:"kalic0re.parkour.chat.standing_block_chest_add",underlined:true,bold:true, \
