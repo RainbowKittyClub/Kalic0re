@@ -1,0 +1,10 @@
+{
+  "criteria": {
+    "changed_dimension": {
+      "trigger": "minecraft:changed_dimension"
+    }
+  },
+  "rewards": {
+    "function": "kalic0re:parkour/admin/course_boundary/wand/outline/changed_dimension"
+  }
+}

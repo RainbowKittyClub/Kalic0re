@@ -2,6 +2,11 @@
 # green. A lone corner outlines its block.
 execute unless data storage kalic0re:parkour tmp.wand.held.firstCorner \
     unless data storage kalic0re:parkour tmp.wand.held.secondCorner run return 0
+# Only in the selection's dimension; a wand from before wands kept one shows it anywhere.
+scoreboard players set #selectionInHolderDimension kalic0re.parkour.tmp 1
+execute if data storage kalic0re:parkour tmp.wand.held.dim store result score #selectionInHolderDimension kalic0re.parkour.tmp run \
+    function kalic0re:parkour/admin/course_boundary/wand/outline/in_dimension with storage kalic0re:parkour tmp.wand.held
+execute if score #selectionInHolderDimension kalic0re.parkour.tmp matches 0 run return 0
 # Each corner falls back to the other, so one alone makes a one-block box.
 data modify storage kalic0re:parkour tmp.outline.a set from storage kalic0re:parkour tmp.wand.held.secondCorner
 data modify storage kalic0re:parkour tmp.outline.a set from storage kalic0re:parkour tmp.wand.held.firstCorner
