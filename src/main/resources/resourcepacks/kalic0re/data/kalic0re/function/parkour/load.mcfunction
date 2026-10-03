@@ -55,12 +55,15 @@ scoreboard objectives add kalic0re.parkour.leaderboardDisplayLine dummy
 # player's feet. give_wand enables it for whoever takes a wand; an op can for anyone else:
 # /scoreboard players enable <player> kalic0re.admin.remove_course_boundary
 scoreboard objectives add kalic0re.admin.remove_course_boundary trigger
-# Divisors for splitting run ticks into minutes, seconds and tenths, and for runners' tick phases.
+# Divisors for splitting run ticks into minutes, seconds and tenths, for runners' tick phases, and for
+# squaring a leaderboard display to the compass and its size to quarters.
 scoreboard players set #2 kalic0re.parkour.tmp 2
 scoreboard players set #4 kalic0re.parkour.tmp 4
 scoreboard players set #16 kalic0re.parkour.tmp 16
 scoreboard players set #10 kalic0re.parkour.tmp 10
 scoreboard players set #60 kalic0re.parkour.tmp 60
+scoreboard players set #90 kalic0re.parkour.tmp 90
+scoreboard players set #250 kalic0re.parkour.tmp 250
 # How messages name a point, shown through an nbt component: a key built from $(point) could only
 # fall back to the point's own id.
 data modify storage kalic0re:parkour pointNames set value { \

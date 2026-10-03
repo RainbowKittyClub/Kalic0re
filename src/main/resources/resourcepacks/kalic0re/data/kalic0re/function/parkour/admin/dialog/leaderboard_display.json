@@ -1,0 +1,85 @@
+{
+  "//": "Opened by admin/course/open; Back is filled in with the course's management dialog.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.leaderboard_display.title",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display.details"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "type": "minecraft:number_range",
+      "key": "distance",
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display.distance"
+      },
+      "start": 0,
+      "end": 16,
+      "step": 0.5,
+      "initial": 3
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "height",
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display.height"
+      },
+      "start": 0,
+      "end": 8,
+      "step": 0.25,
+      "initial": 3.5
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "size",
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display.size"
+      },
+      "start": 0.25,
+      "end": 4,
+      "step": 0.25,
+      "initial": 1
+    },
+    {
+      "type": "minecraft:boolean",
+      "key": "square",
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display.square"
+      },
+      "initial": true,
+      "on_true": "1",
+      "on_false": "0"
+    }
+  ],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.leaderboard_display.confirm"
+    },
+    "action": {
+      "type": "minecraft:dynamic/run_command",
+      "template": "function kalic0re:parkour/admin/course/place_leaderboard_display {course:\"$(course)\",distance:$(distance),height:$(height),size:$(size),square:$(square)}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}
