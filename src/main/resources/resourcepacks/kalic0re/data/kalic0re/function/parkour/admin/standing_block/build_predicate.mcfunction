@@ -1,4 +1,5 @@
-# Block ids share one term and tags get one each: a predicate's block set is a list of ids or one tag.
+# Block ids share one pair of terms and tags get a pair each (append_ids_term): a predicate's block set is a
+# list of ids or one tag.
 # Blocks a runner can be inside (enterableStandingBlocks) are also tested at their feet, by their inTerm.
 data modify storage kalic0re:parkour tmp.standingBlockPredicate set value \
     {ids:[],onListed:{condition:"minecraft:any_of",terms:[]},forbidden:{condition:"minecraft:any_of",terms:[]}}
