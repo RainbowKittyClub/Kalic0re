@@ -20,5 +20,6 @@ function kalic0re:parkour/timer/count_no_slower
 execute store result storage kalic0re:parkour tmp.record.index int 1 run scoreboard players get #index kalic0re.parkour.tmp
 data remove storage kalic0re:parkour tmp.scan
 function kalic0re:parkour/timer/store with storage kalic0re:parkour tmp.record
+function kalic0re:parkour/admin/displays/leaderboard_refresh with storage kalic0re:parkour tmp.record
 scoreboard players operation @s kalic0re.parkour.courseBestTicks = #best kalic0re.parkour.tmp
 function kalic0re:parkour/timer/announce with storage kalic0re:parkour tmp.record

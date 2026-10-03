@@ -63,3 +63,5 @@ execute as @a[tag=kalic0re.parkour.holdingBoundaryWand] \
 # client flickers it, which at 6 s is always.
 execute if score #16ticks kalic0re.timer matches 0 as @a[tag=kalic0re.parkour.holdingBoundaryWand] run \
     effect give @s minecraft:night_vision 6 0 true
+# Leaderboard boards whose chunk was unloaded when their course changed catch up.
+execute if score #1024ticks kalic0re.timer matches 0 run function kalic0re:parkour/admin/displays/leaderboard_refresh_all

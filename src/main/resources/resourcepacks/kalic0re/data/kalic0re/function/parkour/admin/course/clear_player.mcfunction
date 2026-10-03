@@ -4,6 +4,7 @@ $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}] run re
 $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}].times[{player:"$(player)"}] run return run \
     function kalic0re:parkour/admin/course/no_time {course:"$(course)",player:"$(player)"}
 $data remove storage kalic0re:parkour courses[{name:"$(course)"}].times[{player:"$(player)"}]
+$function kalic0re:parkour/admin/displays/leaderboard_refresh_named {course:"$(course)"}
 $function kalic0re:parkour/course/reset_best_score {course:"$(course)",player:"$(player)"}
 $execute as @a[name=$(player),scores={kalic0re.parkour.isActive=1}] run \
     function kalic0re:parkour/admin/course/runner {course:"$(course)",run:"kalic0re:parkour/timer/forget_shown_best"}

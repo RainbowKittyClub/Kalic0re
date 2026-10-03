@@ -12,4 +12,5 @@ $execute if data storage kalic0re:parkour players[{course:"$(course)"}] run \
     data modify storage kalic0re:parkour players[{course:"$(course)"}].course set value "$(new_name)"
 $function kalic0re:parkour/course/retitle_times {course:"$(course)",new_name:"$(new_name)"}
 $data modify storage kalic0re:parkour courses[{name:"$(course)"}].name set value "$(new_name)"
+$function kalic0re:parkour/admin/displays/leaderboard_refresh_named {course:"$(new_name)"}
 $tellraw @s {translate:"kalic0re.parkour.chat.renamed",with:["$(course)","$(new_name)"],color:"green"}

@@ -48,6 +48,9 @@ scoreboard objectives add kalic0re.parkour.leaderboard trigger
 # /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:
 # /scoreboard players enable <player> kalic0re.parkour.admin
 scoreboard objectives add kalic0re.parkour.admin trigger
+# A leaderboard board's lines: each one's course and its place on the board, 0 the title.
+scoreboard objectives add kalic0re.parkour.leaderboardDisplayCourseId dummy
+scoreboard objectives add kalic0re.parkour.leaderboardDisplayLine dummy
 # /trigger kalic0re.admin.remove_course_boundary removes the boundary of a held wand's course around the
 # player's feet. give_wand enables it for whoever takes a wand; an op can for anyone else:
 # /scoreboard players enable <player> kalic0re.admin.remove_course_boundary
@@ -73,3 +76,4 @@ data modify storage kalic0re:parkour enterableStandingBlocks set value [ \
     {block:"minecraft:powder_snow",bucket:"minecraft:powder_snow_bucket",standable:1b, \
         inTerm:{condition:"minecraft:location_check",predicate:{block:{blocks:"minecraft:powder_snow"}}}}]
 function kalic0re:parkour/course/refresh_all_predicate_texts
+function kalic0re:parkour/admin/displays/leaderboard_refresh_all
