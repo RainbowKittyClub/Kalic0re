@@ -8,6 +8,9 @@ $execute if predicate {condition:"minecraft:entity_properties",entity:"this",pre
 $execute if data storage kalic0re:parkour courses[{name:"$(course)"}].standingBlocks[{block:"$(block)"}] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.standing_block_exists", \
     with:["$(course)","$(block)"],color:"gray"}
+# No more than the chest has slots for: 25, beside its campfire and its pane.
+$execute if data storage kalic0re:parkour courses[{name:"$(course)"}].standingBlocks[24] run return run \
+    tellraw @s {translate:"kalic0re.parkour.chat.standing_blocks_full",with:["$(course)","25"],color:"red"}
 $data modify storage kalic0re:parkour courses[{name:"$(course)"}].standingBlocks append value {block:"$(block)"}
 $function kalic0re:parkour/admin/standing_block/rebuild_predicate {course:"$(course)"}
 $execute if data storage kalic0re:parkour courses[{name:"$(course)",standingBlockMode:"allow"}] run return run \

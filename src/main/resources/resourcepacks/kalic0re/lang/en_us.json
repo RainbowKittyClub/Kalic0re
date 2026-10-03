@@ -47,6 +47,7 @@
   "kalic0re.parkour.chat.standing_block_removed": "Parkour course \"%s\": standing block %s removed.",
   "kalic0re.parkour.chat.standing_blocks_allow": "Parkour course \"%s\": runners may stand only on its standing blocks, so its start and checkpoints must stand on them too.",
   "kalic0re.parkour.chat.standing_blocks_deny": "Parkour course \"%s\": runners may stand on anything but its standing blocks.",
+  "kalic0re.parkour.chat.standing_blocks_full": "Parkour course \"%s\" already has %s standing blocks, as many as its chest holds.",
   "kalic0re.parkour.chat.standing_blocks_too_many": "Parkour course \"%s\" has more standing blocks than its chest holds.",
   "kalic0re.parkour.chat.wand_add_boundary": "Click to add boundary: %s to %s in %s",
   "kalic0re.parkour.chat.wand_add_exclusion_boundary": "Click to add exclusion boundary: %s to %s in %s",

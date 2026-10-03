@@ -15,4 +15,5 @@ execute if data storage kalic0re:parkour tmp.chest.entry.block run return run \
 # Anything else was just put in: a block's own item, or the bucket of a block a runner can be inside.
 data modify storage kalic0re:parkour tmp.chest.entry.block set from storage kalic0re:parkour tmp.chest.item.id
 function kalic0re:parkour/admin/standing_block/chest/bucket_block with storage kalic0re:parkour tmp.chest.entry
+data modify storage kalic0re:parkour tmp.chest.entry.course set from storage kalic0re:parkour tmp.chest.course
 function kalic0re:parkour/admin/standing_block/chest/put_in with storage kalic0re:parkour tmp.chest.entry
