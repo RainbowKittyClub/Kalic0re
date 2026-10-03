@@ -9,6 +9,10 @@ function kalic0re:parkour/course_boundary/check_runner
 # Parkour items only exist on active players, so their drops are always near one. Every tick: a
 # runner who dies drops theirs and respawns away from them a tick or two later.
 execute as @e[type=item,distance=..8] if items entity @s contents *[custom_data~{kalic0re:{parkour:{}}}] run kill @s
+# Runners pick nothing else up: what they hold is cleared when the run ends. Items within reach, 2.7 blocks
+# at most, plus a tick's flight, keep a pickup delay above 0 when the runner's turn to pick up comes. At
+# @s again: the check above may have sent them back, and they pick up where they are now.
+execute at @s as @e[type=item,distance=..5] run function kalic0re:parkour/player/hold_off_pickup
 # The shown time moves in tenths of a second, every 2 ticks. After the clicks, so a restart's reset
 # shows within a tick.
 execute if score @s kalic0re.parkour.runnerTickPhaseOf2 = #2ticks kalic0re.timer run function kalic0re:parkour/timer/show
