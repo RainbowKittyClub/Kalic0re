@@ -5,6 +5,8 @@ execute as @a[scores={kalic0re.parkour.isActive=1},tag=!kalic0re.parkour.playerI
 execute as @a[scores={kalic0re.parkour.isActive=1},tag=kalic0re.parkour.playerInventorySaved, \
     tag=!kalic0re.parkour.playerEffectsSaved] at @s run \
     function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/enter"}
+# Runners through a portal since last tick stand on the block under them again before they're checked.
+execute as @a[tag=kalic0re.parkour.runnerChangedDimension] at @s run function kalic0re:parkour/player/refresh_supporting_block
 # enter refuses a run with no course and clears isActive, which leaves them out of this.
 execute as @a[scores={kalic0re.parkour.isActive=1}] at @s run function kalic0re:parkour/player/tick
 # The course id their checks pass on, removed once rather than per runner.
