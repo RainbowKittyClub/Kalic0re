@@ -80,3 +80,14 @@ data modify storage kalic0re:parkour enterableStandingBlocks set value [ \
         inTerm:{condition:"minecraft:location_check",predicate:{block:{blocks:"minecraft:powder_snow"}}}}]
 function kalic0re:parkour/course/refresh_all_predicate_texts
 function kalic0re:parkour/admin/displays/leaderboard_refresh_all
+# Direction markers: each one's base translation and the way it points, in ten-thousandths; and one period of
+# their sine, a tick an entry, 0.2 at its peak: 2000 sin(2 pi k / 20).
+scoreboard objectives add kalic0re.parkour.directionMarkerBaseX dummy
+scoreboard objectives add kalic0re.parkour.directionMarkerBaseY dummy
+scoreboard objectives add kalic0re.parkour.directionMarkerBaseZ dummy
+scoreboard objectives add kalic0re.parkour.directionMarkerDirectionX dummy
+scoreboard objectives add kalic0re.parkour.directionMarkerDirectionY dummy
+scoreboard objectives add kalic0re.parkour.directionMarkerDirectionZ dummy
+scoreboard players set #10000 kalic0re.parkour.tmp 10000
+data modify storage kalic0re:parkour directionMarkerSine set value \
+    [0,618,1176,1618,1902,2000,1902,1618,1176,618,0,-618,-1176,-1618,-1902,-2000,-1902,-1618,-1176,-618]
