@@ -10,6 +10,7 @@ $data modify storage kalic0re:parkour tmp.leaderboardDisplay.course set from sto
 function kalic0re:parkour/admin/displays/leaderboard_title with storage kalic0re:parkour tmp.leaderboardDisplay
 scoreboard players set #leaderboardDisplayRank kalic0re.parkour.tmp 1
 function kalic0re:parkour/admin/displays/leaderboard_rank_lines
-$execute as @e[type=minecraft:text_display,tag=kalic0re.parkour.leaderboardDisplay, \
+# A title given its own text in the Edit dialog keeps it.
+$execute as @e[type=minecraft:text_display,tag=kalic0re.parkour.leaderboardDisplay,tag=!kalic0re.parkour.leaderboardDisplayCustomTitle, \
     scores={kalic0re.parkour.leaderboardDisplayCourseId=$(id)}] run function kalic0re:parkour/admin/displays/leaderboard_apply
 data remove storage kalic0re:parkour tmp.leaderboardDisplay

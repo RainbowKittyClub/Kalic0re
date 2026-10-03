@@ -1,0 +1,75 @@
+{
+  "//": "Opened by admin/displays/edit_nearest, which fills in Size's initial value and Back with the Courses dialog.",
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "kalic0re.parkour.menu.leaderboard_display_edit.title",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display_edit.details",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display_edit.board_title_details"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "title",
+      "width": 250,
+      "max_length": 64,
+      "initial": "$(current_title)",
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display_edit.board_title"
+      }
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "size",
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display.size"
+      },
+      "start": 0.25,
+      "end": 4,
+      "step": 0.25,
+      "initial": 1
+    }
+  ],
+  "actions": [
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display_edit.apply"
+      },
+      "action": {
+        "type": "minecraft:dynamic/run_command",
+        "template": "function kalic0re:parkour/admin/displays/edit_nearest_apply {size:$(size),title:\"$(title)\"}"
+      }
+    },
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display_edit.remove"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/displays/remove_nearest"
+      }
+    }
+  ],
+  "columns": 2,
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}
