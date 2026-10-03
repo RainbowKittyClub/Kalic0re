@@ -13,6 +13,9 @@ execute as @e[type=item,distance=..8] if items entity @s contents *[custom_data~
 # at most, plus a tick's flight, keep a pickup delay above 0 when the runner's turn to pick up comes. At
 # @s again: the check above may have sent them back, and they pick up where they are now.
 execute at @s as @e[type=item,distance=..5] run function kalic0re:parkour/player/hold_off_pickup
+# A safety net for what still gets in, a pearl or a portal landing on an item, a /give: back onto the ground.
+# Only once their own inventory is saved and cleared, so nothing of theirs is ever thrown down.
+execute if entity @s[tag=kalic0re.parkour.playerInventorySaved] at @s run function kalic0re:parkour/player/sweep_strays
 # The shown time moves in tenths of a second, every 2 ticks. After the clicks, so a restart's reset
 # shows within a tick.
 execute if score @s kalic0re.parkour.runnerTickPhaseOf2 = #2ticks kalic0re.timer run function kalic0re:parkour/timer/show
