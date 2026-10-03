@@ -27,6 +27,9 @@ execute if score #16ticks kalic0re.timer matches 0 as @a[tag=kalic0re.parkour.pl
 execute as @a[scores={kalic0re.parkour.leaderboard=0..}] run function kalic0re:parkour/leaderboard/requested
 execute as @a[scores={kalic0re.parkour.leaderboard=..-2}] run function kalic0re:parkour/leaderboard/requested
 execute as @a[scores={kalic0re.parkour.admin=1..}] run function kalic0re:parkour/admin/requested
+# At their feet: the boundaries removed are the ones holding them.
+execute as @a[scores={kalic0re.admin.remove_course_boundary=1..}] at @s run \
+    function kalic0re:parkour/admin/course_boundary/remove_requested
 # The course boundary wand's right-clicks; its left-clicks come through its enchantment instead.
 execute as @a[scores={kalic0re.parkour.courseBoundaryWandRightClick=1..}] at @s run \
     function kalic0re:parkour/admin/course_boundary/wand/right_click

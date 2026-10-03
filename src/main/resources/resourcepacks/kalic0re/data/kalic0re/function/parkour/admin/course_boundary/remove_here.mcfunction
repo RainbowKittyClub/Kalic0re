@@ -1,6 +1,6 @@
-# /function kalic0re:parkour/admin/course_boundary/remove_here, holding a Parkour Boundary Wand: removes
-# the boundary of the wand's course around your feet. Exclusion boundaries first, as one usually sits
-# inside a course boundary; inside overlapping ones, the lowest-numbered.
+# /trigger kalic0re.admin.remove_course_boundary, or /function kalic0re:parkour/admin/course_boundary/remove_here,
+# holding a Parkour Boundary Wand: removes the boundary of the wand's course around your feet. Inside more
+# than one, chat asks which. The only way a boundary is removed.
 execute unless items entity @s weapon.mainhand *[custom_data~{kalic0re:{parkourCourseBoundaryWand:{}}}] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.remove_here_needs_wand",color:"red"}
 function kalic0re:parkour/admin/course_boundary/wand/read_held

@@ -48,6 +48,10 @@ scoreboard objectives add kalic0re.parkour.leaderboard trigger
 # /trigger kalic0re.parkour.admin opens the Courses dialog, for players an op has enabled it for:
 # /scoreboard players enable <player> kalic0re.parkour.admin
 scoreboard objectives add kalic0re.parkour.admin trigger
+# /trigger kalic0re.admin.remove_course_boundary removes the boundary of a held wand's course around the
+# player's feet. give_wand enables it for whoever takes a wand; an op can for anyone else:
+# /scoreboard players enable <player> kalic0re.admin.remove_course_boundary
+scoreboard objectives add kalic0re.admin.remove_course_boundary trigger
 # Divisors for splitting run ticks into minutes, seconds and tenths, and for runners' tick phases.
 scoreboard players set #2 kalic0re.parkour.tmp 2
 scoreboard players set #4 kalic0re.parkour.tmp 4

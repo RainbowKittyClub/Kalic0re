@@ -8,8 +8,11 @@ $give @s minecraft:warped_fungus_on_a_stick[custom_data={kalic0re:{parkourCourse
     lore=[{translate:"kalic0re.parkour.item.course_boundary_wand.course",with:["$(course)"],color:"gray",italic:false}, \
         {translate:"kalic0re.parkour.item.course_boundary_wand.left",color:"gray",italic:false}, \
         {translate:"kalic0re.parkour.item.course_boundary_wand.right",color:"gray",italic:false}, \
-        {translate:"kalic0re.parkour.item.course_boundary_wand.sneak",color:"gray",italic:false}], \
+        {translate:"kalic0re.parkour.item.course_boundary_wand.sneak",color:"gray",italic:false}, \
+        {translate:"kalic0re.parkour.item.course_boundary_wand.remove",color:"gray",italic:false}], \
     piercing_weapon={deals_knockback:false}, \
     attack_range={max_reach:0,max_creative_reach:0,hitbox_margin:0}, \
     enchantments={"kalic0re:parkour/course_boundary_wand":1},enchantment_glint_override=false, \
     tooltip_display={hidden_components:["minecraft:enchantments"]}]
+# Its lore names the trigger that removes a boundary, so they can use it.
+scoreboard players enable @s kalic0re.admin.remove_course_boundary
