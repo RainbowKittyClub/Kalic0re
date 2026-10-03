@@ -1,10 +1,26 @@
+# Enter until both steps are saved; each save skips itself once its copy exists. Selected here, so a
+# runner already in is never tested for it: one scan of the players costs less than a test per runner.
+execute as @a[scores={kalic0re.parkour.isActive=1},tag=!kalic0re.parkour.playerInventorySaved] at @s run \
+    function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/enter"}
+execute as @a[scores={kalic0re.parkour.isActive=1},tag=kalic0re.parkour.playerInventorySaved, \
+    tag=!kalic0re.parkour.playerEffectsSaved] at @s run \
+    function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/enter"}
+# enter refuses a run with no course and clears isActive, which leaves them out of this.
 execute as @a[scores={kalic0re.parkour.isActive=1}] at @s run function kalic0re:parkour/player/tick
+# The course id their checks pass on, removed once rather than per runner.
+data remove storage kalic0re:parkour tmp.courseBoundaryCheck
 # isActive alone ends a run, so the quit item, kalic0re:parkour/finish or an op can set it to 0.
 # Either saved step starts the exit, which restores and untags both, so the second line skips them.
-execute as @a[tag=kalic0re.parkour.playerInventorySaved] \
+# The score is in the selector, so runners are passed over without a test each.
+execute as @a[tag=kalic0re.parkour.playerInventorySaved,scores={kalic0re.parkour.isActive=..0}] \
+    at @s run function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/exit"}
+execute as @a[tag=kalic0re.parkour.playerEffectsSaved,scores={kalic0re.parkour.isActive=..0}] \
+    at @s run function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/exit"}
+# Any other value, or none, which no score range selects: caught on the 16-tick beat.
+execute if score #16ticks kalic0re.timer matches 0 as @a[tag=kalic0re.parkour.playerInventorySaved] \
     unless score @s kalic0re.parkour.isActive matches 1 \
     at @s run function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/exit"}
-execute as @a[tag=kalic0re.parkour.playerEffectsSaved] \
+execute if score #16ticks kalic0re.timer matches 0 as @a[tag=kalic0re.parkour.playerEffectsSaved] \
     unless score @s kalic0re.parkour.isActive matches 1 \
     at @s run function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/exit"}
 # The leaderboard trigger rests at -1, so any other value means it was used.
@@ -30,7 +46,11 @@ execute as @a[tag=kalic0re.parkour.holdingBoundaryWand,scores={kalic0re.parkour.
 execute as @a[tag=!kalic0re.parkour.holdingBoundaryWand,scores={kalic0re.parkour.boundaryWandHandChangeTicks=1..}] \
     unless items entity @s weapon.mainhand *[custom_data~{kalic0re:{parkourCourseBoundaryWand:{}}}] \
     run scoreboard players reset @s kalic0re.parkour.boundaryWandHandChangeTicks
-execute as @a[tag=!kalic0re.parkour.holdingBoundaryWand] \
+# Every player's hand tested at once first, in one context: forking one per player costs four times as much,
+# so that runs only while someone holds one.
+execute if items entity @a[tag=!kalic0re.parkour.holdingBoundaryWand] weapon.mainhand \
+    *[custom_data~{kalic0re:{parkourCourseBoundaryWand:{}}}] \
+    as @a[tag=!kalic0re.parkour.holdingBoundaryWand] \
     if items entity @s weapon.mainhand *[custom_data~{kalic0re:{parkourCourseBoundaryWand:{}}}] \
     at @s run function kalic0re:parkour/admin/course_boundary/wand/outline/wand_in_hand
 execute as @a[tag=kalic0re.parkour.holdingBoundaryWand] \
