@@ -1,6 +1,4 @@
 {
-  "kalic0re.parkour.chat.burning_allowed": "Parkour course \"%s\": runners who catch fire burn on.",
-  "kalic0re.parkour.chat.burning_denied": "Parkour course \"%s\": a runner who catches fire goes back to their checkpoint.",
   "kalic0re.parkour.chat.cleared_all": "Cleared every time on parkour course \"%s\".",
   "kalic0re.parkour.chat.cleared_player": "Cleared %s's time on parkour course \"%s\".",
   "kalic0re.parkour.chat.course_boundary_added": "Parkour course \"%s\": course boundary %s added, from %s to %s.",
@@ -45,8 +43,6 @@
   "kalic0re.parkour.chat.standing_block_exists": "Parkour course \"%s\" already has standing block %s.",
   "kalic0re.parkour.chat.standing_block_not_a_block": "%s is not a valid block.",
   "kalic0re.parkour.chat.standing_block_removed": "Parkour course \"%s\": standing block %s removed.",
-  "kalic0re.parkour.chat.standing_blocks_allow": "Parkour course \"%s\": runners may stand only on its standing blocks, so its start and checkpoints must stand on them too.",
-  "kalic0re.parkour.chat.standing_blocks_deny": "Parkour course \"%s\": runners may stand on anything but its standing blocks.",
   "kalic0re.parkour.chat.standing_blocks_full": "Parkour course \"%s\" already has %s standing blocks, as many as its chest holds.",
   "kalic0re.parkour.chat.standing_blocks_too_many": "Parkour course \"%s\" has more standing blocks than its chest holds.",
   "kalic0re.parkour.chat.wand_add_boundary": "Click to add boundary: %s to %s in %s",
