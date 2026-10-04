@@ -24,6 +24,7 @@
     {
       "type": "minecraft:text",
       "key": "position",
+      "max_length": 100,
       "label": {
         "translate": "kalic0re.parkour.menu.position_box"
       },
@@ -33,6 +34,7 @@
     {
       "type": "minecraft:text",
       "key": "rotation",
+      "max_length": 100,
       "label": {
         "translate": "kalic0re.parkour.menu.rotation_box"
       },

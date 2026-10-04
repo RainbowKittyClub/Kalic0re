@@ -53,6 +53,7 @@
     {
       "type": "minecraft:text",
       "key": "first_corner",
+      "max_length": 100,
       "label": {
         "translate": "kalic0re.parkour.menu.wand_add_boundary.first_corner"
       },
@@ -62,6 +63,7 @@
     {
       "type": "minecraft:text",
       "key": "second_corner",
+      "max_length": 100,
       "label": {
         "translate": "kalic0re.parkour.menu.wand_add_boundary.second_corner"
       },

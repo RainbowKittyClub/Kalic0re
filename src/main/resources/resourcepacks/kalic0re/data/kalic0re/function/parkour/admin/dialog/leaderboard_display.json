@@ -35,6 +35,7 @@
     {
       "type": "minecraft:text",
       "key": "position",
+      "max_length": 100,
       "width": 250,
       "initial": "$(place_position)",
       "label": {
@@ -44,6 +45,7 @@
     {
       "type": "minecraft:text",
       "key": "rotation",
+      "max_length": 100,
       "width": 250,
       "initial": "$(place_rotation)",
       "label": {
