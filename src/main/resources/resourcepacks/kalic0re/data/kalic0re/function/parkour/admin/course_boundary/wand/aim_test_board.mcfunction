@@ -4,9 +4,13 @@
 execute store result score #aimTitleX kalic0re.parkour.tmp run data get entity @s Pos[0] 100
 execute store result score #aimTitleY kalic0re.parkour.tmp run data get entity @s Pos[1] 100
 execute store result score #aimTitleZ kalic0re.parkour.tmp run data get entity @s Pos[2] 100
-execute positioned ^ ^ ^10 summon minecraft:marker run function kalic0re:parkour/admin/course_boundary/wand/aim_read_axis {axis:"F"}
-execute positioned ^10 ^ ^ summon minecraft:marker run function kalic0re:parkour/admin/course_boundary/wand/aim_read_axis {axis:"R"}
-execute positioned ^ ^10 ^ summon minecraft:marker run function kalic0re:parkour/admin/course_boundary/wand/aim_read_axis {axis:"U"}
+# Its axes as drawn, out of the face (F), across (R) and up (U): its facing alone misses a board turned by its
+# transformation's rotations, as a world editor turns one.
+data modify storage kalic0re:parkour tmp.directionMarkerTransformation set from entity @s transformation
+function kalic0re:parkour/admin/course_boundary/wand/aim_board_axis {axis:"F",x:0,y:0,z:10000}
+function kalic0re:parkour/admin/course_boundary/wand/aim_board_axis {axis:"R",x:10000,y:0,z:0}
+function kalic0re:parkour/admin/course_boundary/wand/aim_board_axis {axis:"U",x:0,y:10000,z:0}
+data remove storage kalic0re:parkour tmp.directionMarkerTransformation
 # P, from the eye to the title.
 scoreboard players operation #aimPX kalic0re.parkour.tmp = #aimTitleX kalic0re.parkour.tmp
 scoreboard players operation #aimPX kalic0re.parkour.tmp -= #aimEyeX kalic0re.parkour.tmp
