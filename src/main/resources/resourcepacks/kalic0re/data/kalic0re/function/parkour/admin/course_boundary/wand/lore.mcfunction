@@ -2,8 +2,9 @@
 # wand held since, so one given before the wand changed catches up. Gray unless a part says otherwise.
 $data modify storage kalic0re:parkour tmp.wandLore set value {lore:[ \
     {translate:"kalic0re.parkour.item.course_boundary_wand.course",color:"gray",italic:false,with:[ \
-        {translate:"kalic0re.parkour.item.course_boundary_wand.course_label",color:"yellow",underlined:true}, \
-        {text:"$(course)",color:"white"}]}, \
+        {translate:"kalic0re.parkour.item.course_boundary_wand.course_label",color:"yellow"}, \
+        {text:"$(course)",color:"white",bold:true}]}, \
+    {text:""}, \
     {translate:"kalic0re.parkour.item.course_boundary_wand.select",color:"white",italic:false}, \
     {translate:"kalic0re.parkour.item.course_boundary_wand.up",color:"gray",italic:false,with:[ \
         {translate:"kalic0re.parkour.item.course_boundary_wand.up_word",color:"aqua"}, \

@@ -58,8 +58,7 @@ execute if items entity @a[tag=!kalic0re.parkour.holdingBoundaryWand] weapon.mai
 execute as @a[tag=kalic0re.parkour.holdingBoundaryWand] \
     unless items entity @s weapon.mainhand *[custom_data~{kalic0re:{parkourCourseBoundaryWand:{}}}] \
     run function kalic0re:parkour/admin/course_boundary/wand/outline/wand_out_of_hand
-# Night vision while holding it, 6 s renewed every 16 ticks, so it ends soon after. Under 10 s left the
-# client flickers it, which at 6 s is always.
+# Night vision while holding it, 6 s renewed every 16 ticks, so it ends soon after.
 execute if score #16ticks kalic0re.timer matches 0 as @a[tag=kalic0re.parkour.holdingBoundaryWand] run \
     effect give @s minecraft:night_vision 6 0 true
 # Leaderboard boards whose chunk was unloaded when their course changed catch up.
