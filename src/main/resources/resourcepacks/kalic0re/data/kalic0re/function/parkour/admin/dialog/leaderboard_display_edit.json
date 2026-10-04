@@ -41,6 +41,15 @@
       "end": 4,
       "step": 0.25,
       "initial": 1
+    },
+    {
+      "type": "minecraft:text",
+      "key": "position",
+      "width": 250,
+      "initial": "$(current_position)",
+      "label": {
+        "translate": "kalic0re.parkour.menu.leaderboard_display_edit.position"
+      }
     }
   ],
   "actions": [
@@ -50,7 +59,7 @@
       },
       "action": {
         "type": "minecraft:dynamic/run_command",
-        "template": "function kalic0re:parkour/admin/displays/edit_board_apply {x:$(x),y:$(y),z:$(z),size:$(size),title:\"$(title)\"}"
+        "template": "function kalic0re:parkour/admin/displays/edit_board_apply {x:$(x),y:$(y),z:$(z),size:$(size),title:\"$(title)\",position:\"$(position)\"}"
       }
     },
     {

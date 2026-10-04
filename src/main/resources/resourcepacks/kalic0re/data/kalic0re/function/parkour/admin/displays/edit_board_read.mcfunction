@@ -4,6 +4,14 @@
 data modify storage kalic0re:dialog args.x set from entity @s Pos[0]
 data modify storage kalic0re:dialog args.y set from entity @s Pos[1]
 data modify storage kalic0re:dialog args.z set from entity @s Pos[2]
+# Position's text, exactly: a double as text is "601.5d" or "-296.0d", the d cut off. A macro would write -296.0
+# as -296, which positioned takes as the block's centre, so an unchanged Apply would move the board.
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition set value {}
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition.x set string entity @s Pos[0] 0 -1
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition.y set string entity @s Pos[1] 0 -1
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition.z set string entity @s Pos[2] 0 -1
+function kalic0re:parkour/admin/displays/edit_board_position_text with storage kalic0re:parkour tmp.leaderboardDisplayPosition
+data remove storage kalic0re:parkour tmp.leaderboardDisplayPosition
 execute if entity @s[tag=kalic0re.parkour.leaderboardDisplayCustomTitle] run \
     data modify storage kalic0re:dialog args.current_title set from entity @s text.text
 execute store result storage kalic0re:parkour tmp.leaderboardDisplayEdit.id int 1 run \
