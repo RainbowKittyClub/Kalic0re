@@ -9,7 +9,7 @@
     {
       "type": "minecraft:plain_message",
       "contents": {
-        "translate": "kalic0re.parkour.menu.course",
+        "translate": "kalic0re.parkour.menu.wand_course.current",
         "with": ["$(course)"]
       }
     },
