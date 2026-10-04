@@ -14,3 +14,7 @@ function kalic0re:parkour/admin/displays/leaderboard_rank_lines
 $execute as @e[type=minecraft:text_display,tag=kalic0re.parkour.leaderboardDisplay,tag=!kalic0re.parkour.leaderboardDisplayCustomTitle, \
     scores={kalic0re.parkour.leaderboardDisplayCourseId=$(id)}] run function kalic0re:parkour/admin/displays/leaderboard_apply
 data remove storage kalic0re:parkour tmp.leaderboardDisplay
+# Ranks catch up with a title turned, scaled or moved by hand since.
+$execute as @e[type=minecraft:text_display,tag=kalic0re.parkour.leaderboardDisplay, \
+    scores={kalic0re.parkour.leaderboardDisplayCourseId=$(id),kalic0re.parkour.leaderboardDisplayLine=0}] run \
+    function kalic0re:parkour/admin/displays/leaderboard_ranks_follow_title
