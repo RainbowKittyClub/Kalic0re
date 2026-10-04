@@ -7,5 +7,6 @@ data remove storage kalic0re:parkour tmp.pos
 $function kalic0re:parkour/admin/course/capture_point_text {position:"$(position)",rotation:"$(rotation)"}
 $execute unless data storage kalic0re:parkour tmp.pos run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.not_a_place",with:["$(position)","$(rotation)"],color:"red"}
+data modify storage kalic0re:parkour tmp.pos.dim set from entity @s Dimension
 $function kalic0re:parkour/admin/store_point {course:"$(course)",point:"$(point)"}
 data remove storage kalic0re:parkour tmp.pos
