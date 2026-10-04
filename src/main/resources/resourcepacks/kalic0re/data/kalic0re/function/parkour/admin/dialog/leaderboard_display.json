@@ -59,7 +59,7 @@
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
-      "template": "function kalic0re:parkour/admin/course/place_leaderboard_display {course:\"$(course)\",size:$(size),position:\"$(position)\",rotation:\"$(rotation)\"}"
+      "template": "function kalic0re:parkour/admin/course/place_leaderboard_display {course:\"$(course)\",size:$(size),texts:{position:\"$(position)\",rotation:\"$(rotation)\"}}"
     }
   },
   "no": {

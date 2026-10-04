@@ -37,7 +37,7 @@
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
-      "template": "function kalic0re:parkour/admin/course/rename {course:\"$(course)\",new_name:\"$(new_name)\"}"
+      "template": "function kalic0re:parkour/admin/course/rename_from_dialog {course:\"$(course)\",texts:{new_name:\"$(new_name)\"}}"
     }
   },
   "no": {

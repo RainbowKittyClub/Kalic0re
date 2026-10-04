@@ -48,7 +48,7 @@
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
-      "template": "function kalic0re:parkour/admin/course/move_point {course:\"$(course)\",point:\"start\",position:\"$(position)\",rotation:\"$(rotation)\"}"
+      "template": "function kalic0re:parkour/admin/course/move_point {course:\"$(course)\",point:\"start\",texts:{position:\"$(position)\",rotation:\"$(rotation)\"}}"
     }
   },
   "no": {

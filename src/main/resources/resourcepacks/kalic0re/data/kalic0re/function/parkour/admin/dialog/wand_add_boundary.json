@@ -77,7 +77,7 @@
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
-      "template": "function kalic0re:parkour/admin/course_boundary/add_from_dialog {course:\"$(course)\",dim:\"$(dim)\",boundaryType:\"$(boundary_type)\",firstCorner:\"$(first_corner)\",secondCorner:\"$(second_corner)\"}"
+      "template": "function kalic0re:parkour/admin/course_boundary/add_from_dialog {course:\"$(course)\",dim:\"$(dim)\",boundaryType:\"$(boundary_type)\",texts:{firstCorner:\"$(first_corner)\",secondCorner:\"$(second_corner)\"}}"
     }
   },
   "no": {

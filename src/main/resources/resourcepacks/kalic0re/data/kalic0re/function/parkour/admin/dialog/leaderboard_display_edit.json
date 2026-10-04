@@ -70,7 +70,7 @@
       },
       "action": {
         "type": "minecraft:dynamic/run_command",
-        "template": "function kalic0re:parkour/admin/displays/edit_board_apply {x:$(x),y:$(y),z:$(z),size:$(size),title:\"$(title)\",position:\"$(position)\",rotation:\"$(rotation)\"}"
+        "template": "function kalic0re:parkour/admin/displays/edit_board_apply {x:$(x),y:$(y),z:$(z),size:$(size),texts:{title:\"$(title)\",position:\"$(position)\",rotation:\"$(rotation)\"}}"
       }
     },
     {

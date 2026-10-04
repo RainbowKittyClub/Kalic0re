@@ -54,7 +54,7 @@
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
-      "template": "function kalic0re:parkour/admin/create {course:\"$(course_name)\"}"
+      "template": "function kalic0re:parkour/admin/create_from_dialog {texts:{course:\"$(course_name)\"}}"
     }
   },
   "no": {

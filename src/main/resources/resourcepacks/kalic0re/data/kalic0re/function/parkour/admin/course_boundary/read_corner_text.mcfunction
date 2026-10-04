@@ -1,6 +1,12 @@
-# The block $(text) is in, as `positioned` reads it, at tmp.boundaryDialog.$(corner). Alone in a function of its
-# own: text that's no position fails to fill only this, and leaves the corner unset.
-data remove storage kalic0re:parkour tmp.wand.pos
-$execute positioned $(text) align xyz summon minecraft:marker run function kalic0re:parkour/admin/read_block_of_marker {into:"wand.pos"}
-$data modify storage kalic0re:parkour tmp.boundaryDialog.$(corner) set from storage kalic0re:parkour tmp.wand.pos
-data remove storage kalic0re:parkour tmp.wand
+# For add_from_dialog: 1 when tmp.dialogTexts.$(corner) is coordinates alone and reads as a position, as positioned
+# reads one (~ from you), its block then at tmp.boundaryDialog.$(corner).
+data modify storage kalic0re:parkour tmp.textCheck set value {rest:""}
+$data modify storage kalic0re:parkour tmp.textCheck.rest set from storage kalic0re:parkour tmp.dialogTexts.$(corner)
+execute unless function kalic0re:parkour/admin/text/only_coordinate_characters run return fail
+data remove storage kalic0re:parkour tmp.textCheck
+$data modify storage kalic0re:parkour tmp.cornerText set value {corner:"$(corner)",text:""}
+$data modify storage kalic0re:parkour tmp.cornerText.text set from storage kalic0re:parkour tmp.dialogTexts.$(corner)
+function kalic0re:parkour/admin/course_boundary/read_corner_block with storage kalic0re:parkour tmp.cornerText
+data remove storage kalic0re:parkour tmp.cornerText
+$execute if data storage kalic0re:parkour tmp.boundaryDialog.$(corner) run return 1
+return fail
