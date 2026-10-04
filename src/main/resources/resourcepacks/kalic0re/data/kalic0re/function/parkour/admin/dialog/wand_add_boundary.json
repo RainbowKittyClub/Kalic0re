@@ -16,8 +16,14 @@
     {
       "type": "minecraft:plain_message",
       "contents": {
-        "translate": "kalic0re.parkour.menu.wand_add_boundary.details",
+        "translate": "kalic0re.parkour.menu.world",
         "with": ["$(dim)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.wand_add_boundary.details"
       }
     }
   ],
