@@ -101,7 +101,7 @@
   "kalic0re.parkour.menu.leaderboard.empty": "No times yet.",
   "kalic0re.parkour.menu.leaderboard.title": "Parkour Leaderboard: %s",
   "kalic0re.parkour.menu.leaderboard_display.confirm": "Place",
-  "kalic0re.parkour.menu.leaderboard_display.details": "Shows the course's ten fastest completion times. Default values are the block face where your cursor is, with the leaderboard facing you.",
+  "kalic0re.parkour.menu.leaderboard_display.details": "Shows the course's ten fastest completion times. Default values are the block face where your cursor is, with the leaderboard flat against it, facing out.",
   "kalic0re.parkour.menu.leaderboard_display.size": "Size",
   "kalic0re.parkour.menu.leaderboard_display.title": "Place a Leaderboard Display",
   "kalic0re.parkour.menu.leaderboard_display_edit.apply": "Apply",
