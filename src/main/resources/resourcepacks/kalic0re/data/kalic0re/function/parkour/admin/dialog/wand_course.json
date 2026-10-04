@@ -1,0 +1,30 @@
+{
+  "//": "Opened by admin/course_boundary/wand/open_course_dialog, which adds a wand_course_button.json per course.",
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "kalic0re.parkour.menu.wand_course.title",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.wand_course.details"
+      }
+    }
+  ],
+  "actions": [],
+  "columns": 1,
+  "exit_action": {
+    "label": {
+      "translate": "gui.cancel"
+    }
+  }
+}
