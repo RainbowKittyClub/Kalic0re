@@ -1,17 +1,20 @@
-# As the title edit_board opens: its course's name, any title of its own and its position into kalic0re:dialog
-# args, and its size as #leaderboardDisplaySize in thousandths, to the slider's quarter steps from 0.25 to 4,
+# As the title edit_board opens: its course's name, any title of its own, its position and facing into
+# kalic0re:dialog args, and its size as #leaderboardDisplaySize in thousandths, to the slider's quarter steps from 0.25 to 4,
 # outside which it won't open. A title of the course's own leaves Title empty, so Apply keeps it following the course.
 data modify storage kalic0re:dialog args.x set from entity @s Pos[0]
 data modify storage kalic0re:dialog args.y set from entity @s Pos[1]
 data modify storage kalic0re:dialog args.z set from entity @s Pos[2]
-# Position's text, exactly: a double as text is "601.5d" or "-296.0d", the d cut off. A macro would write -296.0
-# as -296, which positioned takes as the block's centre, so an unchanged Apply would move the board.
-data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition set value {}
-data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition.x set string entity @s Pos[0] 0 -1
-data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition.y set string entity @s Pos[1] 0 -1
-data modify storage kalic0re:parkour tmp.leaderboardDisplayPosition.z set string entity @s Pos[2] 0 -1
-function kalic0re:parkour/admin/displays/edit_board_position_text with storage kalic0re:parkour tmp.leaderboardDisplayPosition
-data remove storage kalic0re:parkour tmp.leaderboardDisplayPosition
+# Position's and Rotation's text, exactly: a number as text is "601.5d", "-296.0d" or "90.0f", the letter cut off.
+# A macro would write -296.0 as -296, which positioned takes as the block's centre, so an unchanged Apply would move
+# the board.
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPlace set value {}
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPlace.x set string entity @s Pos[0] 0 -1
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPlace.y set string entity @s Pos[1] 0 -1
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPlace.z set string entity @s Pos[2] 0 -1
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPlace.yaw set string entity @s Rotation[0] 0 -1
+data modify storage kalic0re:parkour tmp.leaderboardDisplayPlace.pitch set string entity @s Rotation[1] 0 -1
+function kalic0re:parkour/admin/displays/edit_board_place_text with storage kalic0re:parkour tmp.leaderboardDisplayPlace
+data remove storage kalic0re:parkour tmp.leaderboardDisplayPlace
 execute if entity @s[tag=kalic0re.parkour.leaderboardDisplayCustomTitle] run \
     data modify storage kalic0re:dialog args.current_title set from entity @s text.text
 execute store result storage kalic0re:parkour tmp.leaderboardDisplayEdit.id int 1 run \

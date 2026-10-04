@@ -48,7 +48,16 @@
       "width": 250,
       "initial": "$(current_position)",
       "label": {
-        "translate": "kalic0re.parkour.menu.leaderboard_display_edit.position"
+        "translate": "kalic0re.parkour.menu.position_box"
+      }
+    },
+    {
+      "type": "minecraft:text",
+      "key": "rotation",
+      "width": 250,
+      "initial": "$(current_rotation)",
+      "label": {
+        "translate": "kalic0re.parkour.menu.rotation_box"
       }
     }
   ],
@@ -59,7 +68,7 @@
       },
       "action": {
         "type": "minecraft:dynamic/run_command",
-        "template": "function kalic0re:parkour/admin/displays/edit_board_apply {x:$(x),y:$(y),z:$(z),size:$(size),title:\"$(title)\",position:\"$(position)\"}"
+        "template": "function kalic0re:parkour/admin/displays/edit_board_apply {x:$(x),y:$(y),z:$(z),size:$(size),title:\"$(title)\",position:\"$(position)\",rotation:\"$(rotation)\"}"
       }
     },
     {

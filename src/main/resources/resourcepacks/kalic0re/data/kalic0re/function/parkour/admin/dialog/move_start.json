@@ -25,7 +25,7 @@
       "type": "minecraft:text",
       "key": "position",
       "label": {
-        "translate": "kalic0re.parkour.menu.move_point.position"
+        "translate": "kalic0re.parkour.menu.position_box"
       },
       "width": 150,
       "initial": "~ ~ ~"
@@ -34,7 +34,7 @@
       "type": "minecraft:text",
       "key": "rotation",
       "label": {
-        "translate": "kalic0re.parkour.menu.move_point.rotation"
+        "translate": "kalic0re.parkour.menu.rotation_box"
       },
       "width": 150,
       "initial": "~ ~"
