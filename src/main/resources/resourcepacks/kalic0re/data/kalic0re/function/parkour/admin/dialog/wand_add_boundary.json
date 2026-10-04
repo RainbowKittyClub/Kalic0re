@@ -1,0 +1,80 @@
+{
+  "//": "Opened by admin/course_boundary/wand/open_add_dialog, which fills in the course, dimension and corners.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.wand_add_boundary.title",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.wand_add_boundary.details",
+        "with": ["$(dim)"]
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "type": "minecraft:single_option",
+      "key": "boundary_type",
+      "label": {
+        "translate": "kalic0re.parkour.menu.wand_add_boundary.type"
+      },
+      "options": [
+        {
+          "id": "add",
+          "display": {
+            "translate": "kalic0re.parkour.menu.wand_add_boundary.course_boundary"
+          },
+          "initial": true
+        },
+        {
+          "id": "add_exclusion",
+          "display": {
+            "translate": "kalic0re.parkour.menu.wand_add_boundary.exclusion_boundary"
+          }
+        }
+      ]
+    },
+    {
+      "type": "minecraft:text",
+      "key": "first_corner",
+      "label": {
+        "translate": "kalic0re.parkour.menu.wand_add_boundary.first_corner"
+      },
+      "width": 100,
+      "initial": "$(firstCorner)"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "second_corner",
+      "label": {
+        "translate": "kalic0re.parkour.menu.wand_add_boundary.second_corner"
+      },
+      "width": 100,
+      "initial": "$(secondCorner)"
+    }
+  ],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.wand_add_boundary.confirm"
+    },
+    "action": {
+      "type": "minecraft:dynamic/run_command",
+      "template": "function kalic0re:parkour/admin/course_boundary/add_from_dialog {course:\"$(course)\",dim:\"$(dim)\",boundaryType:\"$(boundary_type)\",firstCorner:\"$(first_corner)\",secondCorner:\"$(second_corner)\"}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.cancel"
+    }
+  }
+}
