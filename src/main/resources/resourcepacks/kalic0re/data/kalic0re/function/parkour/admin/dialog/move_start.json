@@ -20,13 +20,33 @@
       }
     }
   ],
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "position",
+      "label": {
+        "translate": "kalic0re.parkour.menu.move_point.position"
+      },
+      "width": 150,
+      "initial": "~ ~ ~"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "rotation",
+      "label": {
+        "translate": "kalic0re.parkour.menu.move_point.rotation"
+      },
+      "width": 150,
+      "initial": "~ ~"
+    }
+  ],
   "yes": {
     "label": {
       "translate": "kalic0re.parkour.menu.move_start.confirm"
     },
     "action": {
-      "type": "minecraft:run_command",
-      "command": "function kalic0re:parkour/admin/course/move_start {course:\"$(course)\"}"
+      "type": "minecraft:dynamic/run_command",
+      "template": "function kalic0re:parkour/admin/course/move_point {course:\"$(course)\",point:\"start\",position:\"$(position)\",rotation:\"$(rotation)\"}"
     }
   },
   "no": {

@@ -33,6 +33,15 @@
     },
     {
       "label": {
+        "translate": "kalic0re.parkour.menu.manage.move_lobby"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"move_lobby\"}"
+      }
+    },
+    {
+      "label": {
         "translate": "kalic0re.parkour.menu.manage.delete"
       },
       "action": {

@@ -1,0 +1,60 @@
+{
+  "//": "Opened by admin/course/open; Back is filled in with the course's management dialog.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.move_lobby.title",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.move_lobby.details"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "position",
+      "label": {
+        "translate": "kalic0re.parkour.menu.move_point.position"
+      },
+      "width": 150,
+      "initial": "~ ~ ~"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "rotation",
+      "label": {
+        "translate": "kalic0re.parkour.menu.move_point.rotation"
+      },
+      "width": 150,
+      "initial": "~ ~"
+    }
+  ],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.move_lobby.confirm"
+    },
+    "action": {
+      "type": "minecraft:dynamic/run_command",
+      "template": "function kalic0re:parkour/admin/course/move_point {course:\"$(course)\",point:\"lobby\",position:\"$(position)\",rotation:\"$(rotation)\"}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog"
+    }
+  }
+}
