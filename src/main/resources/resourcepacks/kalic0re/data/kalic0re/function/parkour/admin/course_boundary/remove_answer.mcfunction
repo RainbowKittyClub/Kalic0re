@@ -1,7 +1,7 @@
-# The answer to remove_here's question, numbered from 0, is the trigger's score less 2; the question is
-# kept under the player's UUID.
+# /function kalic0re:parkour/admin/course_boundary/remove_answer {index:<n>}, as remove_here's question links run
+# it: choice $(index), from 0, of the last question this player was asked, kept under their UUID.
+data modify storage kalic0re:parkour tmp.courseBoundaryAnswer set value {}
 data modify storage kalic0re:parkour tmp.courseBoundaryAnswer.uuid set from entity @s UUID
-execute store result storage kalic0re:parkour tmp.courseBoundaryAnswer.index int 1 run \
-    scoreboard players get @s kalic0re.admin.remove_course_boundary
+$data modify storage kalic0re:parkour tmp.courseBoundaryAnswer.index set value $(index)
 function kalic0re:parkour/admin/course_boundary/remove_answer_of with storage kalic0re:parkour tmp.courseBoundaryAnswer
 data remove storage kalic0re:parkour tmp.courseBoundaryAnswer

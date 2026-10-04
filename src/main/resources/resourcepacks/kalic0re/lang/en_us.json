@@ -67,7 +67,6 @@
   "kalic0re.parkour.item.course_boundary_wand.course": "Course: %s",
   "kalic0re.parkour.item.course_boundary_wand.down": "Right-click looking straight down: remove the boundary you stand in",
   "kalic0re.parkour.item.course_boundary_wand.left": "Left-click a block: first corner",
-  "kalic0re.parkour.item.course_boundary_wand.remove": "/trigger kalic0re.admin.remove_course_boundary: remove the boundary you stand in",
   "kalic0re.parkour.item.course_boundary_wand.right": "Right-click a block: second corner",
   "kalic0re.parkour.item.course_boundary_wand.sneak_left": "Sneak and left-click: change the course",
   "kalic0re.parkour.item.course_boundary_wand.sneak_right": "Sneak and right-click: clear the selection",

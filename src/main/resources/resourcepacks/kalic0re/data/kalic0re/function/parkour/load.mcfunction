@@ -51,10 +51,6 @@ scoreboard objectives add kalic0re.parkour.admin trigger
 # A leaderboard board's lines: each one's course and its place on the board, 0 the title.
 scoreboard objectives add kalic0re.parkour.leaderboardDisplayCourseId dummy
 scoreboard objectives add kalic0re.parkour.leaderboardDisplayLine dummy
-# /trigger kalic0re.admin.remove_course_boundary removes the boundary of a held wand's course around the
-# player's feet. give_wand enables it for whoever takes a wand; an op can for anyone else:
-# /scoreboard players enable <player> kalic0re.admin.remove_course_boundary
-scoreboard objectives add kalic0re.admin.remove_course_boundary trigger
 # Divisors for splitting run ticks into minutes, seconds and tenths, for runners' tick phases, and for
 # squaring a leaderboard display to the compass and its size to quarters; #100 puts exclusion bounds in
 # hundredths.
