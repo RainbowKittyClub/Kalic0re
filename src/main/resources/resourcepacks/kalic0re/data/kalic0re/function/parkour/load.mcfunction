@@ -53,8 +53,10 @@ scoreboard objectives add kalic0re.parkour.leaderboardDisplayCourseId dummy
 scoreboard objectives add kalic0re.parkour.leaderboardDisplayLine dummy
 # Divisors for splitting run ticks into minutes, seconds and tenths, for runners' tick phases, and for
 # squaring a leaderboard display to the compass and its size to quarters; #100 puts exclusion bounds in
-# hundredths.
+# hundredths; #-1, #3 and #1000 work out the leaderboard display a boundary wand aims at.
+scoreboard players set #-1 kalic0re.parkour.tmp -1
 scoreboard players set #2 kalic0re.parkour.tmp 2
+scoreboard players set #3 kalic0re.parkour.tmp 3
 scoreboard players set #4 kalic0re.parkour.tmp 4
 scoreboard players set #16 kalic0re.parkour.tmp 16
 scoreboard players set #10 kalic0re.parkour.tmp 10
@@ -62,6 +64,7 @@ scoreboard players set #60 kalic0re.parkour.tmp 60
 scoreboard players set #90 kalic0re.parkour.tmp 90
 scoreboard players set #100 kalic0re.parkour.tmp 100
 scoreboard players set #250 kalic0re.parkour.tmp 250
+scoreboard players set #1000 kalic0re.parkour.tmp 1000
 # How messages name a point, shown through an nbt component: a key built from $(point) could only
 # fall back to the point's own id.
 data modify storage kalic0re:parkour pointNames set value { \

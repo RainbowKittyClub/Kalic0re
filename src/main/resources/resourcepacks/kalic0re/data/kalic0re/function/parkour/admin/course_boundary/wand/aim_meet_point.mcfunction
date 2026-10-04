@@ -1,0 +1,13 @@
+# For aim_test_board: Q = t D - P, from the title to where the look meets the face, in hundredths.
+scoreboard players operation #aimQX kalic0re.parkour.tmp = #aimT kalic0re.parkour.tmp
+scoreboard players operation #aimQX kalic0re.parkour.tmp *= #aimDX kalic0re.parkour.tmp
+scoreboard players operation #aimQX kalic0re.parkour.tmp /= #1000 kalic0re.parkour.tmp
+scoreboard players operation #aimQX kalic0re.parkour.tmp -= #aimPX kalic0re.parkour.tmp
+scoreboard players operation #aimQY kalic0re.parkour.tmp = #aimT kalic0re.parkour.tmp
+scoreboard players operation #aimQY kalic0re.parkour.tmp *= #aimDY kalic0re.parkour.tmp
+scoreboard players operation #aimQY kalic0re.parkour.tmp /= #1000 kalic0re.parkour.tmp
+scoreboard players operation #aimQY kalic0re.parkour.tmp -= #aimPY kalic0re.parkour.tmp
+scoreboard players operation #aimQZ kalic0re.parkour.tmp = #aimT kalic0re.parkour.tmp
+scoreboard players operation #aimQZ kalic0re.parkour.tmp *= #aimDZ kalic0re.parkour.tmp
+scoreboard players operation #aimQZ kalic0re.parkour.tmp /= #1000 kalic0re.parkour.tmp
+scoreboard players operation #aimQZ kalic0re.parkour.tmp -= #aimPZ kalic0re.parkour.tmp

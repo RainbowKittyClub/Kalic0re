@@ -66,6 +66,7 @@
   "kalic0re.parkour.item.checkpoint": "Checkpoint",
   "kalic0re.parkour.item.course_boundary_wand": "Parkour Boundary Wand",
   "kalic0re.parkour.item.course_boundary_wand.course": "Course: %s",
+  "kalic0re.parkour.item.course_boundary_wand.display": "Right-click a leaderboard display: edit it",
   "kalic0re.parkour.item.course_boundary_wand.down": "Right-click looking straight down: remove the boundary you stand in",
   "kalic0re.parkour.item.course_boundary_wand.left": "Left-click a block: first corner",
   "kalic0re.parkour.item.course_boundary_wand.right": "Right-click a block: second corner",
