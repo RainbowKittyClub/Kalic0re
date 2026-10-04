@@ -1,5 +1,5 @@
 {
-  "//": "Filled in by admin/dialog/build_courses: New Course's dialog, then a course_button.json per course after Edit Nearby Leaderboard Display.",
+  "//": "Filled in by admin/dialog/build_courses: New Course's dialog, then a course_button.json per course.",
   "type": "minecraft:multi_action",
   "title": {
     "translate": "kalic0re.parkour.menu.courses.title",
@@ -19,16 +19,6 @@
       "width": 250,
       "action": {
         "type": "minecraft:show_dialog"
-      }
-    },
-    {
-      "label": {
-        "translate": "kalic0re.parkour.menu.courses.edit_leaderboard_display"
-      },
-      "width": 250,
-      "action": {
-        "type": "minecraft:run_command",
-        "command": "function kalic0re:parkour/admin/displays/edit_nearest"
       }
     }
   ],

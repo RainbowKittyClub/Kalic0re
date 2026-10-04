@@ -1,5 +1,5 @@
-# /function kalic0re:parkour/admin/displays/edit_nearest, or the Courses dialog's Edit Nearby Leaderboard Display:
-# the Edit dialog for the nearest leaderboard display whose title is within 8 blocks, Back to the Courses dialog.
+# /function kalic0re:parkour/admin/displays/edit_nearest: the Edit dialog for the nearest leaderboard display whose
+# title is within 8 blocks, Back to the Courses dialog. The wand's right-click at a display opens it too.
 execute unless entity @n[type=minecraft:text_display,tag=kalic0re.parkour.leaderboardDisplay, \
     scores={kalic0re.parkour.leaderboardDisplayLine=0},distance=..8] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.no_leaderboard_display_near",color:"red"}

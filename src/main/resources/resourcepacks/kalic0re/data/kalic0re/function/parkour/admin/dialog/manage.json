@@ -64,7 +64,7 @@
       },
       "action": {
         "type": "minecraft:run_command",
-        "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"leaderboard_display\"}"
+        "command": "function kalic0re:parkour/admin/course/open_place_leaderboard_display {course:\"$(course)\"}"
       }
     },
     {

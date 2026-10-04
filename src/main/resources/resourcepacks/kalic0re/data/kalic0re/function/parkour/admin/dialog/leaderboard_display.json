@@ -1,5 +1,5 @@
 {
-  "//": "Opened by admin/course/open; Back is filled in with the course's management dialog.",
+  "//": "Opened by admin/course/open_place_leaderboard_display, which fills in Position and Rotation's starting text and Back with the course's management dialog.",
   "type": "minecraft:confirmation",
   "title": {
     "translate": "kalic0re.parkour.menu.leaderboard_display.title",
@@ -23,28 +23,6 @@
   "inputs": [
     {
       "type": "minecraft:number_range",
-      "key": "distance",
-      "label": {
-        "translate": "kalic0re.parkour.menu.leaderboard_display.distance"
-      },
-      "start": 0,
-      "end": 16,
-      "step": 0.5,
-      "initial": 3
-    },
-    {
-      "type": "minecraft:number_range",
-      "key": "height",
-      "label": {
-        "translate": "kalic0re.parkour.menu.leaderboard_display.height"
-      },
-      "start": 0,
-      "end": 8,
-      "step": 0.25,
-      "initial": 3.5
-    },
-    {
-      "type": "minecraft:number_range",
       "key": "size",
       "label": {
         "translate": "kalic0re.parkour.menu.leaderboard_display.size"
@@ -55,14 +33,22 @@
       "initial": 1
     },
     {
-      "type": "minecraft:boolean",
-      "key": "square",
+      "type": "minecraft:text",
+      "key": "position",
+      "width": 250,
+      "initial": "$(place_position)",
       "label": {
-        "translate": "kalic0re.parkour.menu.leaderboard_display.square"
-      },
-      "initial": true,
-      "on_true": "1",
-      "on_false": "0"
+        "translate": "kalic0re.parkour.menu.position_box"
+      }
+    },
+    {
+      "type": "minecraft:text",
+      "key": "rotation",
+      "width": 250,
+      "initial": "$(place_rotation)",
+      "label": {
+        "translate": "kalic0re.parkour.menu.rotation_box"
+      }
     }
   ],
   "yes": {
@@ -71,7 +57,7 @@
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
-      "template": "function kalic0re:parkour/admin/course/place_leaderboard_display {course:\"$(course)\",distance:$(distance),height:$(height),size:$(size),square:$(square)}"
+      "template": "function kalic0re:parkour/admin/course/place_leaderboard_display {course:\"$(course)\",size:$(size),position:\"$(position)\",rotation:\"$(rotation)\"}"
     }
   },
   "no": {
