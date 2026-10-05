@@ -2,7 +2,9 @@ package club.rainbowkitty.kalic0re.common.vehicle;
 
 import com.mojang.math.Axis;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.AbstractElement;
 import eu.pb4.polymer.virtualentity.api.elements.GenericEntityElement;
+import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -141,6 +143,28 @@ public abstract class CargoDisplayHolder extends ElementHolder {
     }
 
     /**
+     * Keeps where a newly watching client is first sent each of {@code holder}'s elements at where
+     * the entity they ride is now. Every cargo holder does this each tick; it is public for any
+     * other holder whose elements all ride the entity it is attached to, and so ignore position
+     * updates.
+     *
+     * <p>Polymer spawns an element for a new watcher wherever it last sent it, and an element that
+     * ignores position updates was last sent where it first spawned. For a cart that has travelled
+     * since, that can be in chunks the client has not loaded. A client seats only a rider it
+     * ticks, and ticks only an entity spawned in a section it is ticking, so the rider stays where
+     * it was put, out of sight, until that far-off chunk happens to load — a cart's cargo missing
+     * from a train that comes back into view. The entity tracker pairs a returning player before it
+     * ticks the holder, so the spawn is at most a tick behind the cart.
+     */
+    public static void keepRidersCurrent(ElementHolder holder) {
+        for (VirtualElement element : holder.getElements()) {
+            if (element instanceof AbstractElement rider) {
+                rider.updateLastSyncedPos();
+            }
+        }
+    }
+
+    /**
      * Applies the cart's rotation to the elements. Called on the first tick and then only when the
      * cart has turned or {@link #markPoseDirty} asked for it, so it is the place for the whole
      * transform, not a delta.
@@ -216,6 +240,7 @@ public abstract class CargoDisplayHolder extends ElementHolder {
 
     @Override
     protected void onTick() {
+        keepRidersCurrent(this);
         trail.push(cart);
         pose();
     }
