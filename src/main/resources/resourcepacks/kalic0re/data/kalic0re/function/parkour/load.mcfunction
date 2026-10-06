@@ -51,9 +51,8 @@ scoreboard objectives add kalic0re.parkour.admin trigger
 # A leaderboard board's lines: each one's course and its place on the board, 0 the title.
 scoreboard objectives add kalic0re.parkour.leaderboardDisplayCourseId dummy
 scoreboard objectives add kalic0re.parkour.leaderboardDisplayLine dummy
-# Divisors for splitting run ticks into minutes, seconds and tenths, for runners' tick phases, and for turning
-# a leaderboard display laid on a floor or ceiling to the nearest quarter and its size to quarters; #100 puts
-# exclusion bounds in hundredths; #-1, #3 and #1000 work out the leaderboard display a boundary wand aims at.
+# Constants for splitting run ticks, tick phases, quarter turns and sizes of boards, exclusion bounds in
+# hundredths, and the board math (aim, placement, ranks following).
 scoreboard players set #-1 kalic0re.parkour.tmp -1
 scoreboard players set #2 kalic0re.parkour.tmp 2
 scoreboard players set #3 kalic0re.parkour.tmp 3
