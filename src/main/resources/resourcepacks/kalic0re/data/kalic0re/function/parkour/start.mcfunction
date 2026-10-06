@@ -8,4 +8,5 @@ $execute store result score @s kalic0re.parkour.runningCourseId run \
     data get storage kalic0re:parkour courses[{name:"$(course)"}].id
 function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/begin"}
 scoreboard players set @s kalic0re.parkour.runTicks 0
+scoreboard players set @s kalic0re.parkour.isTimerRunning 1
 scoreboard players set @s kalic0re.parkour.isActive 1
