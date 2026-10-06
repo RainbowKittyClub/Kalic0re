@@ -5,6 +5,8 @@ scoreboard objectives add kalic0re.parkour.tmp dummy
 # may set to a course's id to see its leaderboard, resting at -1.
 scoreboard objectives add kalic0re.parkour.runTicks dummy
 scoreboard objectives add kalic0re.parkour.courseBestTicks dummy
+# 1 while a runner's timer counts: from a start or restart until they finish.
+scoreboard objectives add kalic0re.parkour.isTimerRunning dummy
 # The id of the course a runner is on, for the per-tick course boundary check.
 scoreboard objectives add kalic0re.parkour.runningCourseId dummy
 # Each runner's turn within every 2, 4 and 16 ticks, so their periodic work falls on different ticks.
@@ -51,19 +53,19 @@ scoreboard objectives add kalic0re.parkour.admin trigger
 # A leaderboard board's lines: each one's course and its place on the board, 0 the title.
 scoreboard objectives add kalic0re.parkour.leaderboardDisplayCourseId dummy
 scoreboard objectives add kalic0re.parkour.leaderboardDisplayLine dummy
-# /trigger kalic0re.admin.remove_course_boundary removes the boundary of a held wand's course around the
-# player's feet. give_wand enables it for whoever takes a wand; an op can for anyone else:
-# /scoreboard players enable <player> kalic0re.admin.remove_course_boundary
-scoreboard objectives add kalic0re.admin.remove_course_boundary trigger
-# Divisors for splitting run ticks into minutes, seconds and tenths, for runners' tick phases, and for
-# squaring a leaderboard display to the compass and its size to quarters.
+# Constants for splitting run ticks, tick phases, quarter turns and sizes of boards, exclusion bounds in
+# hundredths, and the board math (aim, placement, ranks following).
+scoreboard players set #-1 kalic0re.parkour.tmp -1
 scoreboard players set #2 kalic0re.parkour.tmp 2
+scoreboard players set #3 kalic0re.parkour.tmp 3
 scoreboard players set #4 kalic0re.parkour.tmp 4
 scoreboard players set #16 kalic0re.parkour.tmp 16
 scoreboard players set #10 kalic0re.parkour.tmp 10
 scoreboard players set #60 kalic0re.parkour.tmp 60
 scoreboard players set #90 kalic0re.parkour.tmp 90
+scoreboard players set #100 kalic0re.parkour.tmp 100
 scoreboard players set #250 kalic0re.parkour.tmp 250
+scoreboard players set #1000 kalic0re.parkour.tmp 1000
 # How messages name a point, shown through an nbt component: a key built from $(point) could only
 # fall back to the point's own id.
 data modify storage kalic0re:parkour pointNames set value { \
@@ -91,3 +93,7 @@ scoreboard objectives add kalic0re.parkour.directionMarkerDirectionZ dummy
 scoreboard players set #10000 kalic0re.parkour.tmp 10000
 data modify storage kalic0re:parkour directionMarkerSine set value \
     [0,618,1176,1618,1902,2000,1902,1618,1176,618,0,-618,-1176,-1618,-1902,-2000,-1902,-1618,-1176,-618]
+# The default course finish firework, over kalic0re:firework's defaults: a burst from the runner's feet, with no rocket
+# to speak of nor its launch sound, seen only by players near enough to see particles. Edit Finish Firework goes over it.
+data modify storage kalic0re:parkour finishFirework set value \
+    {pattern:"burst",position:"~ ~ ~",riseTicks:1,playLaunchSound:0b,particleMode:"normal"}

@@ -1,5 +1,5 @@
 {
-  "//": "admin/new_course_named fills in the name box; admin/new_course keeps the initial name below.",
+  "//": "admin/new_course_named fills in the name box; new_course_as_typed every box; admin/new_course keeps the initials below. The start starts where you stand, the lobby empty.",
   "type": "minecraft:confirmation",
   "external_title": {
     "translate": "kalic0re.parkour.menu.new_parkour",
@@ -43,6 +43,41 @@
         "translate": "kalic0re.parkour.menu.new_parkour.course_prompt_title"
       },
       "initial": "My Parkour Course"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "start_position",
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.parkour.menu.new_parkour.start_position"
+      },
+      "initial": "~ ~ ~"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "start_rotation",
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.parkour.menu.new_parkour.start_rotation"
+      },
+      "initial": "~ ~"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "lobby_position",
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.parkour.menu.new_parkour.lobby_position"
+      }
+    },
+    {
+      "type": "minecraft:text",
+      "key": "lobby_rotation",
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.parkour.menu.new_parkour.lobby_rotation"
+      },
+      "initial": "~ ~"
     }
   ],
   "can_close_with_escape": true,
@@ -54,7 +89,7 @@
     },
     "action": {
       "type": "minecraft:dynamic/run_command",
-      "template": "function kalic0re:parkour/admin/create {course:\"$(course_name)\"}"
+      "template": "function kalic0re:parkour/admin/create_from_dialog {texts:{course:\"$(course_name)\",startPosition:\"$(start_position)\",startRotation:\"$(start_rotation)\",lobbyPosition:\"$(lobby_position)\",lobbyRotation:\"$(lobby_rotation)\"}}"
     }
   },
   "no": {

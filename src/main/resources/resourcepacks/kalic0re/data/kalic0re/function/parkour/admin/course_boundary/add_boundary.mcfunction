@@ -1,5 +1,5 @@
 # add and add_exclusion: to the course's $(boundaries) and the any_of at $(boundaryPredicate), told by the
-# message/$(key)_* functions.
+# message/$(key)_* functions. A term with $(widenTermToFootprint) 1 holds any of a runner's footprint.
 $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.no_such_course",with:["$(course)"],color:"red"}
 # An unknown dimension fails `in` before the score is set; the predicate would take it and hold no one.
@@ -14,6 +14,9 @@ $scoreboard players set #x2 kalic0re.parkour.tmp $(x2)
 $scoreboard players set #y2 kalic0re.parkour.tmp $(y2)
 $scoreboard players set #z2 kalic0re.parkour.tmp $(z2)
 function kalic0re:parkour/admin/course_boundary/build_boundary
+$scoreboard players set #widenTermToFootprint kalic0re.parkour.tmp $(widenTermToFootprint)
+execute if score #widenTermToFootprint kalic0re.parkour.tmp matches 1 run \
+    function kalic0re:parkour/admin/course_boundary/widen_term_to_footprint
 $data modify storage kalic0re:parkour tmp.newCourseBoundary.boundary.dim set value "$(dim)"
 $data modify storage kalic0re:parkour tmp.newCourseBoundary.term.predicate.dimension set value "$(dim)"
 # A wand's link can be clicked twice; the same boundary again would only add a test.

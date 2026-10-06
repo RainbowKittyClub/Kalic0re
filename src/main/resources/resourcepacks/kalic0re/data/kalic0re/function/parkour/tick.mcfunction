@@ -11,9 +11,8 @@ execute as @a[tag=kalic0re.parkour.runnerChangedDimension] at @s run function ka
 execute as @a[scores={kalic0re.parkour.isActive=1}] at @s run function kalic0re:parkour/player/tick
 # The course id their checks pass on, removed once rather than per runner.
 data remove storage kalic0re:parkour tmp.courseBoundaryCheck
-# isActive alone ends a run, so the quit item, kalic0re:parkour/finish or an op can set it to 0.
-# Either saved step starts the exit, which restores and untags both, so the second line skips them.
-# The score is in the selector, so runners are passed over without a test each.
+# isActive alone ends a run (the quit item or an op set it to 0; a finish only stops the timer). Either saved
+# step starts the exit, which untags both, so the second line skips them.
 execute as @a[tag=kalic0re.parkour.playerInventorySaved,scores={kalic0re.parkour.isActive=..0}] \
     at @s run function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/exit"}
 execute as @a[tag=kalic0re.parkour.playerEffectsSaved,scores={kalic0re.parkour.isActive=..0}] \
@@ -29,9 +28,6 @@ execute if score #16ticks kalic0re.timer matches 0 as @a[tag=kalic0re.parkour.pl
 execute as @a[scores={kalic0re.parkour.leaderboard=0..}] run function kalic0re:parkour/leaderboard/requested
 execute as @a[scores={kalic0re.parkour.leaderboard=..-2}] run function kalic0re:parkour/leaderboard/requested
 execute as @a[scores={kalic0re.parkour.admin=1..}] run function kalic0re:parkour/admin/requested
-# At their feet: the boundaries removed are the ones holding them.
-execute as @a[scores={kalic0re.admin.remove_course_boundary=1..}] at @s run \
-    function kalic0re:parkour/admin/course_boundary/remove_requested
 # The course boundary wand's right-clicks; its left-clicks come through its enchantment instead.
 execute as @a[scores={kalic0re.parkour.courseBoundaryWandRightClick=1..}] at @s run \
     function kalic0re:parkour/admin/course_boundary/wand/right_click
@@ -61,8 +57,7 @@ execute if items entity @a[tag=!kalic0re.parkour.holdingBoundaryWand] weapon.mai
 execute as @a[tag=kalic0re.parkour.holdingBoundaryWand] \
     unless items entity @s weapon.mainhand *[custom_data~{kalic0re:{parkourCourseBoundaryWand:{}}}] \
     run function kalic0re:parkour/admin/course_boundary/wand/outline/wand_out_of_hand
-# Night vision while holding it, 6 s renewed every 16 ticks, so it ends soon after. Under 10 s left the
-# client flickers it, which at 6 s is always.
+# Night vision while holding it, 6 s renewed every 16 ticks, so it ends soon after.
 execute if score #16ticks kalic0re.timer matches 0 as @a[tag=kalic0re.parkour.holdingBoundaryWand] run \
     effect give @s minecraft:night_vision 6 0 true
 # Leaderboard boards whose chunk was unloaded when their course changed catch up.

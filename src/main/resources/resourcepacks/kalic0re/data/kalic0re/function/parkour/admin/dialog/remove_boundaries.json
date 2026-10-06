@@ -1,0 +1,45 @@
+{
+  "//": "Opened by admin/course_boundary/ask_which_by_dialog, which adds a checkbox per boundary and Remove's template.",
+  "type": "minecraft:confirmation",
+  "title": {
+    "translate": "kalic0re.parkour.menu.remove_boundaries.title",
+    "bold": true
+  },
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.course",
+        "with": ["$(course)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.world",
+        "with": ["$(dim)"]
+      }
+    },
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.parkour.menu.remove_boundaries.details"
+      }
+    }
+  ],
+  "inputs": [],
+  "yes": {
+    "label": {
+      "translate": "kalic0re.parkour.menu.remove_boundaries.confirm"
+    },
+    "action": {
+      "type": "minecraft:dynamic/run_command",
+      "template": "function kalic0re:parkour/admin/course_boundary/remove_checked {checks:[]}"
+    }
+  },
+  "no": {
+    "label": {
+      "translate": "gui.cancel"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "//": "Opened by admin/displays/edit_nearest, which fills in Size's initial value and Back with the Courses dialog.",
+  "//": "Built by admin/displays/edit_board, which fills in the board's position and Size's initial value; its caller sets the exit.",
   "type": "minecraft:multi_action",
   "title": {
     "translate": "kalic0re.parkour.menu.leaderboard_display_edit.title",
@@ -41,6 +41,26 @@
       "end": 4,
       "step": 0.25,
       "initial": 1
+    },
+    {
+      "type": "minecraft:text",
+      "key": "position",
+      "max_length": 100,
+      "width": 250,
+      "initial": "$(current_position)",
+      "label": {
+        "translate": "kalic0re.parkour.menu.position_box"
+      }
+    },
+    {
+      "type": "minecraft:text",
+      "key": "rotation",
+      "max_length": 100,
+      "width": 250,
+      "initial": "$(current_rotation)",
+      "label": {
+        "translate": "kalic0re.parkour.menu.rotation_box"
+      }
     }
   ],
   "actions": [
@@ -50,7 +70,7 @@
       },
       "action": {
         "type": "minecraft:dynamic/run_command",
-        "template": "function kalic0re:parkour/admin/displays/edit_nearest_apply {size:$(size),title:\"$(title)\"}"
+        "template": "function kalic0re:parkour/admin/displays/edit_board_apply {x:$(x),y:$(y),z:$(z),size:$(size),texts:{title:\"$(title)\",position:\"$(position)\",rotation:\"$(rotation)\"}}"
       }
     },
     {
@@ -59,7 +79,7 @@
       },
       "action": {
         "type": "minecraft:run_command",
-        "command": "function kalic0re:parkour/admin/displays/remove_nearest"
+        "command": "function kalic0re:parkour/admin/displays/remove_board {x:$(x),y:$(y),z:$(z)}"
       }
     }
   ],

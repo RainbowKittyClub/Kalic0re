@@ -1,5 +1,5 @@
 # Every boundary of $(course) holding this player's feet, exclusion boundaries first, as one usually sits
-# inside a course boundary: one alone is removed, more are asked about.
+# inside a course boundary: one alone is removed, more are asked about by $(askWhich), in chat or a dialog.
 $execute unless data storage kalic0re:parkour courses[{name:"$(course)"}] run return run \
     tellraw @s {translate:"kalic0re.parkour.chat.no_such_course",with:["$(course)"],color:"red"}
 data remove storage kalic0re:parkour tmp.boundaryRemoval
@@ -13,5 +13,5 @@ $execute unless data storage kalic0re:parkour tmp.boundaryHere.found[0] run \
 execute if data storage kalic0re:parkour tmp.boundaryHere.found[0] unless data storage kalic0re:parkour tmp.boundaryHere.found[1] run \
     data modify storage kalic0re:parkour tmp.boundaryRemoval set from storage kalic0re:parkour tmp.boundaryHere.found[0]
 execute if data storage kalic0re:parkour tmp.boundaryRemoval run function kalic0re:parkour/admin/course_boundary/remove_found
-execute if data storage kalic0re:parkour tmp.boundaryHere.found[1] run function kalic0re:parkour/admin/course_boundary/ask_which
+$execute if data storage kalic0re:parkour tmp.boundaryHere.found[1] run function kalic0re:parkour/admin/course_boundary/$(askWhich)
 data remove storage kalic0re:parkour tmp.boundaryHere

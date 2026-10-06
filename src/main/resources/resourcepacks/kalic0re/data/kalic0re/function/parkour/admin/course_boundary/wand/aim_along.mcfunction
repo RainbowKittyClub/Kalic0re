@@ -1,0 +1,10 @@
+# For aim_test_board: #aimAlong$(axis) = Q · $(axis), how far the meeting point lies along that axis, in hundredths.
+$scoreboard players operation #aimAlong$(axis) kalic0re.parkour.tmp = #aimQX kalic0re.parkour.tmp
+$scoreboard players operation #aimAlong$(axis) kalic0re.parkour.tmp *= #aim$(axis)X kalic0re.parkour.tmp
+scoreboard players operation #aimTerm kalic0re.parkour.tmp = #aimQY kalic0re.parkour.tmp
+$scoreboard players operation #aimTerm kalic0re.parkour.tmp *= #aim$(axis)Y kalic0re.parkour.tmp
+$scoreboard players operation #aimAlong$(axis) kalic0re.parkour.tmp += #aimTerm kalic0re.parkour.tmp
+scoreboard players operation #aimTerm kalic0re.parkour.tmp = #aimQZ kalic0re.parkour.tmp
+$scoreboard players operation #aimTerm kalic0re.parkour.tmp *= #aim$(axis)Z kalic0re.parkour.tmp
+$scoreboard players operation #aimAlong$(axis) kalic0re.parkour.tmp += #aimTerm kalic0re.parkour.tmp
+$scoreboard players operation #aimAlong$(axis) kalic0re.parkour.tmp /= #1000 kalic0re.parkour.tmp

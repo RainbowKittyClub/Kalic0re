@@ -33,6 +33,15 @@
     },
     {
       "label": {
+        "translate": "kalic0re.parkour.menu.manage.move_lobby"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"move_lobby\"}"
+      }
+    },
+    {
+      "label": {
         "translate": "kalic0re.parkour.menu.manage.delete"
       },
       "action": {
@@ -55,7 +64,16 @@
       },
       "action": {
         "type": "minecraft:run_command",
-        "command": "function kalic0re:parkour/admin/course/open {course:\"$(course)\",dialog:\"leaderboard_display\"}"
+        "command": "function kalic0re:parkour/admin/course/open_place_leaderboard_display {course:\"$(course)\"}"
+      }
+    },
+    {
+      "label": {
+        "translate": "kalic0re.parkour.menu.manage.finish_firework"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/open_finish_firework {course:\"$(course)\"}"
       }
     },
     {
