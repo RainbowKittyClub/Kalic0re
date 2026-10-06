@@ -11,9 +11,8 @@ execute as @a[tag=kalic0re.parkour.runnerChangedDimension] at @s run function ka
 execute as @a[scores={kalic0re.parkour.isActive=1}] at @s run function kalic0re:parkour/player/tick
 # The course id their checks pass on, removed once rather than per runner.
 data remove storage kalic0re:parkour tmp.courseBoundaryCheck
-# isActive alone ends a run, so the quit item, kalic0re:parkour/finish or an op can set it to 0.
-# Either saved step starts the exit, which restores and untags both, so the second line skips them.
-# The score is in the selector, so runners are passed over without a test each.
+# isActive alone ends a run (the quit item or an op set it to 0; a finish only stops the timer). Either saved
+# step starts the exit, which untags both, so the second line skips them.
 execute as @a[tag=kalic0re.parkour.playerInventorySaved,scores={kalic0re.parkour.isActive=..0}] \
     at @s run function kalic0re:parkour/player/with_uuid {run:"kalic0re:parkour/player/exit"}
 execute as @a[tag=kalic0re.parkour.playerEffectsSaved,scores={kalic0re.parkour.isActive=..0}] \
