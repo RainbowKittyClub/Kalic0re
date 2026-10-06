@@ -54,7 +54,7 @@
   "kalic0re.parkour.chat.finished": "Finished \"%s\" in %s. Your best time is %s.",
   "kalic0re.parkour.chat.finished_new_best": "Finished \"%s\" in %s. New best!",
   "kalic0re.parkour.chat.leaderboard_display_gone": "That leaderboard display isn't there any more.",
-  "kalic0re.parkour.chat.name_has_quote_or_backslash": "Course names can't contain \" or \\. Choose another name.",
+  "kalic0re.parkour.chat.name_has_quote_backslash_or_dollar": "Course names can't contain \", \\ or $. Choose another name.",
   "kalic0re.parkour.chat.name_kept": "Parkour course \"%s\" name not changed.",
   "kalic0re.parkour.chat.name_taken": "A parkour course named \"%s\" already exists. Choose another name.",
   "kalic0re.parkour.chat.no_boundaries_checked": "None were checked, so no boundary was removed.",
