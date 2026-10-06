@@ -3,4 +3,3 @@ $tellraw @s {translate:"kalic0re.parkour.chat.not_a_block_position",color:"red",
     {nbt:"tmp.dialogTexts.$(corner)",storage:"kalic0re:parkour",interpret:true}]}
 data remove storage kalic0re:parkour tmp.boundaryDialog
 data remove storage kalic0re:parkour tmp.dialogTexts
-data remove storage kalic0re:parkour tmp.textCheck
