@@ -69,6 +69,15 @@
     },
     {
       "label": {
+        "translate": "kalic0re.parkour.menu.manage.finish_firework"
+      },
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "function kalic0re:parkour/admin/course/open_finish_firework {course:\"$(course)\"}"
+      }
+    },
+    {
+      "label": {
         "translate": "kalic0re.parkour.menu.manage.course_boundary_wand"
       },
       "action": {
