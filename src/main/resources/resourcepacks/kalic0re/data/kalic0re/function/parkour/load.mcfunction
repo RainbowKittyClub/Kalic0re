@@ -93,3 +93,7 @@ scoreboard objectives add kalic0re.parkour.directionMarkerDirectionZ dummy
 scoreboard players set #10000 kalic0re.parkour.tmp 10000
 data modify storage kalic0re:parkour directionMarkerSine set value \
     [0,618,1176,1618,1902,2000,1902,1618,1176,618,0,-618,-1176,-1618,-1902,-2000,-1902,-1618,-1176,-618]
+# The default course finish firework, over kalic0re:firework's defaults: a burst from the runner's feet, with no rocket
+# to speak of nor its launch sound, seen only by players near enough to see particles. Edit Finish Firework goes over it.
+data modify storage kalic0re:parkour finishFirework set value \
+    {pattern:"burst",position:"~ ~ ~",riseTicks:1,playLaunchSound:0b,particleMode:"normal"}
