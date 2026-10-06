@@ -1,0 +1,303 @@
+{
+  "//": "Built by kalic0re:firework/editor/open, which fills in every box from the firework it starts from, and what Save runs; its caller sets the exit and shows it.",
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "kalic0re.create_firework.title",
+    "bold": true
+  },
+  "pause": false,
+  "after_action": "none",
+  "body": [
+    {
+      "type": "minecraft:plain_message",
+      "contents": {
+        "translate": "kalic0re.create_firework.details"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "type": "minecraft:single_option",
+      "key": "pattern",
+      "label": {
+        "translate": "kalic0re.create_firework.pattern.label"
+      },
+      "options": [
+        {"id": "small_ball", "display": {"translate": "item.minecraft.firework_star.shape.small_ball"}},
+        {"id": "large_ball", "display": {"translate": "item.minecraft.firework_star.shape.large_ball"}, "initial": true},
+        {"id": "star", "display": {"translate": "item.minecraft.firework_star.shape.star"}},
+        {"id": "burst", "display": {"translate": "item.minecraft.firework_star.shape.burst"}},
+        {"id": "creeper", "display": {"translate": "item.minecraft.firework_star.shape.creeper"}}
+      ]
+    },
+    {
+      "type": "minecraft:text",
+      "key": "colors",
+      "width": 300,
+      "max_length": 256,
+      "label": {
+        "translate": "kalic0re.create_firework.color.label"
+      },
+      "initial": "$(colors_text)"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "fade_colors",
+      "width": 300,
+      "max_length": 256,
+      "label": {
+        "translate": "kalic0re.create_firework.fade_color.label"
+      },
+      "initial": "$(fade_colors_text)"
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "radius",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.radius.label"
+      },
+      "start": 0.5,
+      "end": 10,
+      "step": 0.5,
+      "initial": 4
+    },
+    {
+      "type": "minecraft:text",
+      "key": "position",
+      "width": 300,
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.create_firework.position.label",
+        "hover_event": {"action": "show_text", "value": {"translate": "kalic0re.create_firework.position.hover"}}
+      },
+      "initial": "$(position_text)"
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "rise_ticks",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.rise_ticks.label"
+      },
+      "start": 1,
+      "end": 60,
+      "step": 1,
+      "initial": 16
+    },
+    {
+      "type": "minecraft:text",
+      "key": "rise_color",
+      "width": 300,
+      "max_length": 16,
+      "label": {
+        "translate": "kalic0re.create_firework.rise_color.label"
+      },
+      "initial": "$(rise_color_text)"
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "burst_ticks",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.burst_ticks.label",
+        "hover_event": {"action": "show_text", "value": {"translate": "kalic0re.create_firework.burst_ticks.hover"}}
+      },
+      "start": 1,
+      "end": 40,
+      "step": 1,
+      "initial": 6
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "dust_scale",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.dust_scale.label"
+      },
+      "start": 0.25,
+      "end": 4,
+      "step": 0.25,
+      "initial": 2
+    },
+    {
+      "type": "minecraft:boolean",
+      "key": "has_trail",
+      "label": {
+        "translate": "kalic0re.create_firework.trail.label"
+      },
+      "initial": true
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "spark_speed",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.spark_speed.label"
+      },
+      "start": 0,
+      "end": 1,
+      "step": 0.05,
+      "initial": 0.35
+    },
+    {
+      "type": "minecraft:text",
+      "key": "spark_particle",
+      "width": 300,
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.create_firework.spark_particle.label",
+        "hover_event": {"action": "show_text", "value": {"translate": "kalic0re.create_firework.spark_particle.hover"}}
+      },
+      "initial": "$(spark_particle_text)"
+    },
+    {
+      "type": "minecraft:boolean",
+      "key": "has_twinkle",
+      "label": {
+        "translate": "kalic0re.create_firework.twinkle.label"
+      },
+      "initial": true
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "twinkle_delay_ticks",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.twinkle_delay_ticks.label"
+      },
+      "start": 1,
+      "end": 40,
+      "step": 1,
+      "initial": 12
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "twinkle_sparks",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.twinkle_sparks.label"
+      },
+      "start": 0,
+      "end": 100,
+      "step": 5,
+      "initial": 40
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "twinkle_spread",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.twinkle_spread.label"
+      },
+      "start": 0,
+      "end": 8,
+      "step": 0.5,
+      "initial": 2
+    },
+    {
+      "type": "minecraft:boolean",
+      "key": "launch_sound",
+      "label": {
+        "translate": "kalic0re.create_firework.launch_sound.label"
+      },
+      "initial": true
+    },
+    {
+      "type": "minecraft:text",
+      "key": "launch_sound_id",
+      "width": 300,
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.create_firework.launch_sound_id.label"
+      },
+      "initial": "$(launch_sound_text)"
+    },
+    {
+      "type": "minecraft:boolean",
+      "key": "blast_sound",
+      "label": {
+        "translate": "kalic0re.create_firework.blast_sound.label"
+      },
+      "initial": true
+    },
+    {
+      "type": "minecraft:text",
+      "key": "blast_sound_id",
+      "width": 300,
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.create_firework.blast_sound_id.label",
+        "hover_event": {"action": "show_text", "value": {"translate": "kalic0re.create_firework.blast_sound_id.hover"}}
+      },
+      "initial": "$(blast_sound_text)"
+    },
+    {
+      "type": "minecraft:boolean",
+      "key": "twinkle_sound",
+      "label": {
+        "translate": "kalic0re.create_firework.twinkle_sound.label"
+      },
+      "initial": true
+    },
+    {
+      "type": "minecraft:text",
+      "key": "twinkle_sound_id",
+      "width": 300,
+      "max_length": 100,
+      "label": {
+        "translate": "kalic0re.create_firework.twinkle_sound_id.label"
+      },
+      "initial": "$(twinkle_sound_text)"
+    },
+    {
+      "type": "minecraft:number_range",
+      "key": "sound_volume",
+      "width": 300,
+      "label": {
+        "translate": "kalic0re.create_firework.sound_volume.label"
+      },
+      "start": 0,
+      "end": 10,
+      "step": 0.5,
+      "initial": 3
+    },
+    {
+      "type": "minecraft:single_option",
+      "key": "particle_mode",
+      "label": {
+        "translate": "kalic0re.create_firework.particle_mode.label"
+      },
+      "options": [
+        {"id": "force", "display": {"translate": "kalic0re.create_firework.particle_mode.force"}, "initial": true},
+        {"id": "normal", "display": {"translate": "kalic0re.create_firework.particle_mode.normal"}}
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "label": {
+        "translate": "kalic0re.create_firework.save"
+      },
+      "action": {
+        "type": "minecraft:dynamic/run_command",
+        "template": "function kalic0re:firework/editor/save {save:\"$(save)\",context:\"$(save_context)\",firework:{texts:{position:\"$(position)\",colors:\"$(colors)\",fadeColors:\"$(fade_colors)\",riseColor:\"$(rise_color)\",sparkParticle:\"$(spark_particle)\",launchSound:\"$(launch_sound_id)\",blastSound:\"$(blast_sound_id)\",twinkleSound:\"$(twinkle_sound_id)\"},values:{pattern:\"$(pattern)\",radius:$(radius),riseTicks:$(rise_ticks),burstTicks:$(burst_ticks),dustScale:$(dust_scale),hasTrail:$(has_trail),sparkSpeed:$(spark_speed),hasTwinkle:$(has_twinkle),twinkleDelayTicks:$(twinkle_delay_ticks),twinkleSparks:$(twinkle_sparks),twinkleSpread:$(twinkle_spread),playLaunchSound:$(launch_sound),playBlastSound:$(blast_sound),playTwinkleSound:$(twinkle_sound),soundVolume:$(sound_volume),particleMode:\"$(particle_mode)\"}}}"
+      }
+    },
+    {
+      "label": {
+        "translate": "kalic0re.create_firework.preview"
+      },
+      "action": {
+        "type": "minecraft:dynamic/run_command",
+        "template": "function kalic0re:firework/editor/preview {firework:{texts:{position:\"$(position)\",colors:\"$(colors)\",fadeColors:\"$(fade_colors)\",riseColor:\"$(rise_color)\",sparkParticle:\"$(spark_particle)\",launchSound:\"$(launch_sound_id)\",blastSound:\"$(blast_sound_id)\",twinkleSound:\"$(twinkle_sound_id)\"},values:{pattern:\"$(pattern)\",radius:$(radius),riseTicks:$(rise_ticks),burstTicks:$(burst_ticks),dustScale:$(dust_scale),hasTrail:$(has_trail),sparkSpeed:$(spark_speed),hasTwinkle:$(has_twinkle),twinkleDelayTicks:$(twinkle_delay_ticks),twinkleSparks:$(twinkle_sparks),twinkleSpread:$(twinkle_spread),playLaunchSound:$(launch_sound),playBlastSound:$(blast_sound),playTwinkleSound:$(twinkle_sound),soundVolume:$(sound_volume),particleMode:\"$(particle_mode)\"}}}"
+      }
+    }
+  ],
+  "columns": 2,
+  "exit_action": {
+    "label": {
+      "translate": "gui.cancel"
+    }
+  }
+}
