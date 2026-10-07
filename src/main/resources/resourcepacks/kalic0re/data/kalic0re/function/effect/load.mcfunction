@@ -26,6 +26,8 @@ scoreboard objectives add kalic0re.effect.displayBounceRangeZ dummy
 scoreboard objectives add kalic0re.effect.displayBounceVelocityX dummy
 scoreboard objectives add kalic0re.effect.displayBounceVelocityY dummy
 scoreboard objectives add kalic0re.effect.displayBounceVelocityZ dummy
+# The speed a bouncing display was given, which each axis's speed is drawn near at every wall.
+scoreboard objectives add kalic0re.effect.displayBounceSpeed dummy
 # How many walls a bouncing display turned off at its latest step: 1 a wall, 2 an edge, 3 a corner.
 scoreboard objectives add kalic0re.effect.displayBounceWallHits dummy
 scoreboard players set #-1 kalic0re.effect.tmp -1

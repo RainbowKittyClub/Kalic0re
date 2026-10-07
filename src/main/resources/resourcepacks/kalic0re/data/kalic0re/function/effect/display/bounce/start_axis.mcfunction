@@ -27,7 +27,8 @@ $scoreboard players operation #displayBounceStep kalic0re.effect.tmp = @s kalic0
 scoreboard players operation #displayBounceStep kalic0re.effect.tmp -= #displayBouncePlace kalic0re.effect.tmp
 $execute store result storage kalic0re:effect displayBounceStep.$(key) double 0.0009765625 run \
     scoreboard players get #displayBounceStep kalic0re.effect.tmp
-$scoreboard players operation @s kalic0re.effect.displayBounceVelocity$(axis) = #displayBounceSpeed kalic0re.effect.tmp
+function kalic0re:effect/display/bounce/noisy_speed
+$scoreboard players operation @s kalic0re.effect.displayBounceVelocity$(axis) = #displayBounceNoisySpeed kalic0re.effect.tmp
 $execute if score @s kalic0re.effect.displayBounceRange$(axis) matches 0 run \
     scoreboard players set @s kalic0re.effect.displayBounceVelocity$(axis) 0
 execute store result score #displayBounceCoin kalic0re.effect.tmp run random value 0..1
