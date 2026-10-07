@@ -7,8 +7,7 @@
 # fails, making nothing, on none. A block vanilla lacks gets no part. Each block takes about 40 commands
 # of max_command_sequence_length, 65536 by default: some 1600 a call.
 # To clear the blocks after, fill them strict: a plain fill drops a lantern or torch as an item when it
-# removes what holds it up first. To remove a display: execute as <display> on passengers run kill @s,
-# then kill the display.
+# removes what holds it up first. To remove the display, see kalic0re:effect/display/remove_display.
 data modify storage kalic0re:effect displayCreate set value {translation:[0.0f,0.0f,0.0f]}
 $data modify storage kalic0re:effect displayCreate.name set value "$(name)"
 $data modify storage kalic0re:effect displayCreate.tags set value $(tags)
