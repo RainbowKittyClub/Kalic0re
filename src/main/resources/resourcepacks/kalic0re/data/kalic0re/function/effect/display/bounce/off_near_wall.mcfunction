@@ -2,3 +2,4 @@
 scoreboard players operation #displayBounceNext kalic0re.effect.tmp *= #-1 kalic0re.effect.tmp
 $scoreboard players operation #displayBounceNext kalic0re.effect.tmp < @s kalic0re.effect.displayBounceRange$(axis)
 $scoreboard players operation @s kalic0re.effect.displayBounceVelocity$(axis) *= #-1 kalic0re.effect.tmp
+scoreboard players add @s kalic0re.effect.displayBounceWallHits 1

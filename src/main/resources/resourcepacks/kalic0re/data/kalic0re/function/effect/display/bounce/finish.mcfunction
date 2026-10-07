@@ -11,3 +11,4 @@ scoreboard players reset @s kalic0re.effect.displayBounceRangeZ
 scoreboard players reset @s kalic0re.effect.displayBounceVelocityX
 scoreboard players reset @s kalic0re.effect.displayBounceVelocityY
 scoreboard players reset @s kalic0re.effect.displayBounceVelocityZ
+scoreboard players reset @s kalic0re.effect.displayBounceWallHits

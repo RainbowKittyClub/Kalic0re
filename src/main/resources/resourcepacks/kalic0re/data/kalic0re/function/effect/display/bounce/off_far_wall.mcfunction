@@ -5,3 +5,4 @@ scoreboard players operation #displayBounceFold kalic0re.effect.tmp -= #displayB
 scoreboard players operation #displayBounceNext kalic0re.effect.tmp = #displayBounceFold kalic0re.effect.tmp
 execute if score #displayBounceNext kalic0re.effect.tmp matches ..-1 run scoreboard players set #displayBounceNext kalic0re.effect.tmp 0
 $scoreboard players operation @s kalic0re.effect.displayBounceVelocity$(axis) *= #-1 kalic0re.effect.tmp
+scoreboard players add @s kalic0re.effect.displayBounceWallHits 1
