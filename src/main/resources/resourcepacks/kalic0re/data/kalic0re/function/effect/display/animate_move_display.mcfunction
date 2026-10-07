@@ -2,7 +2,7 @@
 # e.g. execute as @e[tag=gate,limit=1] run function … {ramp:"smooth",dx:0,dy:-4,dz:0,ticks:40}
 # Moves this display, and whatever rides it, by dx dy dz over ticks: at a steady speed when linear,
 # easing in and out when smooth. It is teleported a step each tick, which clients glide over. A new
-# move replaces one in progress and starts from where the display is. Fails on any other ramp, or on
+# move replaces a move or bounce in progress, from where the display is. Fails on any other ramp, or on
 # ticks under 1. Covers up to about 2000 blocks along each axis.
 $data modify storage kalic0re:effect displayMove set value {ramp:"$(ramp)",ticks:$(ticks),by:[$(dx)d,$(dy)d,$(dz)d]}
 execute store result score #displayMoveTicks kalic0re.effect.tmp run data get storage kalic0re:effect displayMove.ticks
@@ -11,6 +11,7 @@ execute unless score #displayMoveTicks kalic0re.effect.tmp matches 1.. run \
 execute unless data storage kalic0re:effect displayMove{ramp:"linear"} \
     unless data storage kalic0re:effect displayMove{ramp:"smooth"} run \
     return run function kalic0re:effect/display/move/refuse
+execute if entity @s[tag=kalic0re.effect.displayBouncing] run function kalic0re:effect/display/bounce/finish
 execute unless entity @s[tag=kalic0re.effect.displayMoving] run \
     data modify entity @s data."kalic0re.effect.teleportDurationBeforeMove" set from entity @s teleport_duration
 data modify entity @s teleport_duration set value 2
