@@ -5,5 +5,7 @@ scoreboard players operation #displayPart kalic0re.effect.tmp = #displayCellX ka
 scoreboard players operation #displayPart kalic0re.effect.tmp -= #displayRootX kalic0re.effect.tmp
 execute store result storage kalic0re:effect displayCreate.translation[0] float 0.001 run \
     scoreboard players get #displayPart kalic0re.effect.tmp
-execute at @s summon minecraft:block_display run function kalic0re:effect/display/create/part
+data modify storage kalic0re:effect displayCreate.part.block_state set from storage kalic0re:block_state state
+data modify storage kalic0re:effect displayCreate.part.translation set from storage kalic0re:effect displayCreate.translation
+execute at @s run function kalic0re:effect/display/create/part with storage kalic0re:effect displayCreate.part
 scoreboard players add #displayParts kalic0re.effect.tmp 1
