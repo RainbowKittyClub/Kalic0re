@@ -1,6 +1,6 @@
 {
   "values": [
     "kalic0re:timer/tick", "kalic0re:parkour/tick", "kalic0re:parkour/direction_marker/tick",
-    "kalic0re:effect/display/wake"
+    "kalic0re:effect/display/wake", "kalic0re:redstone/wake"
   ]
 }
