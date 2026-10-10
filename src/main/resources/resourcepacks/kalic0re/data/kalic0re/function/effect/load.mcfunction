@@ -32,6 +32,7 @@ scoreboard objectives add kalic0re.effect.displayBounceSpeed dummy
 scoreboard objectives add kalic0re.effect.displayBounceWallHits dummy
 scoreboard players set #-1 kalic0re.effect.tmp -1
 scoreboard players set #2 kalic0re.effect.tmp 2
+scoreboard players set #500 kalic0re.effect.tmp 500
 scoreboard players set #1000 kalic0re.effect.tmp 1000
 scoreboard players set #1024 kalic0re.effect.tmp 1024
 # A move a reload or restart cut into carries on from where its display is.

@@ -1,6 +1,8 @@
 scoreboard players operation #displayPart kalic0re.effect.tmp = #displayCellZ kalic0re.effect.tmp
 scoreboard players operation #displayPart kalic0re.effect.tmp -= #displayRootZ kalic0re.effect.tmp
-execute store result storage kalic0re:effect displayCreate.translation[2] float 0.001 run \
+scoreboard players operation #displayPart kalic0re.effect.tmp /= #500 kalic0re.effect.tmp
+scoreboard players operation #displayPart kalic0re.effect.tmp *= #displayScaleZ kalic0re.effect.tmp
+execute store result storage kalic0re:effect displayCreate.translation[2] float 0.00048828125 run \
     scoreboard players get #displayPart kalic0re.effect.tmp
 scoreboard players set #displayCellX kalic0re.effect.tmp 0
 function kalic0re:effect/display/create/scan_cells
