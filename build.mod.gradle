@@ -19,6 +19,10 @@ dependencies {
 	compileOnly('dev.ftb.mods:ftb-chunks-fabric:26.1.2.8') { transitive = false }
 	compileOnly('dev.ftb.mods:ftb-teams-fabric:26.1.2.4') { transitive = false }
 	compileOnly('eu.pb4:common-protection-api:2.0.0') { transitive = false }
+
+	// fabric-permissions-api, which common/command asks when some mod provides it at runtime
+	// (LuckPerms nests it). compileOnly: a consumer without it gets the vanilla level check.
+	compileOnly("me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}") { transitive = false }
 }
 
 // A <name>.json among a pack's functions is a dialog (or a piece of one), built into <name>.mcfunction:
