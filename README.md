@@ -15,7 +15,9 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
   raw JSON, since vanilla's typed model builders cannot load under `client = false` datagen. Also
   `SpecialModelExtentsProvider`, which needs `client = true` datagen and `common.display`: it bakes
   vanilla's special item renderers and writes the box each draws in, for `ItemModelExtents`.
-- `common.death` — registry for themed death-message overrides.
+- `common.death` — registry for themed death-message overrides, for players (`register`) or any
+  living entity such as a pet (`registerLiving`); the consumer owns the mixin at each
+  `getDeathMessage()` call it wants routed through `resolve`.
 - `common.claim` — `ClaimExemptions`, one probe per claim mod (GOML, Flan, Open Parties and Claims,
   FTB Chunks, the Common Protection API) answering what it would say without its by-id exemptions,
   and a listener that lets a modded block stand in for a vanilla one. Compiled against those mods'
