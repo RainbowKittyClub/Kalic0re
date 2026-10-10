@@ -23,6 +23,10 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 - `common.click` — `HandClicks`, which drops the rest of a right-click once the server has taken
   it with one hand, where the client predicted a pass and went on to offer it to the other. The
   consumer owns the mixin on `ServerGamePacketListenerImpl` that routes through it.
+- `common.command` — `CommandPermissions`, gating one mod's commands on `<modId>.command.<path>`
+  nodes through fabric-permissions-api when some mod provides it (LuckPerms nests it), else on the
+  vanilla operator level. The API is `compileOnly` (`build.mod.gradle`) and named by one nested
+  class only, so a consumer without it still loads the gate.
 - `common.craft` — a 3×3 crafting grid that keeps its contents (`CraftingGridBlockEntity`), the
   shared menu over it (`PersistentCraftingMenu`) and vanilla's per-player one at any block
   (`BlockCraftingMenu`). The consumer owns the mixin that reads `CraftingGridHandoff`.
@@ -47,6 +51,9 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
   consumer owns the mixin that consults them.
 - `common.rule` — `ComponentGameRules`, registering rules as `<modId>.<component>:<path>` instead of
   one flat per-mod prefix.
+- `common.text` — `FallbackText`, translatable text carrying the mod's English from its own
+  `en_us.json` as fallback, since a vanilla client holds no server-side mod's lang file. English
+  lives only in that file; a key it lacks is logged once and shown as itself.
 - `common.vehicle` — cargo-minecart framework (`CargoMinecarts`, `CartCargo` and friends); needs
   `display` alongside it.
 
