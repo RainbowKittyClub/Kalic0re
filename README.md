@@ -184,6 +184,12 @@ The same work as functions:
 - `block_state/read` reads the block at the execution position into storage
   `kalic0re:block_state state`, in the form a block display's `block_state` takes. It fails on a
   block this Minecraft version lacks, such as a modded one.
+- `redstone/push_button {position:"<x y z>"}` pushes the button there as a player would, for as long
+  as their push holds it: 30 ticks a wooden button, 20 a stone one. `push_button_for
+  {position:"<x y z>",ticks:<n>}` holds it down for `ticks` instead. Either way it clicks, and what
+  it powers, through the block it's on too, follows it. Both return the ticks, and fail on anything
+  but an unpressed vanilla button in a loaded chunk, a pressed one included. The chunk stays loaded
+  until the button is let up; after a restart, the wait carries on once the chunk loads again.
 - `text/only_coordinates`, `only_digits`, `only_identifier`, `only_resource_id` and
   `only_color_list`, for `execute if function`, pass when storage `kalic0re:text check` holds only
   that kind of character, so it can go into a command and do nothing else there.
