@@ -28,7 +28,10 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 - `common.command` — `CommandPermissions`, gating one mod's commands on `<modId>.command.<path>`
   nodes through fabric-permissions-api when some mod provides it (LuckPerms nests it), else on the
   vanilla operator level. The API is `compileOnly` (`build.mod.gradle`) and named by one nested
-  class only, so a consumer without it still loads the gate.
+  class only, so a consumer without it still loads the gate. `PermissionCondition` is the same
+  question as a datapack predicate: a consumer registers it under its own id, and
+  `execute as <player> if predicate <id>` or `@a[predicate=<id>]` asks it, failing closed without
+  a player.
 - `common.craft` — a 3×3 crafting grid that keeps its contents (`CraftingGridBlockEntity`), the
   shared menu over it (`PersistentCraftingMenu`) and vanilla's per-player one at any block
   (`BlockCraftingMenu`). The consumer owns the mixin that reads `CraftingGridHandoff`.
