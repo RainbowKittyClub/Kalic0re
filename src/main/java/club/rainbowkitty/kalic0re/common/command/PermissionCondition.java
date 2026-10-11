@@ -40,7 +40,11 @@ public record PermissionCondition(String node, PermissionLevel fallback)
                             .forGetter(PermissionCondition::fallback))
                     .apply(i, PermissionCondition::new));
 
-    /** Registers the condition type under {@code id}, the string datapacks name in "condition". */
+    /**
+     * Registers the condition type under {@code id}, the string datapacks name in "condition". An
+     * id in the default namespace lets them write the bare name, at the price of failing boot the
+     * day vanilla ships a condition called the same, which is a loud enough tripwire to rename on.
+     */
     public static void register(Identifier id) {
         Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, id, MAP_CODEC);
     }
