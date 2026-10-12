@@ -150,18 +150,18 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
 
     @Override
     public BlockState getPolymerBlockState(BlockState state, @Nullable PacketContext context) {
-        return STAND_INS[state.getLightEmission()];
+        return STAND_INS[Math.min(LightBlock.MAX_LEVEL, state.getLightEmission())];
     }
 
     // The stand-in is invisible and breaks in silence; the material's block is what shatters.
     @Override
     public BlockState getPolymerBreakEventBlockState(BlockState state, PacketContext context) {
-        return owner.kind().material().plain();
+        return owner.material().plain();
     }
 
     @Override
     public @Nullable ElementHolder createElementHolder(ServerLevel level, BlockPos pos,
             BlockState state) {
-        return new PortalHolder(owner.kind().material(), PortalPlane.of(state.getValue(AXIS)));
+        return new PortalHolder(owner.material(), PortalPlane.of(state.getValue(AXIS)));
     }
 }

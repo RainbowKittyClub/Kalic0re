@@ -1,5 +1,7 @@
 package club.rainbowkitty.kalic0re.common.portal;
 
+import java.util.UUID;
+
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -25,10 +27,12 @@ public final class PortalExit {
 
     /**
      * The transition carrying {@code entity} from {@code from} into {@code to}, which stands in
-     * {@code toLevel}, with {@code after} run once it has arrived.
+     * {@code toLevel}, with {@code after} run once it has arrived. Riders come along on copies
+     * of the transition; {@code after} runs once, for {@code entity} alone.
      */
     public static TeleportTransition transition(Entity entity, PortalFrame from,
             ServerLevel toLevel, PortalFrame to, TeleportTransition.PostTeleportTransition after) {
+        UUID crossing = entity.getUUID();
         EntityDimensions size = entity.getDimensions(entity.getPose());
         Vec3 pos = entity.position();
         PortalPlane near = from.plane();
@@ -48,7 +52,11 @@ public final class PortalExit {
         return new TeleportTransition(toLevel, free, Vec3.ZERO, turn, 0.0F,
                 Relative.union(Relative.DELTA, Relative.ROTATION),
                 TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET)
-                        .then(PortalExit::coolPassengers).then(after));
+                        .then(PortalExit::coolPassengers).then(arrived -> {
+                            if (arrived.getUUID().equals(crossing)) {
+                                after.onTransition(arrived);
+                            }
+                        }));
     }
 
     /** Whether an entity of {@code size} has room inside {@code frame}. */

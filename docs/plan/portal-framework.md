@@ -59,8 +59,19 @@ compiles against it.
 As planned. `PortalBlock.properties` had to become `defaultProperties`: `BlockBehaviour` has an
 instance method of that name. The block's codec is `MapCodec.unit(this)`, since a block that
 carries its `Portals` cannot be built from a codec. Every client is sent a light block of the
-block's own light level as the stand-in, so a consumer may change the light in its properties
-and the client's lighting still agrees.
+block's own light level (capped at 15) as the stand-in, so a consumer may change the light in
+its properties and the client's lighting still agrees.
+
+An adversarial review of the first draft changed four things. `light` refuses, with nothing
+changed, a frame that is not complete by the time its turn comes, so two frames that cross each
+other cannot overwrite one another's interior; it returns that answer. `Portals.transition`
+runs the kind's `onExit` once, for the entity that entered: vanilla copies the post-transition
+step onto every rider's transition and runs those first. A player whose pack status changes
+mid-session is shown every portal display in loaded chunks of their level afresh
+(`PolymerCommonUtils.ON_RESOURCE_PACK_STATUS_CHANGE`), since Polymer's own chunk resend never
+re-asks a display that is already watched. And `Portals.lit` hands a consumer the lit frames,
+so it can reconcile its own records after a crash that saved one file and not the other. The
+material is now asked once and its stack copied; the saved data is `modId:path_frames`.
 
 ## S2 — player-portals on the framework — **done**
 
@@ -78,6 +89,10 @@ interior block over upright and flat portals alike, and `light` as the block und
 Recorded in `rkc/mods/player-portals/docs/plan/player-portals.md`.
 
 ## Reference: the contract
+
+- The client-side stand-in is `light`, which the vanilla client treats as replaceable and
+  waterloggable: a block placed or water poured into a portal is predicted and then corrected by
+  the server. Nothing short of a different stand-in removes that, and none matches the light.
 
 - `Portals.register(modId, path, kind, properties)` once at init; the block is
   `modId:path`, its saved data `modId:path` in the overworld.

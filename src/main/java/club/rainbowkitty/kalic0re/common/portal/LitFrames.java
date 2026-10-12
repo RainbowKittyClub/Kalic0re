@@ -66,6 +66,21 @@ final class LitFrames extends SavedData {
         return portals.contains(frame);
     }
 
+    Set<PortalFrame> lit() {
+        return Set.copyOf(portals);
+    }
+
+    // The lit frames in dimension.
+    List<PortalFrame> inDimension(ResourceKey<Level> dimension) {
+        List<PortalFrame> frames = new ArrayList<>();
+        for (PortalFrame frame : portals) {
+            if (frame.dimension().equals(dimension)) {
+                frames.add(frame);
+            }
+        }
+        return frames;
+    }
+
     // The lit frame whose interior holds pos, if any.
     @Nullable PortalFrame portalAt(ResourceKey<Level> dimension, BlockPos pos) {
         for (PortalFrame frame : candidates(dimension, pos)) {
@@ -87,16 +102,16 @@ final class LitFrames extends SavedData {
     }
 
     // Lights frame: a record it already has is faded first, so a record whose blocks a command
-    // cleared without the removal hook never keeps what the consumer tied to it. Blocks are set
-    // without shape updates, as vanilla lights a nether portal, or a half-filled interior would
-    // clear itself.
-    void light(MinecraftServer server, PortalFrame frame) {
+    // cleared without the removal hook never keeps what the consumer tied to it; a frame no
+    // longer complete by then is refused. Blocks are set without shape updates, as vanilla
+    // lights a nether portal, or a half-filled interior would clear itself.
+    boolean light(MinecraftServer server, PortalFrame frame) {
         if (portals.contains(frame)) {
             fade(server, frame);
         }
         ServerLevel level = server.getLevel(frame.dimension());
-        if (level == null) {
-            return;
+        if (level == null || !owner.finder().isComplete(level, frame)) {
+            return false;
         }
         add(frame);
         setDirty();
@@ -105,6 +120,7 @@ final class LitFrames extends SavedData {
             level.setBlock(pos, state, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
         owner.kind().onLit(level, frame);
+        return true;
     }
 
     // Forgets frame, tells the kind, and clears its blocks on a following tick, or when its
@@ -147,7 +163,9 @@ final class LitFrames extends SavedData {
     // unloaded chunks waits for them.
     private void clearIfDead(MinecraftServer server, PortalFrame frame) {
         if (portals.contains(frame)) {
-            pending.remove(frame);
+            if (pending.remove(frame)) {
+                setDirty();
+            }
             return;
         }
         ServerLevel level = server.getLevel(frame.dimension());

@@ -19,7 +19,10 @@ public interface PortalKind {
     /** Whether {@code state} may be part of a frame. */
     public boolean isFrameBlock(BlockState state);
 
-    /** What each interior block of a lit portal is shown as; asked once per block shown. */
+    /**
+     * What each interior block of a lit portal is shown as. Asked once, on first use, and kept;
+     * the item stack is copied, so a stack that changes later changes nothing.
+     */
     public PortalMaterial material();
 
     /** After the interior of {@code frame} is lit. */
@@ -43,7 +46,10 @@ public interface PortalKind {
     public @Nullable TeleportTransition onEnter(ServerLevel level, Entity entity, PortalFrame frame,
             BlockPos entryPos);
 
-    /** After {@code entity} arrives in {@code destination} by {@link Portals#transition}. */
+    /**
+     * After {@code entity} arrives in {@code destination} by {@link Portals#transition}: once per
+     * crossing, for the entity that entered; its riders arrive with it and are not reported.
+     */
     public default void onExit(Entity entity, PortalFrame destination) {
     }
 
