@@ -77,6 +77,18 @@ public final class CommandPermissions {
         return player.permissions().hasPermission(new Permission.HasCommandLevel(fallback));
     }
 
+    /**
+     * Whether {@code player} holds the full node {@code node}, or {@code fallback} when no
+     * permission provider is loaded or the provider leaves the node undefined. For nodes that no
+     * operator level should imply.
+     */
+    public static boolean holds(ServerPlayer player, String node, boolean fallback) {
+        if (API_LOADED) {
+            return ApiGate.check(player, node, fallback);
+        }
+        return fallback;
+    }
+
     // Vanilla's own "has command level" check, the one Commands.LEVEL_GAMEMASTERS and kin wrap.
     private static Predicate<CommandSourceStack> levelCheck(PermissionLevel level) {
         return Commands.<CommandSourceStack>hasPermission(
@@ -103,6 +115,11 @@ public final class CommandPermissions {
 
         // The entity overload of the same check.
         private static boolean check(ServerPlayer player, String node, PermissionLevel fallback) {
+            return Permissions.check(player, node, fallback);
+        }
+
+        // The entity overload with a fixed default for an undefined node.
+        private static boolean check(ServerPlayer player, String node, boolean fallback) {
             return Permissions.check(player, node, fallback);
         }
     }
