@@ -66,7 +66,9 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
   one flat per-mod prefix.
 - `common.text` — `FallbackText`, translatable text carrying the mod's English from its own
   `en_us.json` as fallback, since a vanilla client holds no server-side mod's lang file. English
-  lives only in that file; a key it lacks is logged once and shown as itself.
+  lives only in that file; a key it lacks is logged once and shown as itself. `Titles`, a title
+  and subtitle for one player, sent with their timing as one bundle every time, since the client
+  keeps an earlier sender's subtitle and timing and shows a subtitle only once a title arrives.
 - `common.vehicle` — cargo-minecart framework (`CargoMinecarts`, `CartCargo` and friends); needs
   `display` alongside it.
 
