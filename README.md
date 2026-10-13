@@ -51,9 +51,17 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 - `common.label` — per-player raycast and hover-label machinery (`HoverScanner`, `HoverLabel`,
   `BlockLabels`, `EntityLabels`, `ItemText` and friends). A runtime package: it ticks per player, and
   `runServer` runs the un-relocated classes, so only an installed jar tests the relocation.
+- `common.mining` — `VanillaCreativeBreak`, a Polymer block that leaves a creative player's break
+  to vanilla. Polymer mines its blocks on the server in every game mode and sends the breaker a
+  break event, which a creative client has already played. `minesOnServer` is the same answer for
+  a block with a `handleMiningOnServer` of its own.
 - `common.net` — `PolymerClientHandshake`, the per-connection "does this client run the mod too" flag.
 - `common.piston` — `PistonMovable`, rules letting pistons move a block with a block entity; the
   consumer owns the mixin that consults them.
+- `common.portal` — portal framework: a `PortalKind` declares the frame block, the material drawn
+  in the interior and the hooks for lighting, fading, entering and arriving; `Portals.register`
+  makes the portal block, the frame finder and the saved data. See `docs/plan/portal-framework.md`.
+  Needs `mining` alongside it.
 - `common.rule` — `ComponentGameRules`, registering rules as `<modId>.<component>:<path>` instead of
   one flat per-mod prefix.
 - `common.text` — `FallbackText`, translatable text carrying the mod's English from its own
