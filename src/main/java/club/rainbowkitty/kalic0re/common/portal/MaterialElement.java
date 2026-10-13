@@ -17,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Brightness;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,6 +29,11 @@ import net.minecraft.world.phys.Vec3;
  */
 final class MaterialElement implements VirtualElement {
     private static final Vector3f BLOCK_CENTRE = new Vector3f(0.5F, 0.5F, 0.5F);
+    // Drawn as a nether portal's own light of 11 draws it under open sky, whatever light the
+    // portal block gives, so a dim portal keeps its look. A display with a brightness of its own
+    // is also no light source to LambDynamicLights, which otherwise lights each display by what
+    // it shows: a nether portal at 11, the material's item at its own.
+    private static final Brightness SURFACE = new Brightness(11, 15);
 
     private final ItemDisplayElement packed;
     private final BlockDisplayElement plain;
@@ -40,8 +46,10 @@ final class MaterialElement implements VirtualElement {
         packed = new ItemDisplayElement(material.packed());
         packed.setItemDisplayContext(ItemDisplayContext.NONE);
         packed.setLeftRotation(turn);
+        packed.setBrightness(SURFACE);
         plain = new BlockDisplayElement(material.plain());
         plain.setLeftRotation(turn);
+        plain.setBrightness(SURFACE);
         plain.setTranslation(turn.transform(new Vector3f(BLOCK_CENTRE)).negate());
     }
 

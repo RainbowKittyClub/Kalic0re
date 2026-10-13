@@ -121,6 +121,9 @@ frame per due emitter, which vanilla delivers only to players within 32 blocks.
 
 - `Portals.register(modId, path, kind, properties)` once at init; the block is
   `modId:path`, its saved data `modId:path` in the overworld.
+- The material's displays are drawn at a fixed brightness, block light 11 and sky 15, as a
+  nether portal's own light draws it in the open, whatever light the portal block is given; a
+  display with its own brightness is also not a light source to LambDynamicLights.
 - A consumer shades `mining` with `portal`: the portal block is a `VanillaCreativeBreak`, so a
   creative player's break of it, possible while holding a light, is vanilla's and heard once.
 - `light` requires a complete frame (`finder().isComplete`); `fade` on an unlit frame is a no-op.
