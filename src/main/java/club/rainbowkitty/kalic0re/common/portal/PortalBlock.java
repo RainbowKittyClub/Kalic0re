@@ -3,7 +3,6 @@ package club.rainbowkitty.kalic0re.common.portal;
 import java.util.Map;
 
 import com.mojang.serialization.MapCodec;
-import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -37,15 +36,18 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import club.rainbowkitty.kalic0re.common.mining.VanillaCreativeBreak;
+
 /**
  * The block a lit portal's interior is made of, one per {@link Portals}. Vanilla's own portal
  * processing carries an entity through: the block only marks the entity as inside, and asks its
  * kind for the destination once the entity has stood in it long enough.
  *
  * <p>Every client sees an invisible light block of the same light level in its place, and the
- * kind's {@link PortalMaterial} drawn over it by a display per block ({@link PortalHolder}).
+ * kind's {@link PortalMaterial} drawn over it by a display per block ({@link PortalHolder}). A
+ * creative player, who can target it holding a light, breaks it as vanilla does.
  */
-public final class PortalBlock extends Block implements Portal, PolymerBlock,
+public final class PortalBlock extends Block implements Portal, VanillaCreativeBreak,
         BlockWithElementHolder {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
     private static final int LIGHT = 11;

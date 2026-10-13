@@ -121,6 +121,8 @@ frame per due emitter, which vanilla delivers only to players within 32 blocks.
 
 - `Portals.register(modId, path, kind, properties)` once at init; the block is
   `modId:path`, its saved data `modId:path` in the overworld.
+- A consumer shades `mining` with `portal`: the portal block is a `VanillaCreativeBreak`, so a
+  creative player's break of it, possible while holding a light, is vanilla's and heard once.
 - `light` requires a complete frame (`finder().isComplete`); `fade` on an unlit frame is a no-op.
 - `onEnter` runs only for a portal the framework has just found whole; a portal found holed
   fades silently, a stray portal block is destroyed.
