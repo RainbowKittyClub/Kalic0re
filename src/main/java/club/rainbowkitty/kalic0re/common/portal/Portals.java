@@ -152,14 +152,17 @@ public final class Portals {
 
     /**
      * The usual answer to {@link PortalKind#onEnter}: {@code entity} comes out of the lit portal
-     * in {@code to} where it went into {@code from} ({@link PortalExit}), and the kind hears of
-     * the arrival through {@link PortalKind#onExit}. The caller has checked
-     * {@link PortalExit#fits}; an entity too big for {@code to} would be set through its ring.
+     * in {@code to} where it went into {@code from} ({@link PortalExit}), hears the kind's
+     * {@link PortalKind#travelSound}, and the kind hears of the arrival through
+     * {@link PortalKind#onExit}. The caller has checked {@link PortalExit#fits}; an entity too
+     * big for {@code to} would be set through its ring.
      */
     public TeleportTransition transition(Entity entity, PortalFrame from, ServerLevel toLevel,
             PortalFrame to) {
-        return PortalExit.transition(entity, from, toLevel, to,
-                arrived -> kind.onExit(arrived, to));
+        return PortalExit.transition(entity, from, toLevel, to, arrived -> {
+            kind.travelSound(arrived);
+            kind.onExit(arrived, to);
+        });
     }
 
     // The block's question: where an entity standing in it goes. A block no lit portal owns is

@@ -64,6 +64,14 @@ public interface PortalKind {
     public default void onExit(Entity entity, PortalFrame destination) {
     }
 
+    /**
+     * The sound of arriving, played to {@code entity} on a crossing by {@link Portals#transition},
+     * before {@link #onExit}: vanilla's portal travel sound, to a player, unless overridden.
+     */
+    public default void travelSound(Entity entity) {
+        TeleportTransition.PLAY_PORTAL_SOUND.onTransition(entity);
+    }
+
     /** How long an entity stands in a portal of this kind before {@link #onEnter}, in ticks. */
     public default int transitionTime(ServerLevel level, Entity entity) {
         return 0;

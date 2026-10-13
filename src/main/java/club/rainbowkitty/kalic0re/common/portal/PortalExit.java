@@ -28,7 +28,8 @@ public final class PortalExit {
     /**
      * The transition carrying {@code entity} from {@code from} into {@code to}, which stands in
      * {@code toLevel}, with {@code after} run once it has arrived. Riders come along on copies
-     * of the transition; {@code after} runs once, for {@code entity} alone.
+     * of the transition; {@code after} runs once, for {@code entity} alone. No sound plays but
+     * what {@code after} plays.
      */
     public static TeleportTransition transition(Entity entity, PortalFrame from,
             ServerLevel toLevel, PortalFrame to, TeleportTransition.PostTeleportTransition after) {
@@ -51,8 +52,8 @@ public final class PortalExit {
         float turn = near != far && !near.isFlat() && !far.isFlat() ? QUARTER_TURN : 0.0F;
         return new TeleportTransition(toLevel, free, Vec3.ZERO, turn, 0.0F,
                 Relative.union(Relative.DELTA, Relative.ROTATION),
-                TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET)
-                        .then(PortalExit::coolPassengers).then(arrived -> {
+                TeleportTransition.PLACE_PORTAL_TICKET.then(PortalExit::coolPassengers)
+                        .then(arrived -> {
                             if (arrived.getUUID().equals(crossing)) {
                                 after.onTransition(arrived);
                             }
