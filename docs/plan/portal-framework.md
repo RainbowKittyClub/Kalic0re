@@ -125,4 +125,5 @@ frame per due emitter, which vanilla delivers only to players within 32 blocks.
 - `onEnter` runs only for a portal the framework has just found whole; a portal found holed
   fades silently, a stray portal block is destroyed.
 - `Portals.transition` keeps velocity and facing, turns a quarter between the X and Z planes,
-  places the arrival in the far frame, gives riders a portal cooldown and then calls `onExit`.
+  places the arrival in the far frame, gives riders a portal cooldown, plays the kind's
+  `travelSound` (vanilla's portal travel unless overridden) and then calls `onExit`.
