@@ -36,6 +36,7 @@ final class LitFrames extends SavedData {
     private final Set<PortalFrame> portals = new HashSet<>();
     private final Map<ResourceKey<Level>, Long2ObjectMap<List<PortalFrame>>> byChunk =
             new HashMap<>();
+    private final Map<ResourceKey<Level>, List<PortalFrame>> byDimension = new HashMap<>();
     // Dead frames whose blocks may still stand, in chunks that were not loaded when they died.
     private final Set<PortalFrame> pending = new HashSet<>();
 
@@ -70,15 +71,27 @@ final class LitFrames extends SavedData {
         return Set.copyOf(portals);
     }
 
-    // The lit frames in dimension.
+    // The lit frames in dimension, the live list.
     List<PortalFrame> inDimension(ResourceKey<Level> dimension) {
-        List<PortalFrame> frames = new ArrayList<>();
-        for (PortalFrame frame : portals) {
-            if (frame.dimension().equals(dimension)) {
-                frames.add(frame);
+        return byDimension.getOrDefault(dimension, List.of());
+    }
+
+    // One tick of ambient particles for every lit frame in level: nothing when the kind has no
+    // emitters, the level no portals or no players.
+    void emit(ServerLevel level) {
+        List<PortalEmitter> emitters = owner.emitters();
+        List<PortalFrame> frames = inDimension(level.dimension());
+        if (emitters.isEmpty() || frames.isEmpty() || level.players().isEmpty()) {
+            return;
+        }
+        long time = level.getGameTime();
+        for (PortalEmitter emitter : emitters) {
+            if (emitter.due(time)) {
+                for (PortalFrame frame : frames) {
+                    emitter.burst(level, frame, time);
+                }
             }
         }
-        return frames;
     }
 
     // The lit frame whose interior holds pos, if any.
@@ -181,6 +194,7 @@ final class LitFrames extends SavedData {
 
     private void add(PortalFrame frame) {
         portals.add(frame);
+        byDimension.computeIfAbsent(frame.dimension(), dimension -> new ArrayList<>()).add(frame);
         Long2ObjectMap<List<PortalFrame>> chunks = byChunk.computeIfAbsent(frame.dimension(),
                 dimension -> new Long2ObjectOpenHashMap<>());
         for (long chunk : frame.chunks()) {
@@ -189,6 +203,10 @@ final class LitFrames extends SavedData {
     }
 
     private void unindex(PortalFrame frame) {
+        List<PortalFrame> inDimension = byDimension.get(frame.dimension());
+        if (inDimension != null) {
+            inDimension.remove(frame);
+        }
         Long2ObjectMap<List<PortalFrame>> chunks = byChunk.get(frame.dimension());
         if (chunks == null) {
             return;

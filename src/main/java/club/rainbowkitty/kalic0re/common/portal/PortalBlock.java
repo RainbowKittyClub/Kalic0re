@@ -32,6 +32,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -123,10 +125,13 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
         owner.onBlockRemoved(level, pos);
     }
 
+    // Vanilla asks this for every portal block the entity's box touched along its move; the
+    // portal takes the entity only once its centre is in this block, or passed through it this
+    // tick, so a fast faller is not missed and a shoulder brushing the plane is not taken.
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
             InsideBlockEffectApplier effectApplier, boolean isPrecise) {
-        if (entity.canUsePortal(false)) {
+        if (entity.canUsePortal(false) && centreEntered(entity, pos)) {
             entity.setAsInsidePortal(this, pos);
         }
     }
@@ -146,6 +151,19 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
     protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state,
             boolean includeData) {
         return ItemStack.EMPTY;
+    }
+
+    // Whether the centre of the entity's box is in the block at pos, or crossed it on the way
+    // from where the entity stood at the start of the tick.
+    private static boolean centreEntered(Entity entity, BlockPos pos) {
+        AABB cube = new AABB(pos);
+        Vec3 centre = entity.getBoundingBox().getCenter();
+        if (cube.contains(centre)) {
+            return true;
+        }
+        Vec3 lift = centre.subtract(entity.position());
+        Vec3 before = new Vec3(entity.xo, entity.yo, entity.zo).add(lift);
+        return cube.clip(before, centre).isPresent();
     }
 
     @Override

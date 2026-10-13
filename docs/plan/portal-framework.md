@@ -8,7 +8,8 @@ in the consumer. Claims about vanilla and Polymer were checked against
 `rkc/mods/player-portals` was built; that mod is the first consumer and the proof.
 
 The framework was lifted out of player-portals in one move (S1), then that mod was rebuilt on it
-(S2). S1 is usable alone; S2 is what makes the move complete.
+(S2); S3 added the centre-crossing rule and ambient emitters. S1 is usable alone; S2 is what
+makes the move complete.
 
 ---
 
@@ -87,6 +88,30 @@ interior block over upright and flat portals alike, and `light` as the block und
 ### As built
 
 Recorded in `rkc/mods/player-portals/docs/plan/player-portals.md`.
+
+## S3 — Centre crossing and ambient emitters — **done**
+
+**Build.** Take an entity only once the centre of its bounding box is inside a portal block, or
+passed through one during the tick, instead of on any overlap; vanilla visits every block along
+the tick's movement, so the test is the segment from the centre's start-of-tick position to its
+current one against the block's cube. Add `PortalEmitter` (a particle or a series played in
+turn, an offset from the portal's centre and a gaussian spread per axis in the portal's own frame,
+optionally scaled to the frame's half-size, a count, a speed and a period) and
+`PortalKind.emitters`; `Portals` bursts every due emitter for every lit frame of a level at the
+end of that level's tick, and returns at once for a level with no lit frames or no players.
+
+**Done when.** A bot standing beside a portal, its box touching the plane and its centre a
+quarter block outside, stays put; moved to the centre, it goes. A bot within 32 blocks of a lit
+portal receives particle packets of each kind in the series inside the portal's box, and none
+from an unlit frame.
+
+### As built
+
+As planned. The first consumer's series is `effect`, `instant_effect` and `entity_effect` in
+three teal shades, two particles every two ticks over the plane and one pale spark every ten
+along the bottom edge; the material tint became `#159c9c`. This is the framework's one per-tick
+walk: one map lookup per level, then one `due` test per emitter and one `sendParticles` per lit
+frame per due emitter, which vanilla delivers only to players within 32 blocks.
 
 ## Reference: the contract
 

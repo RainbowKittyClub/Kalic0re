@@ -1,11 +1,13 @@
 package club.rainbowkitty.kalic0re.common.portal;
 
+import java.util.List;
 import java.util.Set;
 
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockBoundAttachment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -32,8 +34,9 @@ import net.minecraft.world.level.saveddata.SavedDataType;
  * which portal a block belongs to. Everything a lit portal does beyond standing there, the kind
  * decides.
  *
- * <p>Nothing here runs per tick: vanilla's portal processing carries entities, Polymer attaches
- * the displays to chunks, and the lit frames are looked up by chunk.
+ * <p>Vanilla's portal processing carries entities, Polymer attaches the displays to chunks, and
+ * the lit frames are looked up by chunk; the one thing that runs per tick is the kind's ambient
+ * emitters, a walk over the level's lit frames that returns at once when there are none.
  */
 public final class Portals {
     private final PortalKind kind;
@@ -41,6 +44,7 @@ public final class Portals {
     private final FrameFinder finder;
     private final SavedDataType<LitFrames> type;
     private @Nullable PortalMaterial material;
+    private @Nullable List<PortalEmitter> emitters;
 
     private Portals(PortalKind kind, ResourceKey<Block> key, BlockBehaviour.Properties properties) {
         this.kind = kind;
@@ -64,6 +68,8 @@ public final class Portals {
         Portals portals = new Portals(kind, key, properties);
         ServerChunkEvents.CHUNK_LOAD.register((level, chunk, newChunk) ->
                 portals.frames(level.getServer()).onChunkLoad(level, chunk.getPos()));
+        ServerTickEvents.END_LEVEL_TICK.register(level ->
+                portals.frames(level.getServer()).emit(level));
         // A display chose its variant when the player started watching; a pack accepted or
         // dropped since would otherwise show the wrong one until the chunk is watched anew.
         PolymerCommonUtils.ON_RESOURCE_PACK_STATUS_CHANGE.register(
@@ -97,6 +103,14 @@ public final class Portals {
     /** Finds frames of this kind. */
     public FrameFinder finder() {
         return finder;
+    }
+
+    /** The kind's ambient emitters, asked once on first use. */
+    public List<PortalEmitter> emitters() {
+        if (emitters == null) {
+            emitters = List.copyOf(kind.emitters());
+        }
+        return emitters;
     }
 
     /** Whether a lit portal stands in {@code frame}. */

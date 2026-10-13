@@ -1,5 +1,7 @@
 package club.rainbowkitty.kalic0re.common.portal;
 
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -24,6 +26,15 @@ public interface PortalKind {
      * the item stack is copied, so a stack that changes later changes nothing.
      */
     public PortalMaterial material();
+
+    /**
+     * The ambient particles a lit portal gives off, none by default. Asked once, on first use.
+     * Each emitter bursts on its own period, for every lit portal of this kind in a level with
+     * players; vanilla sends a burst only to players within 32 blocks.
+     */
+    public default List<PortalEmitter> emitters() {
+        return List.of();
+    }
 
     /** After the interior of {@code frame} is lit. */
     public default void onLit(ServerLevel level, PortalFrame frame) {

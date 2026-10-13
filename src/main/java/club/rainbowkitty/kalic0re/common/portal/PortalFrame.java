@@ -11,6 +11,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Where a portal stands: a rectangle of interior blocks and the ring of frame blocks one block
@@ -70,6 +71,12 @@ public record PortalFrame(ResourceKey<Level> dimension, BlockPos origin, PortalP
             ring.add(at(-1, v));
         }
         return ring;
+    }
+
+    /** The centre of the interior, in the middle of the plane. */
+    public Vec3 centre() {
+        return Vec3.atCenterOf(origin).add(Vec3.atLowerCornerOf(at(width - 1, height - 1))
+                .subtract(Vec3.atLowerCornerOf(origin)).scale(0.5));
     }
 
     /** How many blocks the ring has. */
