@@ -120,7 +120,9 @@ frame per due emitter, which vanilla delivers only to players within 32 blocks.
   the server. Nothing short of a different stand-in removes that, and none matches the light.
 
 - `Portals.register(modId, path, kind, properties)` once at init; the block is
-  `modId:path`, its saved data `modId:path` in the overworld.
+  `modId:path`, its saved data `modId:path_frames` in the server's own storage, `<world>/data/`.
+  That storage exists before any level (MinecraftServer.java:329), so a chunk loaded from inside
+  a level's constructor (MinecraftServer.java:434-437) reaches the lit frames too.
 - The material's displays are drawn at a fixed brightness, block light 11 and sky 15, as a
   nether portal's own light draws it in the open, whatever light the portal block is given; a
   display with its own brightness is also not a light source to LambDynamicLights.
