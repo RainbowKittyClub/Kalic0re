@@ -60,15 +60,10 @@ public record PortalEmitter(List<ParticleOptions> particles, Vec3 offset, Vec3 s
             at = new Vec3(at.x * halfWidth, at.y * halfHeight, at.z);
             deviation = new Vec3(deviation.x * halfWidth, deviation.y * halfHeight, deviation.z);
         }
-        Vec3 centre = frame.centre().add(toWorld(frame.plane(), at));
-        Vec3 worldDeviation = toWorld(frame.plane(), deviation);
+        Vec3 centre = frame.centre().add(frame.plane().toWorld(at));
+        Vec3 worldDeviation = frame.plane().toWorld(deviation);
         ParticleOptions particle = particles.get((int) ((time / period) % particles.size()));
         level.sendParticles(particle, centre.x, centre.y, centre.z, count, worldDeviation.x,
                 worldDeviation.y, worldDeviation.z, speed);
-    }
-
-    private static Vec3 toWorld(PortalPlane plane, Vec3 local) {
-        return Vec3.ZERO.with(plane.along(), local.x).with(plane.up(), local.y)
-                .with(plane.normal(), local.z);
     }
 }
