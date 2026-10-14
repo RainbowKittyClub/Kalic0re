@@ -88,8 +88,8 @@ final class SettingsCommand {
         return result(value);
     }
 
-    // set: a one-entry page write. Checked in the hub's order: visible, of the kind, a change at
-    // all, then permitted, so setting a value to what it already is never needs permission.
+    // set: a one-entry page write. Checked in the hub's order: visible, of the kind, not forced, a
+    // change at all, then permitted, so setting a value to what it already is needs no permission.
     private static int set(CommandContext<CommandSourceStack> context, ModConfig config) {
         CommandSourceStack source = context.getSource();
         String key = StringArgumentType.getString(context, "key");
@@ -115,13 +115,14 @@ final class SettingsCommand {
             return 0;
         }
         T value = parsed.getOrThrow();
+        // Before the change check, which compares with the own value the force hides.
+        if (setting.forced(player).isPresent()) {
+            return fail(source, "forced", setting.key());
+        }
         if (value.equals(setting.own(player))) {
             Component message = text("unchanged", setting.key(), setting.kind().show(value));
             source.sendSuccess(() -> message, false);
             return 0;
-        }
-        if (setting.forced(player).isPresent()) {
-            return fail(source, "forced", setting.key());
         }
         if (!Access.of(setting, player).editable()) {
             return fail(source, "read_only", setting.key());
