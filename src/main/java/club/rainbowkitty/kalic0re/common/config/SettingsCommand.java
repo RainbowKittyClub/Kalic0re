@@ -151,7 +151,7 @@ final class SettingsCommand {
         }
         ServerPlayer player = source.getPlayer();
         if (player == null) {
-            return fail(source, "needs_player", name);
+            return fail(source, "page_needs_player", name);
         }
         if (page.stream().noneMatch(setting -> Access.of(setting, player).visible())) {
             return fail(source, "unknown_page", name);
@@ -208,6 +208,7 @@ final class SettingsCommand {
             case "unknown_setting" -> "Unknown setting: %s";
             case "unknown_page" -> "Unknown page: %s";
             case "needs_player" -> "%s is a player setting; only a player has one";
+            case "page_needs_player" -> "Page %s holds player settings; only a player has those";
             case "invalid.toggle" -> "%s takes true or false, not %s";
             case "invalid.range" -> "%s takes a whole number from %s to %s, not %s";
             case "invalid.choice" -> "%s takes one of %s, not %s";
