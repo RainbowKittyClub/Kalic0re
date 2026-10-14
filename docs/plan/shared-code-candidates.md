@@ -751,6 +751,18 @@ and crafting tables have the mismatch it fixes: a vanilla block item over a note
 (`BookshelfBlocks.java:70-76`, `CraftingTableBlocks.java:69`), so a placement flashes a vanilla
 bookshelf or crafting table first. A second consumer of the fix would make it worth moving here.
 
+**Whether `common/item` registers an item under its own fallback name.** Three consumers register
+an item and name it by hand in the same lambda. `player-portals` `PlayerPortals.registerItem`
+(`PlayerPortals.java:63-69`, four items) names each by its description id through its
+`FallbackText`; `better-barriers` `BarrierBlocks.register` (`BarrierBlocks.java:70-73`) does the
+same for each block item, spelling the key out; `artifacts` keeps its own copy of `ItemNames` as
+`ArtifactNames`, which names its four items with gold italic literals. The candidate is
+`ItemNames.register(modId, path, FallbackText, factory)` in `common/item`: register what `factory`
+makes as `modId:path` and name it `text.of(item.getDescriptionId())`, which is the key
+`useBlockDescriptionPrefix` gives a block item too. The first two move onto it as they stand;
+`artifacts` would first need to shade `text` and read its datagen `lang/en_us.json` through
+`FallbackText`, plus a styled overload, or keeps its copy.
+
 ## Reference: what is deliberately not extracted
 
 | Pattern | Where | Why it stays |
