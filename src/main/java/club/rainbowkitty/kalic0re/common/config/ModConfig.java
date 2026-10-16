@@ -175,9 +175,11 @@ public final class ModConfig {
         }
     }
 
-    // Holds the server, and subscribes to the hub's notices once per JVM.
+    // Holds the server, drops any hub answer cached before the hub loaded its values (a read from
+    // another SERVER_STARTING listener), and subscribes to the hub's notices once per JVM.
     void serverStarting(MinecraftServer starting, ConfigRuntime.Mode mode) {
         this.server = starting;
+        settings.values().forEach(Setting::clearHubCache);
         if (mode == ConfigRuntime.Mode.HUB && !listening) {
             listening = true;
             ConfigRuntime.listen(modId, this::notice);

@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.google.gson.JsonElement;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jspecify.annotations.Nullable;
@@ -29,6 +30,10 @@ final class ConfigRuntime {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("kalic0re/config");
     private static final List<ModConfig> CONFIGS = new CopyOnWriteArrayList<>();
+    // After every default-phase listener, so the hub has loaded its values whatever the mod order
+    // and a value a consumer read before that is dropped from the cache.
+    private static final Identifier STARTING_PHASE =
+            Identifier.fromNamespaceAndPath("kalic0re", "config");
 
     private static volatile @Nullable Mode mode;
     private static volatile @Nullable Function<Identifier, JsonElement> serverValues;
@@ -49,7 +54,10 @@ final class ConfigRuntime {
         CONFIGS.add(config);
         if (!hooked) {
             hooked = true;
-            ServerLifecycleEvents.SERVER_STARTING.register(ConfigRuntime::starting);
+            ServerLifecycleEvents.SERVER_STARTING.addPhaseOrdering(Event.DEFAULT_PHASE,
+                    STARTING_PHASE);
+            ServerLifecycleEvents.SERVER_STARTING.register(STARTING_PHASE,
+                    ConfigRuntime::starting);
             ServerLifecycleEvents.SERVER_STOPPED.register(server -> CONFIGS.forEach(
                     ModConfig::serverStopped));
         }
@@ -105,7 +113,7 @@ final class ConfigRuntime {
         }
     }
 
-    // Hands every config the starting server and the settled mode.
+    // Hands every config the starting server and the settled mode, once the hub has started.
     private static void starting(MinecraftServer server) {
         Mode settled = mode();
         if (settled == Mode.BROKEN) {
