@@ -289,12 +289,15 @@ final class SettingsCommand {
                 .map(Setting::key), builder);
     }
 
-    // Suggests what the typed key takes: true and false, its bounds, its option ids, or "".
+    // Suggests what the typed key takes: true and false, its bounds, its option ids, or "". Only
+    // for a key the source may change, so a hidden one answers as an unknown one does.
     private static SuggestionProvider<CommandSourceStack> values(ModConfig config) {
         return (context, builder) -> {
             Setting<?> setting = playerSetting(config,
                     StringArgumentType.getString(context, "key"));
-            List<String> values = setting == null ? List.of() : setting.kind().suggestions();
+            List<String> values = setting == null
+                    || !Access.of(setting, context.getSource()).editable()
+                    ? List.of() : setting.kind().suggestions();
             return SharedSuggestionProvider.suggest(values, builder);
         };
     }
