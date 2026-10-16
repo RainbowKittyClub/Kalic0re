@@ -10,6 +10,8 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 
+import net.minecraft.util.StringUtil;
+
 // One kind of setting value: how it is checked, parsed from a command or a forcing meta value,
 // carried as contract JSON, saved in the player attachment, and shown in a message.
 sealed interface SettingKind<T> {
@@ -212,7 +214,8 @@ sealed interface SettingKind<T> {
         }
     }
 
-    // A string of at most maxLength characters.
+    // A string of at most maxLength characters that chat allows (no control character, DEL or
+    // section sign), as the hub checks it; a rule or an attachment may hold any string.
     record Text(int maxLength) implements SettingKind<String> {
         @Override
         public String name() {
@@ -227,7 +230,8 @@ sealed interface SettingKind<T> {
 
         @Override
         public boolean accepts(String value) {
-            return value.length() <= maxLength;
+            return value.length() <= maxLength
+                    && value.chars().allMatch(StringUtil::isAllowedChatCharacter);
         }
 
         @Override
