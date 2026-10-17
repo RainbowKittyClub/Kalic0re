@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
-// Every lit frame of one Portals, saved with the overworld, with an index from chunk to the
+// Every lit frame of one Portals, saved with the server, with an index from chunk to the
 // frames whose ring or interior touches it, so a crossing or a block break finds its portal
 // without a world read. A frame that died while its chunks were unloaded is cleared when they
 // load.

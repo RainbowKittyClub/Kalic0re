@@ -207,7 +207,9 @@ public final class Portals {
         }
     }
 
+    // The server's own storage, not a level's: it exists before any level, whose constructor may
+    // already load chunks.
     private LitFrames frames(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(type);
+        return server.getDataStorage().computeIfAbsent(type);
     }
 }

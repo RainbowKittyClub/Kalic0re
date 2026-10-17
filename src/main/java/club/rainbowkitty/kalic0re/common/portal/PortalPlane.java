@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The orientation of a portal's plane, named as {@code nether_portal[axis]} names it: {@code X}
@@ -79,6 +80,14 @@ public enum PortalPlane implements StringRepresentable {
     /** Whether this plane lies flat, as a hole in a floor or ceiling. */
     public boolean isFlat() {
         return this == Y;
+    }
+
+    /**
+     * Turns {@code local}, whose {@code x} runs {@link #along}, {@code y} {@link #up} and
+     * {@code z} {@link #normal}, onto the world's axes.
+     */
+    public Vec3 toWorld(Vec3 local) {
+        return Vec3.ZERO.with(along, local.x).with(up, local.y).with(normal, local.z);
     }
 
     @Override
