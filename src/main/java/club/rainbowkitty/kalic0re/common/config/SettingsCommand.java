@@ -141,8 +141,8 @@ final class SettingsCommand {
         return 1;
     }
 
-    // reset: drops the page's entries, making it untouched; refused, one line per setting, when
-    // that would change a stored value the player cannot edit.
+    // reset: drops the page's entries the player may edit, as the hub deletes only those rows.
+    // An entry they cannot change stays, so it is never named and the page stays touched.
     private static int reset(CommandContext<CommandSourceStack> context, ModConfig config) {
         CommandSourceStack source = context.getSource();
         String name = StringArgumentType.getString(context, "page");
@@ -157,19 +157,9 @@ final class SettingsCommand {
         if (page.stream().noneMatch(setting -> Access.of(setting, player).visible())) {
             return fail(source, "unknown_page", name);
         }
-        List<Component> refusals = new ArrayList<>();
-        for (Setting<?> setting : page) {
-            Access access = Access.of(setting, player);
-            if (!access.editable() && storedAwayFromDefault(setting, player)) {
-                refusals.add(access.visible() ? text("reset_denied", name, setting.key())
-                        : text("reset_denied_hidden", name));
-            }
-        }
-        if (!refusals.isEmpty()) {
-            refusals.forEach(source::sendFailure);
-            return 0;
-        }
-        List<String> keys = page.stream().map(Setting::key).toList();
+        List<String> keys = page.stream()
+                .filter(setting -> Access.of(setting, player).editable())
+                .map(Setting::key).toList();
         if (!config.playerValues().hasAny(player, keys)) {
             Component message = text("reset_unchanged", name, config.modId());
             source.sendSuccess(() -> message, false);
@@ -216,9 +206,6 @@ final class SettingsCommand {
             case "invalid.text" -> "%s takes at most %s characters";
             case "read_only" -> "You cannot change %s";
             case "forced" -> "%s is set by the server";
-            case "reset_denied" -> "Cannot reset page %s: you cannot change %s";
-            case "reset_denied_hidden" -> "Cannot reset page %s: it holds a value you cannot"
-                    + " change";
             default -> throw new IllegalArgumentException("No reply " + line);
         };
         return Component.translatableWithFallback(KEYS + line, english, args);
@@ -319,12 +306,6 @@ final class SettingsCommand {
     // A setting's stored-or-default value as its page write stores it; never the forced one.
     private static <T> Dynamic<?> ownEntry(Setting<T> setting, ServerPlayer player) {
         return PlayerValues.encode(setting, setting.own(player));
-    }
-
-    // Whether player has a valid stored value for setting other than its default.
-    private static <T> boolean storedAwayFromDefault(Setting<T> setting, ServerPlayer player) {
-        return setting.storedOwn(player)
-                .filter(value -> !value.equals(setting.defaultValue())).isPresent();
     }
 
     // Each setting's effective value, in page order.
