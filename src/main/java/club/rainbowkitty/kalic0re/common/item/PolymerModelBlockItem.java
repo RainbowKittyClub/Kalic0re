@@ -16,9 +16,12 @@ import net.minecraft.world.level.block.Block;
 
 /**
  * A block item that clients without the server's resource pack see as an ordinary vanilla item and
- * clients with the pack see with a fixed custom model. The {@link BlockItem} twin of
- * {@link PolymerModelItem}; they cannot share a superclass ({@code Item} vs {@code BlockItem}), so
- * the small body (fields, constructors, {@code getPolymer*} overrides) is duplicated between them.
+ * clients with the pack see with a fixed custom model, on the client item RKC Polymer's stand-in
+ * policy ({@link StandInItems}) picks for the block when that Polymer is present: the one block
+ * item a vanilla client can place as the block's stand-in, pinned to its exact state, or a
+ * non-placing firework star. The {@link BlockItem} twin of {@link PolymerModelItem}; they cannot
+ * share a superclass ({@code Item} vs {@code BlockItem}), so the small body (fields, constructors,
+ * {@code getPolymer*} overrides) is duplicated between them.
  */
 public class PolymerModelBlockItem extends BlockItem implements PolymerItem {
     private final Item fallback;
@@ -53,9 +56,28 @@ public class PolymerModelBlockItem extends BlockItem implements PolymerItem {
         return model;
     }
 
+    /**
+     * The real item for a client running this mod, the stand-in policy's choice for one with the
+     * pack when Polymer offers it, and the fallback for every other client.
+     */
     @Override
     public Item getPolymerItem(ItemStack stack, PacketContext context) {
-        return useRealItem.test(context) ? this : fallback;
+        if (useRealItem.test(context)) {
+            return this;
+        }
+        if (StandInItems.available() && PolymerResourcePackUtils.hasMainPack(context)) {
+            return StandInItems.item(this, context);
+        }
+        return fallback;
+    }
+
+    /** Pins a pack client's stack to the stand-in state the policy chose, if it chose one. */
+    @Override
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context,
+            HolderLookup.Provider lookup) {
+        if (!useRealItem.test(context) && PolymerResourcePackUtils.hasMainPack(context)) {
+            StandInItems.pin(out, this, context);
+        }
     }
 
     /**
