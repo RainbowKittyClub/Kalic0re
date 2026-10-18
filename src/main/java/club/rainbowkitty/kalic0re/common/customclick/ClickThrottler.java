@@ -12,10 +12,11 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Rate limits each player's custom clicks by {@link ClickLimits}: a bucket of {@code burst} clicks
- * refilled at {@code perSecond}, with a click on an empty bucket dropped rather than punished. Past
- * a nonzero {@code kickPerSecond} held for two seconds the player is disconnected as
- * {@code disconnect.spam}, operators exempt as vanilla exempts them from chat spam. Each player's
- * peak clicks over any 20 ticks is kept too, to size those limits from real clicking.
+ * refilled at {@code perSecond}, with a click on an empty bucket dropped rather than punished. A
+ * nonzero {@code kickPerSecond} drains a second bucket that every click fills; overflowing its two
+ * seconds' worth disconnects as {@code disconnect.spam}, operators exempt as vanilla exempts them
+ * from chat spam. Each player's peak clicks over any 20 ticks is kept too, to size those limits
+ * from real clicking.
  *
  * <p>Clicks arrive on the server thread. The class hooks its own cleanup when first loaded, before
  * any bucket exists, and a leaving player's state goes once the server thread has seen their last
