@@ -11,59 +11,108 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * Vanilla's chat spam rule for custom clicks: each click adds {@value #STEP} to its player's
- * count, each server tick takes one off, and a count at {@value #LIMIT} disconnects the player
- * as {@code disconnect.spam}, unless they are an operator, whom vanilla exempts. Ten clicks in
- * one burst trip it; a click a second apart never does. Clicks arrive on the server thread, and a
- * leaving player's count goes once the server thread has seen their last packet.
+ * Rate limits each player's custom clicks by {@link ClickLimits}: a bucket of {@code burst} clicks
+ * refilled at {@code perSecond}, with a click on an empty bucket dropped rather than punished. Past
+ * a nonzero {@code kickPerSecond} held for two seconds the player is disconnected as
+ * {@code disconnect.spam}, operators exempt as vanilla exempts them from chat spam. Each player's
+ * peak clicks over any 20 ticks is kept too, to size those limits from real clicking.
+ *
+ * <p>Clicks arrive on the server thread, and a leaving player's state goes once the server thread
+ * has seen their last packet.
  */
 public final class ClickThrottler {
-    // Vanilla's chat throttler at its default threshold (TickThrottler(20, 20 * 10)).
-    private static final int STEP = 20;
-    private static final int LIMIT = 200;
+    private static final int TICKS_PER_SECOND = 20;
+    private static final int KICK_SECONDS = 2;
     private static final Component SPAM = Component.translatable("disconnect.spam");
     // Server thread only.
-    private static final Map<UUID, Count> COUNTS = new HashMap<>();
+    private static final Map<UUID, Bucket> BUCKETS = new HashMap<>();
+    private static volatile ClickLimits limits = ClickLimits.DEFAULT;
 
     private ClickThrottler() {
     }
 
-    /** Drops a leaving player's count; from {@link CustomClicks#register()}. */
+    /** Drops a leaving player's state; from {@link CustomClicks#register()}. */
     static void register() {
         // Fabric fires DISCONNECT on the netty thread while the server thread may still hold
         // clicks of the kicked player; a queued task runs after it has drained them.
         ServerPlayConnectionEvents.DISCONNECT.register((listener, server) ->
-                server.execute(() -> COUNTS.remove(listener.getPlayer().getUUID())));
+                server.execute(() -> BUCKETS.remove(listener.getPlayer().getUUID())));
+    }
+
+    static void limits(ClickLimits newLimits) {
+        limits = newLimits;
     }
 
     /**
-     * Counts one click from {@code player}. Returns true, having disconnected them, when it took
-     * them to the limit and they are not exempt; the click is then dropped.
+     * Counts one click from {@code player}. Returns true when it is to be dropped: the bucket was
+     * empty, or the click took them past the disconnect rate and they were disconnected.
      */
-    public static boolean flooded(ServerPlayer player) {
+    static boolean drop(ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
-        Count count = COUNTS.computeIfAbsent(player.getUUID(), id -> new Count());
-        if (count.add(server.getTickCount()) < LIMIT) {
-            return false;
+        ClickLimits current = limits;
+        Bucket bucket = BUCKETS.computeIfAbsent(player.getUUID(), id -> new Bucket(current));
+        int now = server.getTickCount();
+        bucket.count(now, current);
+        if (current.kickPerSecond() > 0 && bucket.flooding(current)
+                && !server.getPlayerList().isOp(player.nameAndId())
+                && !server.isSingleplayerOwner(player.nameAndId())) {
+            player.connection.disconnect(SPAM);
+            return true;
         }
-        if (server.getPlayerList().isOp(player.nameAndId())
-                || server.isSingleplayerOwner(player.nameAndId())) {
-            return false;
-        }
-        player.connection.disconnect(SPAM);
-        return true;
+        return !bucket.take();
     }
 
-    // One player's count, taken down by the ticks since it last grew.
-    private static final class Count {
-        private int count;
-        private int tick;
+    /** {@code player}'s peak clicks over any 20 ticks so far, and how many were dropped. */
+    static CustomClicks.Stats stats(ServerPlayer player) {
+        Bucket bucket = BUCKETS.get(player.getUUID());
+        return bucket == null ? new CustomClicks.Stats(0, 0)
+                : new CustomClicks.Stats(bucket.peak, bucket.dropped);
+    }
 
-        // Counts one click at server tick `now` and returns the count.
-        private int add(int now) {
-            count = Math.max(0, count - (now - tick)) + STEP;
+    // One player's bucket, flood count and last-second window.
+    private static final class Bucket {
+        private final int[] window = new int[TICKS_PER_SECOND];
+        private double tokens;
+        private double flood;
+        private int windowSum;
+        private int tick;
+        private int peak;
+        private int dropped;
+
+        private Bucket(ClickLimits limits) {
+            tokens = limits.burst();
+        }
+
+        // Refills by the ticks since the last click and records this one in the window.
+        private void count(int now, ClickLimits limits) {
+            int elapsed = Math.max(0, now - tick);
+            tokens = Math.min(limits.burst(),
+                    tokens + elapsed * (double) limits.perSecond() / TICKS_PER_SECOND);
+            flood = Math.max(0.0,
+                    flood - elapsed * (double) limits.kickPerSecond() / TICKS_PER_SECOND) + 1;
+            for (int t = 1; t <= Math.min(elapsed, TICKS_PER_SECOND); t++) {
+                int slot = (tick + t) % TICKS_PER_SECOND;
+                windowSum -= window[slot];
+                window[slot] = 0;
+            }
             tick = now;
-            return count;
+            window[now % TICKS_PER_SECOND]++;
+            windowSum++;
+            peak = Math.max(peak, windowSum);
+        }
+
+        // Clicks beyond the kick rate pile up; two seconds' worth of excess disconnects.
+        private boolean flooding(ClickLimits limits) {
+            return flood > limits.kickPerSecond() * KICK_SECONDS;
+        }
+
+        private boolean take() {
+            if (tokens >= 1.0) {
+                tokens -= 1.0;
+                return true;
+            }
+            dropped++;
+            return false;
         }
     }
 }

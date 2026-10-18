@@ -12,7 +12,8 @@ import net.minecraft.server.level.ServerPlayer;
  * Handlers for the custom clicks a player's client sends from a dialog or a text click event, by
  * click id. Vanilla hands every such click to {@code MinecraftServer.handleCustomClickAction}, a
  * no-op that never learns the player, so a consumer routes clicks here from its own mixin. Every
- * click counts towards {@link ClickThrottler}'s limit, handled or not.
+ * click counts towards {@link ClickThrottler}'s limits, handled or not; a consumer may replace the
+ * package's {@link ClickLimits#DEFAULT} with {@link #limits}.
  *
  * <p>This holds the logic; each consumer owns the mixin, since mixins are never shared code. On
  * {@code ServerCommonPacketListenerImpl.handleCustomClickAction}, inject at the INVOKE of
@@ -44,13 +45,23 @@ public final class CustomClicks {
         }
     }
 
+    /** Replaces this copy's rate limits; call from the mod initializer. */
+    public static void limits(ClickLimits limits) {
+        ClickThrottler.limits(limits);
+    }
+
+    /** {@code player}'s peak clicks over any second so far, and how many were dropped. */
+    public static Stats stats(ServerPlayer player) {
+        return ClickThrottler.stats(player);
+    }
+
     /**
-     * Runs the handler for {@code id} on the server thread, unless the click floods.
+     * Runs the handler for {@code id} on the server thread, unless the rate limit drops the click.
      *
-     * @return whether the click is handled: by a registered handler, or dropped as a flood
+     * @return whether the click is handled: by a registered handler, or dropped by the limit
      */
     public static boolean handle(ServerPlayer player, Identifier id, Optional<Tag> payload) {
-        if (ClickThrottler.flooded(player)) {
+        if (ClickThrottler.drop(player)) {
             return true;
         }
         Handler handler = HANDLERS.get(id);
@@ -59,6 +70,10 @@ public final class CustomClicks {
         }
         handler.handle(player, payload);
         return true;
+    }
+
+    /** A player's peak clicks in any 20 ticks, and the clicks the rate limit dropped. */
+    public record Stats(int peakPerSecond, int dropped) {
     }
 
     /** What one click id does. */
