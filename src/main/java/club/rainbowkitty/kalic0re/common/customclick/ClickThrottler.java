@@ -17,8 +17,9 @@ import net.minecraft.server.level.ServerPlayer;
  * {@code disconnect.spam}, operators exempt as vanilla exempts them from chat spam. Each player's
  * peak clicks over any 20 ticks is kept too, to size those limits from real clicking.
  *
- * <p>Clicks arrive on the server thread, and a leaving player's state goes once the server thread
- * has seen their last packet.
+ * <p>Clicks arrive on the server thread. The class hooks its own cleanup when first loaded, before
+ * any bucket exists, and a leaving player's state goes once the server thread has seen their last
+ * packet.
  */
 public final class ClickThrottler {
     private static final int TICKS_PER_SECOND = 20;
@@ -28,15 +29,14 @@ public final class ClickThrottler {
     private static final Map<UUID, Bucket> BUCKETS = new HashMap<>();
     private static volatile ClickLimits limits = ClickLimits.DEFAULT;
 
-    private ClickThrottler() {
-    }
-
-    /** Drops a leaving player's state; from {@link CustomClicks#register()}. */
-    static void register() {
+    static {
         // Fabric fires DISCONNECT on the netty thread while the server thread may still hold
         // clicks of the kicked player; a queued task runs after it has drained them.
         ServerPlayConnectionEvents.DISCONNECT.register((listener, server) ->
                 server.execute(() -> BUCKETS.remove(listener.getPlayer().getUUID())));
+    }
+
+    private ClickThrottler() {
     }
 
     static void limits(ClickLimits newLimits) {

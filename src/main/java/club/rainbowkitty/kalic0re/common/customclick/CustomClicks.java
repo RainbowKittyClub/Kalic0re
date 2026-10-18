@@ -11,8 +11,8 @@ import net.minecraft.server.level.ServerPlayer;
 /**
  * Handlers for the custom clicks a player's client sends from a dialog or a text click event, by
  * click id. Vanilla hands every such click to {@code MinecraftServer.handleCustomClickAction}, a
- * no-op that never learns the player, so a consumer routes clicks here from its own mixin. Every
- * click counts towards {@link ClickThrottler}'s limits, handled or not; a consumer may replace the
+ * no-op that never learns the player, so a consumer routes clicks here from its own mixin. Clicks
+ * on a registered id count towards {@link ClickThrottler}'s limits; a consumer may replace the
  * package's {@link ClickLimits#DEFAULT} with {@link #limits}.
  *
  * <p>This holds the logic; each consumer owns the mixin, since mixins are never shared code. On
@@ -20,21 +20,16 @@ import net.minecraft.server.level.ServerPlayer;
  * {@code MinecraftServer.handleCustomClickAction} (past the thread check, so handlers run on the
  * server thread). When {@code this} is a {@code ServerGamePacketListenerImpl}, call
  * {@link #handle} with its player and the packet's id and payload, and cancel if it returns true.
- * Call {@link #register()} once from the mod initializer.
+ * Beyond that, register handlers from the mod initializer; the throttler cleans up after itself.
  *
  * <p>Several consumers installed together each keep a relocated copy with its own handlers and
- * counts. A click one copy handles is cancelled there and never reaches the next; a click none
- * handles goes on to vanilla. Each copy counts every click it sees against its own limit.
+ * counts. A copy counts and throttles only clicks on its own ids, and cancels them, so they never
+ * reach the next copy; a click on an id no copy handles goes on to vanilla uncounted.
  */
 public final class CustomClicks {
     private static final Map<Identifier, Handler> HANDLERS = new ConcurrentHashMap<>();
 
     private CustomClicks() {
-    }
-
-    /** Hooks the throttler's cleanup of leaving players; from the mod initializer. */
-    public static void register() {
-        ClickThrottler.register();
     }
 
     /** Handles every click with {@code id}; one handler per id. */
@@ -50,25 +45,25 @@ public final class CustomClicks {
         ClickThrottler.limits(limits);
     }
 
-    /** {@code player}'s peak clicks over any second so far, and how many were dropped. */
+    /** {@code player}'s peak clicks on this copy's ids over any second, and the dropped ones. */
     public static Stats stats(ServerPlayer player) {
         return ClickThrottler.stats(player);
     }
 
     /**
      * Runs the handler for {@code id} on the server thread, unless the rate limit drops the click.
+     * A click on an id with no handler here is not counted.
      *
-     * @return whether the click is handled: by a registered handler, or dropped by the limit
+     * @return whether the click is this copy's: handled, or dropped by the limit
      */
     public static boolean handle(ServerPlayer player, Identifier id, Optional<Tag> payload) {
-        if (ClickThrottler.drop(player)) {
-            return true;
-        }
         Handler handler = HANDLERS.get(id);
         if (handler == null) {
             return false;
         }
-        handler.handle(player, payload);
+        if (!ClickThrottler.drop(player)) {
+            handler.handle(player, payload);
+        }
         return true;
     }
 
