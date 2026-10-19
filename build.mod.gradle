@@ -29,7 +29,7 @@ dependencies {
 // a function that stores it in storage <namespace>:dialog at built.<name>. A $(key) naming one of its
 // own inputs is left for the client; any other $(arg) is filled from <namespace>:dialog args. The JSON
 // source stays out of the pack; keys named "//" are comments and are dropped.
-def dialogSources = fileTree('src/main/resources/resourcepacks') { include '*/data/*/function/**/*.json' }
+def dialogSources = fileTree(rootProject.file('src/main/resources/resourcepacks')) { include '*/data/*/function/**/*.json' }
 def dialogFunctions = layout.buildDirectory.dir('generated/datapackDialogs')
 def generateDatapackDialogs = tasks.register('generateDatapackDialogs') {
 	description = 'Builds each dialog .json among the built-in packs\' functions into its .mcfunction.'
@@ -186,10 +186,10 @@ tasks.named('processResources') {
 // A pack's English is written once, in its lang/en_us.json: each {translate:"<key>"} of the pack's own
 // keys gets the text there as its fallback, SNBT or JSON alike, for clients without its resource pack.
 // A key missing from the file, a fallback written in a source, or a key built at run time fails the build.
-def packLangs = fileTree('src/main/resources/resourcepacks') { include '*/lang/en_us.json' }
+def packLangs = fileTree(rootProject.file('src/main/resources/resourcepacks')) { include '*/lang/en_us.json' }
 def usedEnglish = Collections.synchronizedSet(new HashSet<String>())
 def englishOf = [:].withDefault { String pack ->
-	def lang = file("src/main/resources/resourcepacks/${pack}/lang/en_us.json")
+	def lang = rootProject.file("src/main/resources/resourcepacks/${pack}/lang/en_us.json")
 	def english = lang.exists() ? new groovy.json.JsonSlurper().parse(lang, 'UTF-8') as Map : [:]
 	// A macro line would expand $( in the text.
 	english.each { key, text ->
@@ -234,7 +234,7 @@ tasks.named('processResources') {
 
 // Zips each built-in pack to build/datapacks/<pack>.zip for a world's datapacks/ folder. Reads
 // processResources' output so pack.mcmeta arrives expanded.
-def datapackZips = (file('src/main/resources/resourcepacks').listFiles()?.findAll { it.directory } ?: [])
+def datapackZips = (rootProject.file('src/main/resources/resourcepacks').listFiles()?.findAll { it.directory } ?: [])
 	.collect { pack ->
 		tasks.register("datapackZip${pack.name.capitalize()}", Zip) {
 			dependsOn tasks.named('processResources')
