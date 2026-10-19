@@ -2,6 +2,7 @@ package club.rainbowkitty.kalic0re.common.portal;
 
 import java.util.Map;
 
+//? if <26.3
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
@@ -49,6 +50,12 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
         BlockWithElementHolder {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
     private static final int LIGHT = 11;
+    // 26.3 renamed BLOCK to IMMOVEABLE.
+    //? if >=26.3 {
+    /*private static final PushReaction IMMOVABLE = PushReaction.IMMOVEABLE;
+    *///?} else {
+    private static final PushReaction IMMOVABLE = PushReaction.BLOCK;
+    //?}
     private static final Map<Direction.Axis, VoxelShape> SHAPES = Map.of(
             Direction.Axis.X, Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0),
             Direction.Axis.Z, Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0),
@@ -75,7 +82,7 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
      */
     public static Properties defaultProperties() {
         return BlockBehaviour.Properties.of().noCollision().strength(-1.0F)
-                .sound(SoundType.GLASS).lightLevel(state -> LIGHT).pushReaction(PushReaction.BLOCK)
+                .sound(SoundType.GLASS).lightLevel(state -> LIGHT).pushReaction(IMMOVABLE)
                 .noLootTable();
     }
 
@@ -89,10 +96,13 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
         return defaultBlockState().setValue(AXIS, plane.axis());
     }
 
+    // 26.3 dropped block codecs.
+    //? if <26.3 {
     @Override
     protected MapCodec<PortalBlock> codec() {
         return MapCodec.unit(this);
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

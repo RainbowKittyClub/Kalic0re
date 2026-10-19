@@ -1,3 +1,5 @@
+// 26.3 replaced the blaze3d pipeline API these classes build on, and they have no 26.3 port yet.
+//? if <26.3 {
 package club.rainbowkitty.kalic0re.common.enchant.client;
 
 import java.util.List;
@@ -122,3 +124,4 @@ public final class HiddenItemRendering {
                         .createRenderSetup()));
     }
 }
+//?}

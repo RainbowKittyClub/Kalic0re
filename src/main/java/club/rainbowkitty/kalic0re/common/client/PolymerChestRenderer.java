@@ -79,8 +79,19 @@ public class PolymerChestRenderer<T extends BlockEntity & LidBlockEntity> extend
                 ((PolymerChestRenderState) state).sprite,
                 id -> new SpriteId(TextureAtlas.LOCATION_BLOCKS, id));
         ChestModel model = this.models.select(state.type);
+        // 26.3 draws the break progress as a separate crumbling overlay, like vanilla's chests.
+        //? if >=26.3 {
+        /*submitNodeCollector.submitModel(model, open, poseStack, state.lightCoords,
+                OverlayTexture.NO_OVERLAY, -1, spriteId, this.sprites, 0);
+        if (state.breakProgress != null) {
+            submitNodeCollector.order(1).submitCrumblingOverlay(model, open, poseStack,
+                    spriteId.renderType(model.renderType()), state.lightCoords,
+                    OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+        }
+        *///?} else {
         submitNodeCollector.submitModel(model, open, poseStack, state.lightCoords,
                 OverlayTexture.NO_OVERLAY, -1, spriteId, this.sprites, 0, state.breakProgress);
+        //?}
         poseStack.popPose();
     }
 }

@@ -1,7 +1,5 @@
 package club.rainbowkitty.kalic0re.common.vehicle;
 
-import java.util.Map;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -173,13 +171,7 @@ public class CargoCartItem extends PolymerMinecartItem {
     // ITEM_NAME (Item.Properties#finalizeInitializer) and reading through to that would shadow the
     // cargo with the one generic name for every stack.
     private static @Nullable Component explicitName(ItemStack stack) {
-        for (Map.Entry<DataComponentType<?>, Optional<?>> entry
-                : stack.getComponentsPatch().entrySet()) {
-            if (entry.getKey() == DataComponents.ITEM_NAME) {
-                return (Component) entry.getValue().orElse(null);
-            }
-        }
-        return null;
+        return stack.getComponentsPatch().split().added().get(DataComponents.ITEM_NAME);
     }
 
     @Override

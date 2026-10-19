@@ -61,7 +61,12 @@ public record PermissionCondition(String node, PermissionLevel fallback)
 
     @Override
     public boolean test(LootContext context) {
-        return context.getOptionalParameter(LootContextParams.THIS_ENTITY)
-                instanceof ServerPlayer player && CommandPermissions.holds(player, node, fallback);
+        //? if >=26.3 {
+        /*Object entity = context.getOptional(LootContextParams.THIS_ENTITY);
+        *///?} else {
+        Object entity = context.getOptionalParameter(LootContextParams.THIS_ENTITY);
+        //?}
+        return entity instanceof ServerPlayer player
+                && CommandPermissions.holds(player, node, fallback);
     }
 }
