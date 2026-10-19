@@ -1,6 +1,8 @@
 # kalic0re
 
-Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API + Polymer.
+Shared Java library for the Rainbow Kitty Club mods, on Fabric API + Polymer. One tree builds for
+MC 26.2 and 26.3 (Stonecutter), published as `kalic0re:<version>+26.2` and
+`kalic0re:<version>+26.3`.
 
 ## Packages
 
@@ -8,6 +10,11 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
   resolved server-side against their own reach.
 - `common.armor` — custom-armor framework, one declaration per set; needs `item` and `datagen`
   alongside it.
+- `common.carrier` — `Carriers.request`, a note block state for a Polymer full-block model, chosen
+  so a client's own block updates flash it as something alike: its stable slot from `CarrierTiers`'
+  49-slot table, else an anchor group of its type, else the group whose slot block is nearest in
+  colour (CIEDE2000). Polymer's stable slots are reached reflectively, so stock Polymer gets a
+  normal request. polymer-patch-bundle and enderscape-patch carry identical copies.
 - `common.client` — `@Environment(CLIENT)` renderer code (`PolymerChestRenderer`,
   `PolymerChestRenderState`, `ChestSpriteSelector`), loaded only by a consumer's own client
   entrypoint and shipped unused on a dedicated server.
@@ -31,7 +38,14 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
   class only, so a consumer without it still loads the gate. `PermissionCondition` is the same
   question as a datapack predicate: a consumer registers it under its own id, and
   `execute as <player> if predicate <id>` or `@a[predicate=<id>]` asks it, failing closed without
-  a player.
+  a player. `CommandPermissions.holds(player, node, fallback)` asks the same of one player, the
+  fallback an op level or, for a node no op level should imply, a boolean.
+- `common.config` — `ModConfig`, one mod's settings as typed `Setting`s (toggle, range, choice or
+  text, player or server scope), declared into the rkcore-common settings hub when it runs. Without
+  it, server values live in `common.rule` fallback rules and player values in a persistent player
+  attachment `<mod>:settings`, edited through `/settings <mod> get|set|reset`. Each setting has a
+  node `<mod>.config.<scope>.<key>`, and LuckPerms meta of that name forces a player value. Needs
+  `command`, `rule` and `text` alongside it.
 - `common.craft` — a 3×3 crafting grid that keeps its contents (`CraftingGridBlockEntity`), the
   shared menu over it (`PersistentCraftingMenu`) and vanilla's per-player one at any block
   (`BlockCraftingMenu`). The consumer owns the mixin that reads `CraftingGridHandoff`.
@@ -44,26 +58,29 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
   effect gets per-tick and per-event plumbing without the consumer writing its own dispatcher.
 - `common.enchant` — enchantment framework: declare cost, targets and effects, get the generated
   datapack entry plus somewhere to register custom effect code. `common.enchant.client` and
-  `common.enchant.datagen` hold the render and asset-generation halves.
+  `common.enchant.datagen` hold the render and asset-generation halves; the render half builds
+  for 26.2 only, as 26.3 replaced the blaze3d pipeline API it draws through.
 - `common.glow` — `PrivateGlow`, one entity outlined in one colour for one player, by telling
   that client something the server does not hold. No server state and no access widener.
-- `common.item` — `ItemRegistration`, `PolymerModelItem`, `PolymerModelBlockItem`.
+- `common.item` — `ItemRegistration`, `PolymerModelItem`, `PolymerModelBlockItem`. `ItemNames` sets
+  an item's name for clients without the server's lang file, from an initializer added after the
+  item's own, since `Item.Properties` sets `ITEM_NAME` to the translatable name last.
+  `StandInItems` finds RKC Polymer's stand-in policy reflectively: a block item's client item is
+  the block item a vanilla client can place as the block's stand-in, pinned to its state, or a
+  non-placing firework star. On stock Polymer it finds nothing and callers keep their own item.
 - `common.label` — per-player raycast and hover-label machinery (`HoverScanner`, `HoverLabel`,
-  `BlockLabels`, `EntityLabels`, `ItemText` and friends). A runtime package: it ticks per player, and
-  `runServer` runs the un-relocated classes, so only an installed jar tests the relocation.
-- `common.mining` — `VanillaCreativeBreak`, a Polymer block that leaves a creative player's break
-  to vanilla. Polymer mines its blocks on the server in every game mode and sends the breaker a
-  break event, which a creative client has already played. `minesOnServer` is the same answer for
-  a block with a `handleMiningOnServer` of its own.
+  `BlockLabels`, `EntityLabels`, `ItemText` and friends); needs `aim` alongside it. A runtime
+  package: it ticks per player, and `runServer` runs the un-relocated classes, so only an installed
+  jar tests the relocation.
 - `common.net` — `PolymerClientHandshake`, the per-connection "does this client run the mod too" flag.
 - `common.piston` — `PistonMovable`, rules letting pistons move a block with a block entity; the
   consumer owns the mixin that consults them.
 - `common.portal` — portal framework: a `PortalKind` declares the frame block, the material drawn
   in the interior and the hooks for lighting, fading, entering and arriving; `Portals.register`
   makes the portal block, the frame finder and the saved data. See `docs/plan/portal-framework.md`.
-  Needs `mining` alongside it.
-- `common.rule` — `ComponentGameRules`, registering rules as `<modId>.<component>:<path>` instead of
-  one flat per-mod prefix.
+- `common.rule` — `FallbackRules`, game rules standing in for server settings where the
+  rkcore-common settings hub is absent: `bool`, `integer`, `choice` and `text` each register their
+  rule only when `rkcorecommon` is not loaded, and return null when it is.
 - `common.text` — `FallbackText`, translatable text carrying the mod's English from its own
   `en_us.json` as fallback, since a vanilla client holds no server-side mod's lang file. English
   lives only in that file; a key it lacks is logged once and shown as itself. `Titles`, a title
@@ -75,11 +92,11 @@ Shared Java library for the Rainbow Kitty Club mods. Targets MC 26.2, Fabric API
 ## Datapack
 
 `kalic0re.zip` is a helper datapack for adventure maps and the server, built from
-`src/main/resources/resourcepacks/kalic0re/`. `./gradlew datapackZip` writes it to
-`build/datapacks/`, for a world's `datapacks/` folder. Its English lives only in `lang/en_us.json`,
-which never ships: the build gives each `kalic0re.*` translate key its English as `fallback`, and
-builds each dialog `.json` among the functions into a function. Function ids below are under
-`kalic0re:`.
+`src/main/resources/resourcepacks/kalic0re/`. `./gradlew datapackZip` writes one per Minecraft
+version to `versions/<version>/build/datapacks/`, for a world's `datapacks/` folder; each loads
+only on its own version. Its English lives only in `lang/en_us.json`, which never ships: the build
+gives each `kalic0re.*` translate key its English as `fallback`, and builds each dialog `.json`
+among the functions into a function. Function ids below are under `kalic0re:`.
 
 ### Displays — `effect/display/`
 
