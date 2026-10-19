@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version without leading v (for example: 0.31.0)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -21,7 +27,20 @@ jobs:
 
       - name: Resolve release and Java versions
         run: |
-          echo "RELEASE_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            release_version="${{ github.event.inputs.release_version }}"
+            if [ -z "$release_version" ]; then
+              echo "release_version input is required for workflow_dispatch" >&2
+              exit 1
+            fi
+            if [[ "$release_version" == v* ]]; then
+              echo "release_version must not include leading 'v'" >&2
+              exit 1
+            fi
+          else
+            release_version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "RELEASE_VERSION=${release_version}" >> "$GITHUB_ENV"
           java_version="$(grep '^java_version=' gradle.properties | head -n1 | cut -d'=' -f2 | tr -d '[:space:]')"
           if [ -z "$java_version" ]; then
             echo "Could not resolve java_version from gradle.properties" >&2
