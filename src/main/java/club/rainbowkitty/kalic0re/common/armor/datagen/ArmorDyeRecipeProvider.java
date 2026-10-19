@@ -6,16 +6,23 @@ import java.util.concurrent.CompletableFuture;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 
+//? if >=26.3
+/*import net.minecraft.advancements.Advancement;*/
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.recipes.CustomCraftingRecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
+//? if <26.3
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+//? if >=26.3
+/*import net.minecraft.data.worldgen.BootstrapContext;*/
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.DyeRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+//? if >=26.3
+/*import net.minecraft.world.item.crafting.Recipe;*/
 
 import club.rainbowkitty.kalic0re.common.armor.ArmorLayer;
 import club.rainbowkitty.kalic0re.common.armor.ArmorPiece;
@@ -44,12 +51,22 @@ public final class ArmorDyeRecipeProvider extends FabricRecipeProvider {
         this.sets = List.copyOf(sets);
     }
 
+    // 26.3 builds recipes into registry bootstrap contexts rather than a RecipeOutput.
     @Override
+    //? if >=26.3 {
+    /*protected RecipeProvider createRecipeProvider(HolderLookup.Provider registries,
+            BootstrapContext<Recipe<?>> recipes, BootstrapContext<Advancement> advancements) {
+    *///?} else {
     protected RecipeProvider createRecipeProvider(HolderLookup.Provider registries,
             RecipeOutput output) {
+    //?}
         String modId = this.output.getModId();
         List<ArmorSet> declared = this.sets;
+        //? if >=26.3 {
+        /*return new RecipeProvider(recipes, advancements) {
+        *///?} else {
         return new RecipeProvider(registries, output) {
+        //?}
             @Override
             public void buildRecipes() {
                 for (ArmorSet set : declared) {
