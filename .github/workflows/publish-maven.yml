@@ -33,7 +33,13 @@ jobs:
             echo "mod_version: ${mod_version}" >&2
             exit 1
           fi
+          supported_versions="$(sed -nE 's/^[[:space:]]*stonecutter_versions[[:space:]]*=[[:space:]]*(.+)[[:space:]]*$/\1/p' gradle.properties | head -n1)"
+          if [ -z "$supported_versions" ]; then
+            echo "Could not resolve stonecutter_versions from gradle.properties" >&2
+            exit 1
+          fi
           echo "RELEASE_VERSION=${mod_version}" >> "$GITHUB_ENV"
+          echo "SUPPORTED_VERSIONS=${supported_versions}" >> "$GITHUB_ENV"
           java_version="$(grep '^java_version=' gradle.properties | head -n1 | cut -d'=' -f2 | tr -d '[:space:]')"
           if [ -z "$java_version" ]; then
             echo "Could not resolve java_version from gradle.properties" >&2
@@ -48,8 +54,22 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
 
-      - name: Publish package
-        run: ./gradlew --no-daemon publish -Pmod_version="${RELEASE_VERSION}"
+      - name: Build and publish all supported versions
+        run: |
+          IFS=',' read -r -a versions <<< "${SUPPORTED_VERSIONS}"
+          published_any=false
+          for version in "${versions[@]}"; do
+            version="${version//[[:space:]]/}"
+            if [ -z "$version" ]; then
+              continue
+            fi
+            published_any=true
+            ./gradlew --no-daemon ":${version}:build" ":${version}:publish" -Pmod_version="${RELEASE_VERSION}"
+          done
+          if [ "$published_any" != "true" ]; then
+            echo "No supported versions were found in stonecutter_versions" >&2
+            exit 1
+          fi
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
