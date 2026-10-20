@@ -23,8 +23,11 @@ MC 26.2 and 26.3 (Stonecutter), published as `kalic0re:<version>+26.2` and
   `SpecialModelExtentsProvider`, which needs `client = true` datagen and `common.display`: it bakes
   vanilla's special item renderers and writes the box each draws in, for `ItemModelExtents`.
 - `common.death` — registry for themed death-message overrides, for players (`register`) or any
-  living entity such as a pet (`registerLiving`); the consumer owns the mixin at each
-  `getDeathMessage()` call it wants routed through `resolve`.
+  living entity such as a pet (`registerLiving`). The consumer owns one mixin: a
+  `@ModifyReturnValue` on `CombatTracker.getDeathMessage()` that returns
+  `resolve(mob, entries, vanilla)` from the tracker's shadowed fields. Inside that method, not at
+  its callers in `die()`, so chat mods such as StyledChat style or hide the override like vanilla's
+  own text.
 - `common.claim` — `ClaimExemptions`, one probe per claim mod (GOML, Flan, Open Parties and Claims,
   FTB Chunks, the Common Protection API) answering what it would say without its by-id exemptions,
   and a listener that lets a modded block stand in for a vanilla one. Compiled against those mods'
