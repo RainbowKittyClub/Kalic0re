@@ -23,8 +23,9 @@ import net.minecraft.world.entity.LivingEntity;
  *
  * <p>There is no Fabric API event for "an item changed slot", and the one precise vanilla hook for
  * it ({@code LivingEntity.onEquipItem}) can't be shared through a mixin the way this codebase
- * relocates ordinary classes between mods — see {@code docs/plan/player-effect-framework.md}'s
- * findings. So activation and deactivation are detected the same way
+ * relocates ordinary classes between mods — see
+ * {@code rkc/docs/kalic0re/plan/player-effect-framework.md}'s findings. So activation and
+ * deactivation are detected the same way
  * {@code common/label/HoverScanner} detects a changed hover target: a per-tick scan comparing each
  * player's currently active effects against what was active last tick.
  */
