@@ -25,22 +25,6 @@ dependencies {
 	compileOnly("me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}") { transitive = false }
 }
 
-plugins.withId('maven-publish') {
-	publishing {
-		repositories {
-			maven {
-				name = 'GitHubPackages'
-				def repository = System.getenv('GITHUB_REPOSITORY') ?: 'RainbowKittyClub/Kalic0re'
-				url = uri("https://maven.pkg.github.com/${repository}")
-				credentials {
-					username = System.getenv('GITHUB_ACTOR')
-					password = System.getenv('GITHUB_TOKEN')
-				}
-			}
-		}
-	}
-}
-
 // A <name>.json among a pack's functions is a dialog (or a piece of one), built into <name>.mcfunction:
 // a function that stores it in storage <namespace>:dialog at built.<name>. A $(key) naming one of its
 // own inputs is left for the client; any other $(arg) is filled from <namespace>:dialog args. The JSON

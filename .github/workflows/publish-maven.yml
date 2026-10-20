@@ -1,9 +1,13 @@
 name: Publish Maven package
 
+# A v<mod_version> tag publishes every Minecraft version's jar to this repository's GitHub Packages.
+# The steps live in the gradle submodule (gradle/ci/release.sh), versioned with the build.
 on:
   push:
     tags:
       - "v*"
+  # Re-run for an existing tag: choose the tag, not a branch, under "Use workflow from".
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,33 +23,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Resolve release and Java versions
-        run: |
-          release_version="${GITHUB_REF_NAME#v}"
-          mod_version="$(sed -nE 's/^[[:space:]]*mod_version[[:space:]]*=[[:space:]]*(.+)[[:space:]]*$/\1/p' gradle.properties | head -n1)"
-          if [ -z "$mod_version" ]; then
-            echo "Could not resolve mod_version from gradle.properties" >&2
-            exit 1
-          fi
-          if [ "$release_version" != "$mod_version" ]; then
-            echo "Version mismatch between tag and mod_version" >&2
-            echo "Tag: ${GITHUB_REF_NAME}" >&2
-            echo "mod_version: ${mod_version}" >&2
-            exit 1
-          fi
-          supported_versions="$(sed -nE 's/^[[:space:]]*stonecutter_versions[[:space:]]*=[[:space:]]*(.+)[[:space:]]*$/\1/p' gradle.properties | head -n1)"
-          if [ -z "$supported_versions" ]; then
-            echo "Could not resolve stonecutter_versions from gradle.properties" >&2
-            exit 1
-          fi
-          echo "RELEASE_VERSION=${mod_version}" >> "$GITHUB_ENV"
-          echo "SUPPORTED_VERSIONS=${supported_versions}" >> "$GITHUB_ENV"
-          java_version="$(grep '^java_version=' gradle.properties | head -n1 | cut -d'=' -f2 | tr -d '[:space:]')"
-          if [ -z "$java_version" ]; then
-            echo "Could not resolve java_version from gradle.properties" >&2
-            exit 1
-          fi
-          echo "JAVA_VERSION=${java_version}" >> "$GITHUB_ENV"
+      - name: Check the tag against gradle.properties
+        run: gradle/ci/release.sh env
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -54,22 +33,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
 
-      - name: Build and publish all supported versions
-        run: |
-          IFS=',' read -r -a versions <<< "${SUPPORTED_VERSIONS}"
-          published_any=false
-          for version in "${versions[@]}"; do
-            version="${version//[[:space:]]/}"
-            if [ -z "$version" ]; then
-              continue
-            fi
-            published_any=true
-            ./gradlew --no-daemon ":${version}:build" ":${version}:publish" -Pmod_version="${RELEASE_VERSION}"
-          done
-          if [ "$published_any" != "true" ]; then
-            echo "No supported versions were found in stonecutter_versions" >&2
-            exit 1
-          fi
+      - name: Build and publish
+        run: gradle/ci/release.sh gradle build publish
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
