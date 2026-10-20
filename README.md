@@ -80,7 +80,7 @@ MC 26.2 and 26.3 (Stonecutter), published as `kalic0re:<version>+26.2` and
   consumer owns the mixin that consults them.
 - `common.portal` — portal framework: a `PortalKind` declares the frame block, the material drawn
   in the interior and the hooks for lighting, fading, entering and arriving; `Portals.register`
-  makes the portal block, the frame finder and the saved data. See `docs/plan/portal-framework.md`.
+  makes the portal block, the frame finder and the saved data.
 - `common.rule` — `FallbackRules`, game rules standing in for server settings where the
   rkcore-common settings hub is absent: `bool`, `integer`, `choice` and `text` each register their
   rule only when `rkcorecommon` is not loaded, and return null when it is.
