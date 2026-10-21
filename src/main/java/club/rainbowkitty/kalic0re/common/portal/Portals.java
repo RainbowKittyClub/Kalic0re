@@ -159,6 +159,14 @@ public final class Portals {
         frames(server).seal(server, frame, sealed);
     }
 
+    /**
+     * Whether every chunk {@code frame} touches is loaded in {@code level}, so reading its blocks
+     * loads nothing and holds up no tick.
+     */
+    public boolean isLoaded(ServerLevel level, PortalFrame frame) {
+        return LitFrames.isLoaded(level, frame);
+    }
+
     /** Whether the lit portal in {@code frame} is sealed. */
     public boolean isSealed(MinecraftServer server, PortalFrame frame) {
         return frames(server).isSealed(frame);
@@ -182,14 +190,15 @@ public final class Portals {
     }
 
     // The block's question: where an entity standing in it goes. A block no lit portal owns is
-    // cleared; a portal no longer whole fades; otherwise the kind answers.
+    // cleared; a portal no longer whole fades, checked only while all of it is loaded so the check
+    // loads nothing; otherwise the kind answers.
     @Nullable TeleportTransition destination(ServerLevel level, Entity entity, BlockPos pos) {
         PortalFrame frame = portalAt(level, pos);
         if (frame == null) {
             level.destroyBlock(pos, false);
             return null;
         }
-        if (!finder.isLit(level, frame)) {
+        if (isLoaded(level, frame) && !finder.isLit(level, frame)) {
             fade(level.getServer(), frame);
             return null;
         }

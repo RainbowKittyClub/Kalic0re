@@ -299,7 +299,7 @@ final class LitFrames extends SavedData {
         return false;
     }
 
-    private static boolean isLoaded(ServerLevel level, PortalFrame frame) {
+    static boolean isLoaded(ServerLevel level, PortalFrame frame) {
         for (long chunk : frame.chunks()) {
             if (!level.hasChunk(ChunkPos.getX(chunk), ChunkPos.getZ(chunk))) {
                 return false;

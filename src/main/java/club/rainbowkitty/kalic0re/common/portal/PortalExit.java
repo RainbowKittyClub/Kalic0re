@@ -70,7 +70,10 @@ public final class PortalExit {
                 .with(far.along(), place(to, far.along(), low[0], size))
                 .with(far.up(), place(to, far.up(), low[1], size))
                 .with(far.normal(), normal);
-        Vec3 free = PortalShape.findCollisionFreePosition(target, toLevel, entity, size);
+        // The free-spot search reads blocks, which would load an unloaded destination on this
+        // tick; there the computed spot stands, and vanilla streams the chunks in after.
+        Vec3 free = loadedAround(toLevel, target, size)
+                ? PortalShape.findCollisionFreePosition(target, toLevel, entity, size) : target;
         return new TeleportTransition(toLevel, free, Vec3.ZERO, turn, 0.0F,
                 Relative.union(Relative.DELTA, Relative.ROTATION),
                 TeleportTransition.PLACE_PORTAL_TICKET.then(PortalExit::coolPassengers)
@@ -135,6 +138,13 @@ public final class PortalExit {
         }
         double half = size.width() / 2.0;
         return side > 0 ? low + 1.0 + half + NUDGE : low - half - NUDGE;
+    }
+
+    // Whether the chunks the free-spot search around target may read are all loaded.
+    private static boolean loadedAround(ServerLevel level, Vec3 target, EntityDimensions size) {
+        double reach = size.width() + 1.0;
+        return level.hasChunksAt(Mth.floor(target.x - reach), Mth.floor(target.z - reach),
+                Mth.floor(target.x + reach), Mth.floor(target.z + reach));
     }
 
     // Riders could not use the portal while riding, so vanilla gave them no cooldown; one who
