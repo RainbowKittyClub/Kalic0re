@@ -2,6 +2,8 @@ package club.rainbowkitty.kalic0re.common.portal;
 
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -13,9 +15,10 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Where an entity comes out: the same place in the far frame it had in the near one, with its
- * velocity and facing kept and turned a quarter between the two upright planes, as a nether
- * portal turns them. The arrival stands inside the far portal, which vanilla's portal cooldown
+ * Where an entity comes out: the same place in the far frame's box it had in the near one's, or on
+ * a shaped frame the nearest spot there it fits, with its velocity and facing kept and turned a
+ * quarter between the two upright planes, as a nether portal turns them. The arrival stands
+ * inside the far portal, which vanilla's portal cooldown
  * keeps from sending it straight back; riders get that cooldown here, since vanilla gives it only
  * to the entity that crossed.
  */
@@ -44,9 +47,13 @@ public final class PortalExit {
         // one and a centre across an upright one are different measures.
         double across = near.isFlat() == far.isFlat()
                 ? pos.get(near.normal()) - (from.origin().get(near.normal()) + 0.5) : 0.0;
+        double extentAlong = extent(far.along(), size);
+        double extentUp = extent(far.up(), size);
+        double[] low = settle(to, (to.width() - extentAlong) * along,
+                (to.height() - extentUp) * up, extentAlong, extentUp);
         Vec3 target = Vec3.ZERO
-                .with(far.along(), place(to, far.along(), to.width(), along, size))
-                .with(far.up(), place(to, far.up(), to.height(), up, size))
+                .with(far.along(), place(to, far.along(), low[0], size))
+                .with(far.up(), place(to, far.up(), low[1], size))
                 .with(far.normal(), to.origin().get(far.normal()) + 0.5 + across);
         Vec3 free = PortalShape.findCollisionFreePosition(target, toLevel, entity, size);
         float turn = near != far && !near.isFlat() && !far.isFlat() ? QUARTER_TURN : 0.0F;
@@ -60,10 +67,18 @@ public final class PortalExit {
                         }));
     }
 
-    /** Whether an entity of {@code size} has room inside {@code frame}. */
+    /**
+     * Whether an entity of {@code size} has room inside {@code frame}: on a shaped frame, a
+     * window of whole interior blocks its box fits.
+     */
     public static boolean fits(EntityDimensions size, PortalFrame frame) {
-        return extent(frame.plane().along(), size) <= frame.width()
-                && extent(frame.plane().up(), size) <= frame.height();
+        double extentAlong = extent(frame.plane().along(), size);
+        double extentUp = extent(frame.plane().up(), size);
+        if (extentAlong > frame.width() || extentUp > frame.height()) {
+            return false;
+        }
+        return frame.isRectangle()
+                || nearestWindow(frame, 0.0, 0.0, extentAlong, extentUp) != null;
     }
 
     // Riders could not use the portal while riding, so vanilla gave them no cooldown; one who
@@ -87,13 +102,60 @@ public final class PortalExit {
         return Mth.clamp((lowEdge - frame.origin().get(axis)) / room, 0.0, 1.0);
     }
 
-    // The coordinate on `axis` that puts the entity at `fraction` of its room in a frame `cells`
-    // long: its centre on a horizontal axis, its feet on the vertical one.
-    private static double place(PortalFrame frame, Direction.Axis axis, int cells,
-            double fraction, EntityDimensions size) {
-        double extent = extent(axis, size);
-        double lowEdge = frame.origin().get(axis) + (cells - extent) * fraction;
-        return lowEdge + (axis == Direction.Axis.Y ? 0.0 : extent / 2.0);
+    // The coordinate on `axis` that puts the entity's low edge `low` blocks past the origin: its
+    // centre on a horizontal axis, its feet on the vertical one.
+    private static double place(PortalFrame frame, Direction.Axis axis, double low,
+            EntityDimensions size) {
+        double lowEdge = frame.origin().get(axis) + low;
+        return lowEdge + (axis == Direction.Axis.Y ? 0.0 : extent(axis, size) / 2.0);
+    }
+
+    // The low corner, in blocks from the origin along and up, nearest (u, v) where a box
+    // extentAlong by extentUp lies on whole interior blocks; (u, v) itself on a rectangle, or
+    // when no such place exists.
+    private static double[] settle(PortalFrame frame, double u, double v, double extentAlong,
+            double extentUp) {
+        if (frame.isRectangle()) {
+            return new double[] {u, v};
+        }
+        double[] nearest = nearestWindow(frame, u, v, extentAlong, extentUp);
+        return nearest == null ? new double[] {u, v} : nearest;
+    }
+
+    // Over every window of whole interior blocks the box covers, the point in it nearest (u, v)
+    // for the box's low corner; null when there is none.
+    private static double @Nullable [] nearestWindow(PortalFrame frame, double u, double v,
+            double extentAlong, double extentUp) {
+        int across = Math.max(1, Mth.ceil(extentAlong));
+        int tall = Math.max(1, Mth.ceil(extentUp));
+        double[] best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (int v0 = 0; v0 + tall <= frame.height(); v0++) {
+            for (int u0 = 0; u0 + across <= frame.width(); u0++) {
+                if (!filled(frame, u0, v0, across, tall)) {
+                    continue;
+                }
+                double atU = Mth.clamp(u, u0, u0 + across - extentAlong);
+                double atV = Mth.clamp(v, v0, v0 + tall - extentUp);
+                double distance = (atU - u) * (atU - u) + (atV - v) * (atV - v);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = new double[] {atU, atV};
+                }
+            }
+        }
+        return best;
+    }
+
+    private static boolean filled(PortalFrame frame, int u0, int v0, int across, int tall) {
+        for (int v = v0; v < v0 + tall; v++) {
+            for (int u = u0; u < u0 + across; u++) {
+                if (!frame.hasCell(u, v)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static double extent(Direction.Axis axis, EntityDimensions size) {
