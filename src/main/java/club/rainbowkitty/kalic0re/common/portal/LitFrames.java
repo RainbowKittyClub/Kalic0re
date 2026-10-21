@@ -39,15 +39,19 @@ final class LitFrames extends SavedData {
     private final Map<ResourceKey<Level>, List<PortalFrame>> byDimension = new HashMap<>();
     // Dead frames whose blocks may still stand, in chunks that were not loaded when they died.
     private final Set<PortalFrame> pending = new HashSet<>();
+    // Lit frames whose interior clients see as barriers.
+    private final Set<PortalFrame> sealed = new HashSet<>();
 
     private LitFrames(Portals owner) {
         this.owner = owner;
     }
 
-    private LitFrames(Portals owner, List<PortalFrame> lit, List<PortalFrame> pending) {
+    private LitFrames(Portals owner, List<PortalFrame> lit, List<PortalFrame> pending,
+            List<PortalFrame> sealed) {
         this(owner);
         lit.forEach(this::add);
         this.pending.addAll(pending);
+        sealed.stream().filter(portals::contains).forEach(this.sealed::add);
     }
 
     // The saved-data type for owner, under id; command storage is the vanilla type with no
@@ -57,8 +61,11 @@ final class LitFrames extends SavedData {
                 .group(PortalFrame.CODEC.listOf().fieldOf("portals")
                                 .forGetter(frames -> List.copyOf(frames.portals)),
                         PortalFrame.CODEC.listOf().fieldOf("pending")
-                                .forGetter(frames -> List.copyOf(frames.pending)))
-                .apply(instance, (lit, pending) -> new LitFrames(owner, lit, pending)));
+                                .forGetter(frames -> List.copyOf(frames.pending)),
+                        PortalFrame.CODEC.listOf().optionalFieldOf("sealed", List.of())
+                                .forGetter(frames -> List.copyOf(frames.sealed)))
+                .apply(instance, (lit, pending, sealed) ->
+                        new LitFrames(owner, lit, pending, sealed)));
         return new SavedDataType<>(id, () -> new LitFrames(owner), codec,
                 DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
     }
@@ -69,6 +76,25 @@ final class LitFrames extends SavedData {
 
     Set<PortalFrame> lit() {
         return Set.copyOf(portals);
+    }
+
+    boolean isSealed(PortalFrame frame) {
+        return sealed.contains(frame);
+    }
+
+    // Marks lit frame sealed or not, and sets its blocks in loaded chunks to match; blocks in
+    // unloaded chunks follow when those load.
+    void seal(MinecraftServer server, PortalFrame frame, boolean seal) {
+        if (!portals.contains(frame)) {
+            return;
+        }
+        if (seal ? sealed.add(frame) : sealed.remove(frame)) {
+            setDirty();
+        }
+        ServerLevel level = server.getLevel(frame.dimension());
+        if (level != null) {
+            applySeal(level, frame);
+        }
     }
 
     // The lit frames in dimension, the live list.
@@ -144,6 +170,7 @@ final class LitFrames extends SavedData {
             return;
         }
         unindex(frame);
+        sealed.remove(frame);
         pending.add(frame);
         setDirty();
         owner.kind().onFaded(server, server.getLevel(frame.dimension()), frame);
@@ -158,12 +185,21 @@ final class LitFrames extends SavedData {
         }
     }
 
-    // Dead frames in this chunk are cleared on a following tick, once the chunk is in the world.
+    // Dead frames in this chunk are cleared on a following tick, once the chunk is in the world,
+    // and lit frames touching it get their seal.
     void onChunkLoad(ServerLevel level, ChunkPos chunk) {
+        long key = chunk.pack();
+        Long2ObjectMap<List<PortalFrame>> chunks = byChunk.get(level.dimension());
+        List<PortalFrame> touching = chunks == null ? null : chunks.get(key);
+        if (touching != null) {
+            for (PortalFrame frame : List.copyOf(touching)) {
+                level.getServer().schedule(new TickTask(level.getServer().getTickCount(),
+                        () -> applySeal(level, frame)));
+            }
+        }
         if (pending.isEmpty()) {
             return;
         }
-        long key = chunk.pack();
         for (PortalFrame frame : pending) {
             if (frame.dimension().equals(level.dimension()) && touches(frame, key)) {
                 level.getServer().schedule(new TickTask(level.getServer().getTickCount(),
@@ -188,6 +224,26 @@ final class LitFrames extends SavedData {
             }
             if (level != null) {
                 unlight(level, frame);
+            }
+        }
+    }
+
+    // Sets frame's portal blocks in loaded chunks to its seal, quietly: the same block in another
+    // state, so no neighbour hears of it.
+    private void applySeal(ServerLevel level, PortalFrame frame) {
+        if (!portals.contains(frame)) {
+            return;
+        }
+        boolean seal = sealed.contains(frame);
+        for (BlockPos pos : frame.interior()) {
+            if (!level.isLoaded(pos)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(pos);
+            if (owner.block().isPortal(state, frame.plane())
+                    && state.getValue(PortalBlock.SEALED) != seal) {
+                level.setBlock(pos, state.setValue(PortalBlock.SEALED, seal),
+                        Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             }
         }
     }
