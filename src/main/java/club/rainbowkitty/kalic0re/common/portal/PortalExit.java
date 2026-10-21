@@ -24,18 +24,29 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class PortalExit {
     private static final float QUARTER_TURN = 90.0F;
+    // How far past a sealed portal's face an arrival is put.
+    private static final double NUDGE = 0.05;
 
     private PortalExit() {
+    }
+
+    /** The transition below into a portal that is not sealed. */
+    public static TeleportTransition transition(Entity entity, PortalFrame from,
+            ServerLevel toLevel, PortalFrame to, TeleportTransition.PostTeleportTransition after) {
+        return transition(entity, from, toLevel, to, false, after);
     }
 
     /**
      * The transition carrying {@code entity} from {@code from} into {@code to}, which stands in
      * {@code toLevel}, with {@code after} run once it has arrived. Riders come along on copies
      * of the transition; {@code after} runs once, for {@code entity} alone. No sound plays but
-     * what {@code after} plays.
+     * what {@code after} plays. Into a {@code sealed} portal, which clients see as barriers, the
+     * entity comes out just clear of it on the side away from where it went in, turned as its
+     * facing turns, so its client never finds itself inside one.
      */
     public static TeleportTransition transition(Entity entity, PortalFrame from,
-            ServerLevel toLevel, PortalFrame to, TeleportTransition.PostTeleportTransition after) {
+            ServerLevel toLevel, PortalFrame to, boolean sealed,
+            TeleportTransition.PostTeleportTransition after) {
         UUID crossing = entity.getUUID();
         EntityDimensions size = entity.getDimensions(entity.getPose());
         Vec3 pos = entity.position();
@@ -51,12 +62,15 @@ public final class PortalExit {
         double extentUp = extent(far.up(), size);
         double[] low = settle(to, (to.width() - extentAlong) * along,
                 (to.height() - extentUp) * up, extentAlong, extentUp);
+        float turn = near != far && !near.isFlat() && !far.isFlat() ? QUARTER_TURN : 0.0F;
+        double normal = sealed
+                ? clearOf(to, size, exitSide(entity, from, to, size, turn))
+                : to.origin().get(far.normal()) + 0.5 + across;
         Vec3 target = Vec3.ZERO
                 .with(far.along(), place(to, far.along(), low[0], size))
                 .with(far.up(), place(to, far.up(), low[1], size))
-                .with(far.normal(), to.origin().get(far.normal()) + 0.5 + across);
+                .with(far.normal(), normal);
         Vec3 free = PortalShape.findCollisionFreePosition(target, toLevel, entity, size);
-        float turn = near != far && !near.isFlat() && !far.isFlat() ? QUARTER_TURN : 0.0F;
         return new TeleportTransition(toLevel, free, Vec3.ZERO, turn, 0.0F,
                 Relative.union(Relative.DELTA, Relative.ROTATION),
                 TeleportTransition.PLACE_PORTAL_TICKET.then(PortalExit::coolPassengers)
@@ -79,6 +93,48 @@ public final class PortalExit {
         }
         return frame.isRectangle()
                 || nearestWindow(frame, 0.0, 0.0, extentAlong, extentUp) != null;
+    }
+
+    // Which side of the far plane, +1 or -1 along its normal, the entity leaves by: away from
+    // the side of the near plane it was on the tick before, turned with it. One standing in the
+    // near plane leaves the way it faces; between an upright and a flat portal, a flat one is
+    // left on top and an upright one the way the entity faces.
+    private static int exitSide(Entity entity, PortalFrame from, PortalFrame to,
+            EntityDimensions size, float turn) {
+        PortalPlane near = from.plane();
+        PortalPlane far = to.plane();
+        if (near.isFlat() != far.isFlat()) {
+            return far.isFlat() ? 1 : facing(entity, far, turn);
+        }
+        Direction.Axis axis = near.normal();
+        double lift = axis == Direction.Axis.Y ? size.height() / 2.0 : 0.0;
+        Vec3 before = new Vec3(entity.xo, entity.yo, entity.zo);
+        double offset = before.get(axis) + lift - (from.origin().get(axis) + 0.5);
+        if (Math.abs(offset) < 1.0E-4) {
+            return far.isFlat() ? 1 : facing(entity, far, turn);
+        }
+        int leave = offset > 0.0 ? -1 : 1;
+        // A quarter turn takes south to west and east to south: the near normal's z onto -x,
+        // its x onto z.
+        return turn == 0.0F || near == PortalPlane.Z ? leave : -leave;
+    }
+
+    // The side of the far plane the entity faces once turned, +1 when it faces along neither.
+    private static int facing(Entity entity, PortalPlane far, float turn) {
+        double along = Vec3.directionFromRotation(0.0F, entity.getYRot() + turn).get(far.normal());
+        return along < 0.0 ? -1 : 1;
+    }
+
+    // The coordinate on the far normal that puts the box just past the plane on `side`: on top
+    // of a flat portal, or clear below it; clear of an upright one's face.
+    private static double clearOf(PortalFrame to, EntityDimensions size, int side) {
+        Direction.Axis axis = to.plane().normal();
+        double low = to.origin().get(axis);
+        if (axis == Direction.Axis.Y) {
+            return side > 0 ? low + 1.0 : low - size.height() - NUDGE;
+        }
+        double half = size.width() / 2.0;
+        return side > 0 ? low + 1.0 + half + NUDGE : low - half - NUDGE;
     }
 
     // Riders could not use the portal while riding, so vanilla gave them no cooldown; one who

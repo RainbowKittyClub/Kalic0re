@@ -166,14 +166,16 @@ public final class Portals {
 
     /**
      * The usual answer to {@link PortalKind#onEnter}: {@code entity} comes out of the lit portal
-     * in {@code to} where it went into {@code from} ({@link PortalExit}), hears the kind's
+     * in {@code to} where it went into {@code from} ({@link PortalExit}), or just clear of it
+     * on the far side when {@code to} is {@link #seal sealed}, hears the kind's
      * {@link PortalKind#travelSound}, and the kind hears of the arrival through
      * {@link PortalKind#onExit}. The caller has checked {@link PortalExit#fits}; an entity too
      * big for {@code to} would be set through its ring.
      */
     public TeleportTransition transition(Entity entity, PortalFrame from, ServerLevel toLevel,
             PortalFrame to) {
-        return PortalExit.transition(entity, from, toLevel, to, arrived -> {
+        boolean sealed = isSealed(toLevel.getServer(), to);
+        return PortalExit.transition(entity, from, toLevel, to, sealed, arrived -> {
             kind.travelSound(arrived);
             kind.onExit(arrived, to);
         });
