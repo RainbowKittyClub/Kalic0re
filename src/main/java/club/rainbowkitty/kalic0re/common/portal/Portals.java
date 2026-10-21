@@ -151,29 +151,54 @@ public final class Portals {
     }
 
     /**
+     * Seals the lit portal in {@code frame}, so every client sees its interior as barriers and
+     * none walks in, or unseals it back to light. Kept with the portal until it fades; blocks in
+     * unloaded chunks follow when those load. Nothing happens for a frame that is not lit.
+     */
+    public void seal(MinecraftServer server, PortalFrame frame, boolean sealed) {
+        frames(server).seal(server, frame, sealed);
+    }
+
+    /**
+     * Whether every chunk {@code frame} touches is loaded in {@code level}, so reading its blocks
+     * loads nothing and holds up no tick.
+     */
+    public boolean isLoaded(ServerLevel level, PortalFrame frame) {
+        return LitFrames.isLoaded(level, frame);
+    }
+
+    /** Whether the lit portal in {@code frame} is sealed. */
+    public boolean isSealed(MinecraftServer server, PortalFrame frame) {
+        return frames(server).isSealed(frame);
+    }
+
+    /**
      * The usual answer to {@link PortalKind#onEnter}: {@code entity} comes out of the lit portal
-     * in {@code to} where it went into {@code from} ({@link PortalExit}), hears the kind's
+     * in {@code to} where it went into {@code from} ({@link PortalExit}), or just clear of it
+     * on the far side when {@code to} is {@link #seal sealed}, hears the kind's
      * {@link PortalKind#travelSound}, and the kind hears of the arrival through
      * {@link PortalKind#onExit}. The caller has checked {@link PortalExit#fits}; an entity too
      * big for {@code to} would be set through its ring.
      */
     public TeleportTransition transition(Entity entity, PortalFrame from, ServerLevel toLevel,
             PortalFrame to) {
-        return PortalExit.transition(entity, from, toLevel, to, arrived -> {
+        boolean sealed = isSealed(toLevel.getServer(), to);
+        return PortalExit.transition(entity, from, toLevel, to, sealed, arrived -> {
             kind.travelSound(arrived);
             kind.onExit(arrived, to);
         });
     }
 
     // The block's question: where an entity standing in it goes. A block no lit portal owns is
-    // cleared; a portal no longer whole fades; otherwise the kind answers.
+    // cleared; a portal no longer whole fades, checked only while all of it is loaded so the check
+    // loads nothing; otherwise the kind answers.
     @Nullable TeleportTransition destination(ServerLevel level, Entity entity, BlockPos pos) {
         PortalFrame frame = portalAt(level, pos);
         if (frame == null) {
             level.destroyBlock(pos, false);
             return null;
         }
-        if (!finder.isLit(level, frame)) {
+        if (isLoaded(level, frame) && !finder.isLit(level, frame)) {
             fade(level.getServer(), frame);
             return null;
         }

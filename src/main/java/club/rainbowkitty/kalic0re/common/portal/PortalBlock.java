@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -30,12 +31,14 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -43,12 +46,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * processing carries an entity through: the block only marks the entity as inside, and asks its
  * kind for the destination once the entity has stood in it long enough.
  *
- * <p>Every client sees an invisible light block of the same light level in its place, and the
- * kind's {@link PortalMaterial} drawn over it by a display per block ({@link PortalHolder}).
+ * <p>Every client sees an invisible light block of the same light level in its place, or a barrier
+ * where the portal is {@link #SEALED}, and the kind's {@link PortalMaterial} drawn over it by a
+ * display per block ({@link PortalHolder}).
  */
 public final class PortalBlock extends Block implements Portal, PolymerBlock,
         BlockWithElementHolder {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
+    /** Whether clients see a barrier here, not light, so none walks in ({@link Portals#seal}). */
+    public static final BooleanProperty SEALED = BooleanProperty.create("sealed");
     private static final int LIGHT = 11;
     // 26.3 renamed BLOCK to IMMOVEABLE.
     //? if >=26.3 {
@@ -73,7 +79,8 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
     PortalBlock(Properties properties, Portals owner) {
         super(properties);
         this.owner = owner;
-        registerDefaultState(stateDefinition.any().setValue(AXIS, Direction.Axis.X));
+        registerDefaultState(stateDefinition.any().setValue(AXIS, Direction.Axis.X)
+                .setValue(SEALED, false));
     }
 
     /**
@@ -91,7 +98,7 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
         return state.is(this) && state.getValue(AXIS) == plane.axis();
     }
 
-    /** This block's state for a portal in {@code plane}. */
+    /** This block's state for a portal in {@code plane}, unsealed. */
     public BlockState stateFor(PortalPlane plane) {
         return defaultBlockState().setValue(AXIS, plane.axis());
     }
@@ -106,13 +113,28 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(AXIS);
+        builder.add(AXIS, SEALED);
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos,
             CollisionContext context) {
         return SHAPES.get(state.getValue(AXIS));
+    }
+
+    // Polymer answers a block's collision with its stand-in's, and a sealed portal's is a
+    // barrier: on the server everything still passes, or whatever stands in it suffocates.
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
+            CollisionContext context) {
+        return Shapes.empty();
+    }
+
+    // The same for a player's collision, which Polymer asks about separately.
+    @Override
+    public boolean overridePlayerCollisionsWithPolymer(BlockGetter level, BlockPos pos,
+            BlockState blockState, ServerPlayer player) {
+        return false;
     }
 
     // Air once an in-plane neighbour is neither portal of this plane nor frame block; the rest
@@ -178,6 +200,9 @@ public final class PortalBlock extends Block implements Portal, PolymerBlock,
 
     @Override
     public BlockState getPolymerBlockState(BlockState state, @Nullable PacketContext context) {
+        if (state.getValue(SEALED)) {
+            return Blocks.BARRIER.defaultBlockState();
+        }
         return STAND_INS[Math.min(LightBlock.MAX_LEVEL, state.getLightEmission())];
     }
 
