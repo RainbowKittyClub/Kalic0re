@@ -33,19 +33,39 @@ final class Declaration {
         if (!pages.isEmpty()) {
             root.add("pages", pages);
         }
+        JsonObject tabs = new JsonObject();
+        for (Setting<?> setting : config.settings()) {
+            String tab = config.tabOf(setting);
+            String titleKey = "config." + modId + ".tab." + tab;
+            if (tab != null && !tabs.has(tab) && text.has(titleKey)) {
+                tabs.add(tab, component(text, titleKey));
+            }
+        }
+        if (!tabs.isEmpty()) {
+            root.add("tabs", tabs);
+        }
         JsonArray settings = new JsonArray();
-        config.settings().forEach(setting -> settings.add(setting(modId, setting, text)));
+        config.settings().forEach(setting -> settings.add(setting(config, setting, text)));
         root.add("settings", settings);
         return root;
     }
 
     // One setting's entry.
-    private static <T> JsonObject setting(String modId, Setting<T> setting, FallbackText text) {
+    private static <T> JsonObject setting(ModConfig config, Setting<T> setting,
+            FallbackText text) {
+        String modId = config.modId();
         JsonObject json = new JsonObject();
         json.addProperty("key", setting.key());
         json.addProperty("scope", setting.scope().serializedName());
         if (setting.pageDeclared()) {
             json.addProperty("page", setting.page());
+        }
+        String tab = config.tabOf(setting);
+        if (tab != null) {
+            json.addProperty("tab", tab);
+        }
+        if (!setting.inMenu()) {
+            json.addProperty("inMenu", false);
         }
         SettingKind<T> kind = setting.kind();
         json.addProperty("kind", kind.name());

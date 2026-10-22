@@ -33,7 +33,9 @@ import club.rainbowkitty.kalic0re.common.text.FallbackText;
  * before the initializer returns. Labels come from the mod's own {@code lang/en_us.json}:
  * {@code gamerule.<mod>.<key>} for a setting with a fallback rule, {@code config.<mod>.<key>}
  * otherwise, each with an optional {@code .description}; a choice's options are
- * {@code config.<mod>.<key>.<option>} and a page's title {@code config.<mod>.page.<page>}.
+ * {@code config.<mod>.<key>.<option>} and a page's title {@code config.<mod>.page.<page>}. A
+ * Settings tab's title {@code config.<mod>.tab.<tab>} is optional: the hub titles the tabs it
+ * defines itself.
  *
  * <p>Without the hub, server values live in their fallback rules and player values in a
  * persistent player attachment {@code <mod>:settings}, edited through
@@ -48,6 +50,7 @@ public final class ModConfig {
 
     private final String modId;
     private final Map<String, Setting<?>> settings = new LinkedHashMap<>();
+    private final Map<String, String> pageTabs = new HashMap<>();
     private boolean registered;
     private @Nullable PlayerValues playerValues;
     private boolean listening;
@@ -101,6 +104,17 @@ public final class ModConfig {
     }
 
     /**
+     * Shows page {@code page}'s settings under the hub's Settings tab {@code tab}
+     * ({@code [a-z0-9_]+}), but for any that names its own ({@link Setting#tab}). Mods naming the
+     * same tab share it; settings that name none sit in the hub's Other tab.
+     */
+    public ModConfig pageTab(String page, String tab) {
+        checkOpen();
+        pageTabs.put(page, tab);
+        return this;
+    }
+
+    /**
      * Closes the declaration: registers the fallback rules (only without rkcore-common), the
      * player attachment, and the fallback {@code /settings}, and hands the declaration to the hub
      * whenever it publishes, so mod load order does not matter.
@@ -142,6 +156,11 @@ public final class ModConfig {
     // The setting under key, or null.
     @Nullable Setting<?> setting(String key) {
         return settings.get(key);
+    }
+
+    // The tab setting shows under: its own, else its page's, else null for the hub's Other.
+    @Nullable String tabOf(Setting<?> setting) {
+        return setting.tab() != null ? setting.tab() : pageTabs.get(setting.page());
     }
 
     // The pages in declaration order, each with its settings.
@@ -204,8 +223,8 @@ public final class ModConfig {
         return setting;
     }
 
-    // Every setting has a scope, a well-formed page of that scope only, and a rule only if it is
-    // a server setting.
+    // Every setting has a scope, a well-formed page of that scope only, a well-formed tab, and a
+    // rule only if it is a server setting; every page given a tab holds a setting.
     private void validate() {
         Map<String, Scope> pageScopes = new HashMap<>();
         for (Setting<?> setting : settings.values()) {
@@ -226,7 +245,20 @@ public final class ModConfig {
                 throw new IllegalStateException(modId + " page " + page + " mixes player and"
                         + " server settings");
             }
+            if (setting.tab() != null && !PAGE.matcher(setting.tab()).matches()) {
+                throw new IllegalStateException(setting.id() + ": a tab is [a-z0-9_]+");
+            }
         }
+        pageTabs.forEach((page, tab) -> {
+            if (!pageScopes.containsKey(page)) {
+                throw new IllegalStateException(modId + " gives page " + page + " a tab, but no"
+                        + " setting is on it");
+            }
+            if (!PAGE.matcher(tab).matches()) {
+                throw new IllegalStateException(modId + " page " + page + ": a tab is"
+                        + " [a-z0-9_]+");
+            }
+        });
     }
 
     // Hands the declaration to the hub's declare function; a refusal is the hub's to log, but a

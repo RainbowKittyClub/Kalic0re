@@ -51,6 +51,8 @@ public final class Setting<T> {
     private final Set<String> reported = ConcurrentHashMap.newKeySet();
     private @Nullable Scope scope;
     private @Nullable String page;
+    private @Nullable String tab;
+    private boolean inMenu = true;
     private FeatureFlagSet requiredFeatures = FeatureFlagSet.of();
     private @Nullable PermissionLevel permission;
     private @Nullable Boolean hiddenWhenDenied;
@@ -85,6 +87,26 @@ public final class Setting<T> {
     public Setting<T> page(String name) {
         config.checkOpen();
         this.page = name;
+        return this;
+    }
+
+    /**
+     * Shows this under the hub's Settings tab {@code key} ({@code [a-z0-9_]+}) instead of its
+     * page's tab ({@link ModConfig#pageTab}); mods naming the same key share that tab.
+     */
+    public Setting<T> tab(String key) {
+        config.checkOpen();
+        this.tab = key;
+        return this;
+    }
+
+    /**
+     * Keeps this out of the menu's Settings section; {@code /settings} still lists and changes
+     * it.
+     */
+    public Setting<T> hideFromMenus() {
+        config.checkOpen();
+        this.inMenu = false;
         return this;
     }
 
@@ -222,6 +244,16 @@ public final class Setting<T> {
     // The page name, the scope's own when none was declared.
     String page() {
         return page != null ? page : scope().serializedName();
+    }
+
+    // Whether the menu's Settings section shows this.
+    boolean inMenu() {
+        return inMenu;
+    }
+
+    // The tab this names itself, or null for its page's.
+    @Nullable String tab() {
+        return tab;
     }
 
     // Whether page(name) was called.
