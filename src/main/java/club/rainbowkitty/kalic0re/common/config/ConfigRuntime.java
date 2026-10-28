@@ -27,6 +27,9 @@ final class ConfigRuntime {
     static final String PLAYER_KEY = "rkcorecommon:config/v1/player";
     static final String SERVER_KEY = "rkcorecommon:config/v1/server";
     static final String LISTEN_KEY = "rkcorecommon:config/v1/listen";
+    // Optional: a hub without it never checks a value, so it is not one of the keys that make
+    // the mode HUB.
+    static final String VALIDATE_KEY = "rkcorecommon:config/v1/validate";
 
     private static final Logger LOGGER = LoggerFactory.getLogger("kalic0re/config");
     private static final List<ModConfig> CONFIGS = new CopyOnWriteArrayList<>();

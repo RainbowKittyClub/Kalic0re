@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
@@ -15,6 +16,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -58,6 +60,7 @@ public final class Setting<T> {
     private @Nullable Boolean hiddenWhenDenied;
     private @Nullable GameRuleCategory fallbackCategory;
     private @Nullable GameRule<T> rule;
+    private @Nullable Validator<T> validator;
     // The hub's answer for a server value, decoded; UNSET until read and after its notice.
     private volatile Object hubCache = UNSET;
 
@@ -142,6 +145,19 @@ public final class Setting<T> {
     public Setting<T> readOnlyWhenDenied() {
         config.checkOpen();
         this.hiddenWhenDenied = false;
+        return this;
+    }
+
+    /**
+     * Refuses a value as it is set, with the reason {@code validator} gives: through the hub's
+     * {@code /settings} and its menu, and the fallback's {@code /settings}. A fallback rule
+     * cannot refuse, since vanilla's {@code /gamerule} sets it without asking; a value it refuses
+     * there is logged once. Reads never ask it, so a value stored before, or set past it, still
+     * reaches the mod.
+     */
+    public Setting<T> validator(Validator<T> validator) {
+        config.checkOpen();
+        this.validator = validator;
         return this;
     }
 
@@ -236,6 +252,22 @@ public final class Setting<T> {
         public void changed(MinecraftServer server, @Nullable ServerPlayer player, T value);
     }
 
+    /**
+     * Checks a value as it is set.
+     *
+     * @param <T> the setting's value type
+     */
+    @FunctionalInterface
+    public interface Validator<T> {
+        /**
+         * Why {@code value} is refused, or null when it is taken. Called on the server thread
+         * with a value of the setting's kind, within its bounds, and never for a reset to the
+         * default. The reason is one line for whoever set it, translatable, its English in the
+         * mod's own {@code lang/en_us.json} ({@code FallbackText}); house refusals start "Must".
+         */
+        public @Nullable Component refusal(T value);
+    }
+
     // The scope, or null before player() or server() was called.
     @Nullable Scope scope() {
         return scope;
@@ -326,6 +358,30 @@ public final class Setting<T> {
         return Forcing.forced(player, this);
     }
 
+    // Whether validator(...) was called.
+    boolean validated() {
+        return validator != null;
+    }
+
+    // The validator's reason to refuse value, or null when it takes it or none is declared.
+    // Throws whatever the validator throws.
+    @Nullable Component refusal(T value) {
+        return validator == null ? null : validator.refusal(value);
+    }
+
+    // Logs a validator that threw on value, once per setting.
+    void validatorFailed(T value, Throwable error) {
+        if (reported.add("validator")) {
+            LOGGER.error("The validator of {} failed on '{}'", id, kind.show(value), error);
+        }
+    }
+
+    // The validator in the bridge's shape: the value as JSON in, the reason or null out. A value
+    // not of the kind is the hub's to refuse, so this takes it.
+    Function<JsonElement, @Nullable Component> bridgedValidator() {
+        return json -> kind.fromJson(json).result().map(this::refusal).orElse(null);
+    }
+
     // Logs message once per distinct what, as a warning.
     void reportOnce(String what, String message) {
         if (reported.add(what)) {
@@ -340,8 +396,11 @@ public final class Setting<T> {
         }
         rule = FallbackRule.register(this, fallbackCategory, defaultValue);
         if (rule != null) {
-            GameRuleEvents.changeCallback(rule)
-                    .register((value, server) -> fire(server, null, checked(value)));
+            GameRuleEvents.changeCallback(rule).register((value, server) -> {
+                T now = checked(value);
+                reportRefusedRule(now);
+                fire(server, null, now);
+            });
         }
     }
 
@@ -410,6 +469,22 @@ public final class Setting<T> {
                 "Rule " + id + " holds '" + kind.show(value) + "', " + error.message()
                         + "; answering its default"));
         return defaultValue;
+    }
+
+    // Logs once per value a rule value the validator refuses: /gamerule has already set it, and
+    // the mod reads it as set.
+    private void reportRefusedRule(T value) {
+        Component reason;
+        try {
+            reason = refusal(value);
+        } catch (RuntimeException | LinkageError e) {
+            validatorFailed(value, e);
+            return;
+        }
+        if (reason != null) {
+            reportOnce("refused:" + kind.show(value), "Rule " + id + " holds '" + kind.show(value)
+                    + "', which " + config.modId() + " refuses: " + reason.getString());
+        }
     }
 
     // The hub's server value, decoded once until its next notice.
