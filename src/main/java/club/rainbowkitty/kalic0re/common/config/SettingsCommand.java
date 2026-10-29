@@ -89,7 +89,8 @@ final class SettingsCommand {
     }
 
     // set: a one-entry page write. Checked in the hub's order: visible, of the kind, not forced, a
-    // change at all, then permitted, so setting a value to what it already is needs no permission.
+    // change at all, permitted, then the validator's, so setting a value to what it already is
+    // needs no permission and asks no validator.
     private static int set(CommandContext<CommandSourceStack> context, ModConfig config) {
         CommandSourceStack source = context.getSource();
         String key = StringArgumentType.getString(context, "key");
@@ -127,6 +128,11 @@ final class SettingsCommand {
         if (!Access.of(setting, player).editable()) {
             return fail(source, "read_only", setting.key());
         }
+        Component refused = refusal(setting, value, player);
+        if (refused != null) {
+            source.sendFailure(refused);
+            return 0;
+        }
         List<Setting<?>> page = config.pages().get(setting.page());
         List<Object> before = effective(page, player);
         Map<String, Dynamic<?>> entries = new LinkedHashMap<>();
@@ -139,6 +145,19 @@ final class SettingsCommand {
         Component message = text("set", setting.key(), setting.kind().show(value));
         source.sendSuccess(() -> message, false);
         return 1;
+    }
+
+    // The validator's reason to refuse player's own value, the generic one when it throws, or
+    // null.
+    private static <T> @Nullable Component refusal(Setting<T> setting, T value,
+            ServerPlayer player) {
+        try {
+            return setting.refusal(value, new Setting.SetContext(player.level().getServer(),
+                    player, player.getUUID()));
+        } catch (RuntimeException | LinkageError e) {
+            setting.validatorFailed(value, e);
+            return text("check_failed");
+        }
     }
 
     // reset: drops the page's entries the player may edit, as the hub deletes only those rows.
@@ -206,6 +225,7 @@ final class SettingsCommand {
             case "invalid.text" -> "%s takes at most %s characters";
             case "read_only" -> "You cannot change %s";
             case "forced" -> "%s is set by the server";
+            case "check_failed" -> "This value could not be checked, so nothing changed.";
             default -> throw new IllegalArgumentException("No reply " + line);
         };
         return Component.translatableWithFallback(KEYS + line, english, args);

@@ -8,16 +8,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ObjectShare;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 
@@ -117,7 +122,7 @@ public final class ModConfig {
     /**
      * Closes the declaration: registers the fallback rules (only without rkcore-common), the
      * player attachment, and the fallback {@code /settings}, and hands the declaration to the hub
-     * whenever it publishes, so mod load order does not matter.
+     * whenever it publishes, with each setting's validator, so mod load order does not matter.
      *
      * @throws IllegalStateException when a setting lacks a scope, mixes scopes on a page, or
      *         lacks a label in the mod's lang file
@@ -138,8 +143,12 @@ public final class ModConfig {
         }
         ConfigRuntime.add(this);
         if (FallbackRules.hubLoaded()) {
-            FabricLoader.getInstance().getObjectShare().whenAvailable(ConfigRuntime.DECLARE_KEY,
+            ObjectShare share = FabricLoader.getInstance().getObjectShare();
+            share.whenAvailable(ConfigRuntime.DECLARE_KEY,
                     (key, declare) -> declareTo(declare, declaration));
+            settings.values().stream().filter(Setting::validated).forEach(setting ->
+                    share.whenAvailable(ConfigRuntime.VALIDATE_KEY,
+                            (key, validate) -> validatorTo(validate, setting)));
         }
     }
 
@@ -196,12 +205,16 @@ public final class ModConfig {
 
     // Holds the server, drops any hub answer cached before the hub loaded its values (a read from
     // another SERVER_STARTING listener), and subscribes to the hub's notices once per JVM.
+    // Without the hub, logs each default its validator refuses, as the hub does with it.
     void serverStarting(MinecraftServer starting, ConfigRuntime.Mode mode) {
         this.server = starting;
         settings.values().forEach(Setting::clearHubCache);
         if (mode == ConfigRuntime.Mode.HUB && !listening) {
             listening = true;
             ConfigRuntime.listen(modId, this::notice);
+        }
+        if (mode == ConfigRuntime.Mode.FALLBACK) {
+            settings.values().forEach(setting -> setting.checkDefault(starting));
         }
     }
 
@@ -269,6 +282,17 @@ public final class ModConfig {
             ((Consumer<JsonObject>) declare).accept(declaration.deepCopy());
         } catch (RuntimeException e) {
             LOGGER.error("The settings hub refused {}'s declaration", modId, e);
+        }
+    }
+
+    // Hands setting's validator to the hub's validate function, logging a throw as declareTo does.
+    @SuppressWarnings("unchecked")
+    private void validatorTo(Object validate, Setting<?> setting) {
+        try {
+            ((BiConsumer<Identifier, BiFunction<JsonElement, Map<?, ?>, @Nullable Component>>)
+                    validate).accept(setting.id(), setting.bridgedValidator());
+        } catch (RuntimeException e) {
+            LOGGER.error("The settings hub refused the validator of {}", setting.id(), e);
         }
     }
 

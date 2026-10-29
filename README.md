@@ -47,8 +47,10 @@ MC 26.2 and 26.3 (Stonecutter), published as `kalic0re:<version>+26.2` and
   text, player or server scope), declared into the rkcore-common settings hub when it runs. Without
   it, server values live in `common.rule` fallback rules and player values in a persistent player
   attachment `<mod>:settings`, edited through `/settings <mod> get|set|reset`. Each setting has a
-  node `<mod>.config.<scope>.<key>`, and LuckPerms meta of that name forces a player value. Needs
-  `command`, `rule` and `text` alongside it.
+  node `<mod>.config.<scope>.<key>`, and LuckPerms meta of that name forces a player value. An
+  optional validator (`Setting.validator`) refuses a value as it is set, with a reason, and sees
+  who sets it and for whom (`Setting.SetContext`); reads never ask it, and a default it refuses is
+  logged at start. Needs `command`, `rule` and `text` alongside it.
 - `common.craft` — a 3×3 crafting grid that keeps its contents (`CraftingGridBlockEntity`), the
   shared menu over it (`PersistentCraftingMenu`) and vanilla's per-player one at any block
   (`BlockCraftingMenu`). The consumer owns the mixin that reads `CraftingGridHandoff`.
