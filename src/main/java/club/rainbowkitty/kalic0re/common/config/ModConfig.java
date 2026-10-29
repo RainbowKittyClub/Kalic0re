@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.google.gson.JsonElement;
@@ -205,12 +205,16 @@ public final class ModConfig {
 
     // Holds the server, drops any hub answer cached before the hub loaded its values (a read from
     // another SERVER_STARTING listener), and subscribes to the hub's notices once per JVM.
+    // Without the hub, logs each default its validator refuses, as the hub does with it.
     void serverStarting(MinecraftServer starting, ConfigRuntime.Mode mode) {
         this.server = starting;
         settings.values().forEach(Setting::clearHubCache);
         if (mode == ConfigRuntime.Mode.HUB && !listening) {
             listening = true;
             ConfigRuntime.listen(modId, this::notice);
+        }
+        if (mode == ConfigRuntime.Mode.FALLBACK) {
+            settings.values().forEach(setting -> setting.checkDefault(starting));
         }
     }
 
@@ -285,8 +289,8 @@ public final class ModConfig {
     @SuppressWarnings("unchecked")
     private void validatorTo(Object validate, Setting<?> setting) {
         try {
-            ((BiConsumer<Identifier, Function<JsonElement, @Nullable Component>>) validate)
-                    .accept(setting.id(), setting.bridgedValidator());
+            ((BiConsumer<Identifier, BiFunction<JsonElement, Map<?, ?>, @Nullable Component>>)
+                    validate).accept(setting.id(), setting.bridgedValidator());
         } catch (RuntimeException e) {
             LOGGER.error("The settings hub refused the validator of {}", setting.id(), e);
         }

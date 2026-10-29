@@ -1,11 +1,13 @@
 package club.rainbowkitty.kalic0re.common.config;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.google.gson.JsonElement;
@@ -149,16 +151,22 @@ public final class Setting<T> {
     }
 
     /**
-     * Refuses a value as it is set, with the reason {@code validator} gives: through the hub's
-     * {@code /settings} and its menu, and the fallback's {@code /settings}. A fallback rule
-     * cannot refuse, since vanilla's {@code /gamerule} sets it without asking; a value it refuses
-     * there is logged once. Reads never ask it, so a value stored before, or set past it, still
-     * reaches the mod.
+     * Refuses a value as it is set, with the reason {@code validator} gives, which also sees who
+     * sets it and for whom ({@link SetContext}): through the hub's {@code /settings} and its
+     * menu, and the fallback's {@code /settings}. A fallback rule cannot refuse, since vanilla's
+     * {@code /gamerule} sets it without asking; a value it refuses there is logged once. Reads
+     * never ask it, so a value stored before, or set past it, still reaches the mod. At server
+     * start it checks the default, with no setter, and a refused default is logged.
      */
     public Setting<T> validator(Validator<T> validator) {
         config.checkOpen();
         this.validator = validator;
         return this;
+    }
+
+    /** {@link #validator(Validator)} for a check that needs only the value. */
+    public Setting<T> validator(Function<T, @Nullable Component> check) {
+        return validator((value, context) -> check.apply(value));
     }
 
     /** Gives this server setting a game rule in {@code MISC} for servers without the hub. */
@@ -262,10 +270,59 @@ public final class Setting<T> {
         /**
          * Why {@code value} is refused, or null when it is taken. Called on the server thread
          * with a value of the setting's kind, within its bounds, and never for a reset to the
-         * default. The reason is one line for whoever set it, translatable, its English in the
-         * mod's own {@code lang/en_us.json} ({@code FallbackText}); house refusals start "Must".
+         * default; at server start once with the default, no setter and no player, when a
+         * refusal is only logged. The reason is one line for whoever set it, translatable, its
+         * English in the mod's own {@code lang/en_us.json} ({@code FallbackText}); house
+         * refusals start "Must".
          */
-        public @Nullable Component refusal(T value);
+        public @Nullable Component refusal(T value, SetContext context);
+    }
+
+    /** Who sets a value and for whom, as a {@link Validator} sees it. */
+    public static final class SetContext {
+        private final MinecraftServer server;
+        private final @Nullable ServerPlayer setter;
+        private final @Nullable UUID forPlayer;
+
+        SetContext(MinecraftServer server, @Nullable ServerPlayer setter,
+                @Nullable UUID forPlayer) {
+            this.server = server;
+            this.setter = setter;
+            this.forPlayer = forPlayer;
+        }
+
+        /** The server the value is set on. */
+        public MinecraftServer server() {
+            return server;
+        }
+
+        /**
+         * The player setting it; empty for the console, rcon or a command block with no player,
+         * for a fallback rule's change (vanilla does not say who made it), and at server start.
+         */
+        public Optional<ServerPlayer> setter() {
+            return Optional.ofNullable(setter);
+        }
+
+        /**
+         * The player whose value it is, online or not ({@code /settings for <player>}); empty for
+         * a server setting and at server start.
+         */
+        public Optional<UUID> forPlayer() {
+            return Optional.ofNullable(forPlayer);
+        }
+
+        // The context as the hub hands it over: the server always, setter and subject when
+        // there is one. Throws without a server, which the hub answers as a failed check.
+        static SetContext fromBridge(Map<?, ?> context) {
+            if (!(context.get(ConfigRuntime.CONTEXT_SERVER) instanceof MinecraftServer server)) {
+                throw new IllegalArgumentException("The settings hub gave a check no server");
+            }
+            return new SetContext(server,
+                    context.get(ConfigRuntime.CONTEXT_SETTER) instanceof ServerPlayer player
+                            ? player : null,
+                    context.get(ConfigRuntime.CONTEXT_FOR) instanceof UUID uuid ? uuid : null);
+        }
     }
 
     // The scope, or null before player() or server() was called.
@@ -365,8 +422,8 @@ public final class Setting<T> {
 
     // The validator's reason to refuse value, or null when it takes it or none is declared.
     // Throws whatever the validator throws.
-    @Nullable Component refusal(T value) {
-        return validator == null ? null : validator.refusal(value);
+    @Nullable Component refusal(T value, SetContext context) {
+        return validator == null ? null : validator.refusal(value, context);
     }
 
     // Logs a validator that threw on value, once per setting.
@@ -376,10 +433,23 @@ public final class Setting<T> {
         }
     }
 
-    // The validator in the bridge's shape: the value as JSON in, the reason or null out. A value
-    // not of the kind is the hub's to refuse, so this takes it.
-    Function<JsonElement, @Nullable Component> bridgedValidator() {
-        return json -> kind.fromJson(json).result().map(this::refusal).orElse(null);
+    // The validator in the bridge's shape: the value as JSON and the context as a map in, the
+    // reason or null out. A value not of the kind is the hub's to refuse, so this takes it.
+    BiFunction<JsonElement, Map<?, ?>, @Nullable Component> bridgedValidator() {
+        return (json, context) -> {
+            SetContext decoded = SetContext.fromBridge(context);
+            return kind.fromJson(json).result().map(value -> refusal(value, decoded))
+                    .orElse(null);
+        };
+    }
+
+    // Without the hub, at server start: logs a default the validator refuses.
+    void checkDefault(MinecraftServer server) {
+        Component reason = loggedRefusal(defaultValue, new SetContext(server, null, null));
+        if (reason != null) {
+            LOGGER.warn("Setting {} defaults to '{}', which {} refuses: {}", id,
+                    kind.show(defaultValue), config.modId(), reason.getString());
+        }
     }
 
     // Logs message once per distinct what, as a warning.
@@ -398,7 +468,7 @@ public final class Setting<T> {
         if (rule != null) {
             GameRuleEvents.changeCallback(rule).register((value, server) -> {
                 T now = checked(value);
-                reportRefusedRule(now);
+                reportRefusedRule(now, server);
                 fire(server, null, now);
             });
         }
@@ -472,18 +542,23 @@ public final class Setting<T> {
     }
 
     // Logs once per value a rule value the validator refuses: /gamerule has already set it, and
-    // the mod reads it as set.
-    private void reportRefusedRule(T value) {
-        Component reason;
-        try {
-            reason = refusal(value);
-        } catch (RuntimeException | LinkageError e) {
-            validatorFailed(value, e);
-            return;
-        }
+    // the mod reads it as set. Vanilla does not say who set it.
+    private void reportRefusedRule(T value, MinecraftServer server) {
+        Component reason = loggedRefusal(value, new SetContext(server, null, null));
         if (reason != null) {
             reportOnce("refused:" + kind.show(value), "Rule " + id + " holds '" + kind.show(value)
                     + "', which " + config.modId() + " refuses: " + reason.getString());
+        }
+    }
+
+    // The validator's reason to refuse value, or null when it takes it, none is declared, or it
+    // throws, which is logged.
+    private @Nullable Component loggedRefusal(T value, SetContext context) {
+        try {
+            return refusal(value, context);
+        } catch (RuntimeException | LinkageError e) {
+            validatorFailed(value, e);
+            return null;
         }
     }
 

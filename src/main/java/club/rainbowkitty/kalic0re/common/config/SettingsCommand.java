@@ -128,7 +128,7 @@ final class SettingsCommand {
         if (!Access.of(setting, player).editable()) {
             return fail(source, "read_only", setting.key());
         }
-        Component refused = refusal(setting, value);
+        Component refused = refusal(setting, value, player);
         if (refused != null) {
             source.sendFailure(refused);
             return 0;
@@ -147,10 +147,13 @@ final class SettingsCommand {
         return 1;
     }
 
-    // The validator's reason to refuse value, the generic one when it throws, or null.
-    private static <T> @Nullable Component refusal(Setting<T> setting, T value) {
+    // The validator's reason to refuse player's own value, the generic one when it throws, or
+    // null.
+    private static <T> @Nullable Component refusal(Setting<T> setting, T value,
+            ServerPlayer player) {
         try {
-            return setting.refusal(value);
+            return setting.refusal(value, new Setting.SetContext(player.level().getServer(),
+                    player, player.getUUID()));
         } catch (RuntimeException | LinkageError e) {
             setting.validatorFailed(value, e);
             return text("check_failed");
