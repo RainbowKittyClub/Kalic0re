@@ -1,0 +1,8 @@
+{
+  "config.settingcheckstest.motto": "Test motto",
+  "gamerule.settingcheckstest.banner": "Test banner",
+  "gamerule.settingcheckstest.odd": "Test odd number",
+  "settingcheckstest.refused.who": "Must not be who: set by %s for %s.",
+  "settingcheckstest.refused.others": "Must be set by its own player or the console.",
+  "settingcheckstest.refused.odd": "Must be odd."
+}
