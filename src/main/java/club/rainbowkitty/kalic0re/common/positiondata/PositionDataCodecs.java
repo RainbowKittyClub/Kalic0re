@@ -35,6 +35,15 @@ public final class PositionDataCodecs {
         return PositionDataEngine.kinds().stream().map(PositionDataCodecs::declaration).toList();
     }
 
+    /**
+     * Owners whose block-change hooks only remove marks, never create them. The optional
+     * {@code fawe:position_data_empty_stable} supplier opts these ids into section installation
+     * only while the entire chunk has no attachments and the proposal carries no present values.
+     */
+    public static List<String> emptyStableOwners() {
+        return PositionDataEngine.kinds().stream().map(kind -> kind.id().toString()).toList();
+    }
+
     // Describes one attachment, never its chunk-wide array.
     private static Map<String, Object> declaration(PositionMarks marks) {
         Predicate<BlockState> holds = marks::holds;
