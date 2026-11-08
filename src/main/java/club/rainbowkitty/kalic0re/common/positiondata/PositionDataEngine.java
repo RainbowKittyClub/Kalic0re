@@ -22,6 +22,11 @@ final class PositionDataEngine {
     private PositionDataEngine() {
     }
 
+    // The immutable registration snapshot belonging to this relocated copy.
+    static List<PositionMarks> kinds() {
+        return List.of(kinds);
+    }
+
     // Throws when a kind of this copy already has id.
     static synchronized void requireFree(Identifier id) {
         for (PositionMarks kind : kinds) {
