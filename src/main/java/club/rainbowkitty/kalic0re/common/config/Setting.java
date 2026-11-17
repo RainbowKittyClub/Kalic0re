@@ -34,7 +34,7 @@ import club.rainbowkitty.kalic0re.common.rule.FallbackRules;
  *
  * <p>Declare it with {@code player()} or {@code server()} and any of the optional calls before
  * {@link ModConfig#register()}; they refuse once the declaration is closed. Reads answer the
- * effective value whoever can see the setting: the hub's when rkcore-common runs, else the
+ * effective value whoever can see the setting: the hub's when rkc-core runs, else the
  * fallback's (the game rule for a server value, the player's attachment for a player value,
  * under any value forced through permission meta), and the default whenever neither has one.
  *
@@ -176,7 +176,7 @@ public final class Setting<T> {
 
     /**
      * Gives this server setting a game rule {@code <mod>:<key>} in {@code category}, registered
-     * only when rkcore-common is absent and read there in place of the hub.
+     * only when rkc-core is absent and read there in place of the hub.
      */
     public Setting<T> fallbackRule(GameRuleCategory category) {
         config.checkOpen();

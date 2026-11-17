@@ -23,13 +23,13 @@ import club.rainbowkitty.kalic0re.common.rule.FallbackRules;
 // Which backend answers settings, decided once every initializer has run, and the hub's bridge
 // functions when it is present. Static per shaded copy, so per consumer mod.
 final class ConfigRuntime {
-    static final String DECLARE_KEY = "rkcorecommon:config/v1/declare";
-    static final String PLAYER_KEY = "rkcorecommon:config/v1/player";
-    static final String SERVER_KEY = "rkcorecommon:config/v1/server";
-    static final String LISTEN_KEY = "rkcorecommon:config/v1/listen";
+    static final String DECLARE_KEY = "rkc-core:config/v1/declare";
+    static final String PLAYER_KEY = "rkc-core:config/v1/player";
+    static final String SERVER_KEY = "rkc-core:config/v1/server";
+    static final String LISTEN_KEY = "rkc-core:config/v1/listen";
     // Optional: a hub without it never checks a value, so it is not one of the keys that make
     // the mode HUB. A check takes the value and a map of these context entries.
-    static final String VALIDATE_KEY = "rkcorecommon:config/v1/validate";
+    static final String VALIDATE_KEY = "rkc-core:config/v1/validate";
     static final String CONTEXT_SERVER = "server";
     static final String CONTEXT_SETTER = "setter";
     static final String CONTEXT_FOR = "for";
@@ -76,7 +76,7 @@ final class ConfigRuntime {
         return settled != null ? settled : resolve();
     }
 
-    // Settles the mode once: fallback without rkcore-common, the hub when it published all
+    // Settles the mode once: fallback without rkc-core, the hub when it published all
     // three read keys, and defaults only when it is loaded but did not.
     @SuppressWarnings("unchecked")
     private static synchronized Mode resolve() {
@@ -123,7 +123,7 @@ final class ConfigRuntime {
     private static void starting(MinecraftServer server) {
         Mode settled = mode();
         if (settled == Mode.BROKEN) {
-            LOGGER.error("rkcorecommon is loaded but published no settings bridge; every"
+            LOGGER.error("rkc-core is loaded but published no settings bridge; every"
                     + " setting of {} answers its default",
                     CONFIGS.stream().map(ModConfig::modId).toList());
         }

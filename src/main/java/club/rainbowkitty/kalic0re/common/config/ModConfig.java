@@ -30,7 +30,7 @@ import club.rainbowkitty.kalic0re.common.rule.FallbackRules;
 import club.rainbowkitty.kalic0re.common.text.FallbackText;
 
 /**
- * One mod's settings, declared into the rkcore-common settings hub when it runs and kept by this
+ * One mod's settings, declared into the rkc-core settings hub when it runs and kept by this
  * mod itself when it does not.
  *
  * <p>Create one in the mod's initializer, declare each setting with {@link #toggle},
@@ -120,7 +120,7 @@ public final class ModConfig {
     }
 
     /**
-     * Closes the declaration: registers the fallback rules (only without rkcore-common), the
+     * Closes the declaration: registers the fallback rules (only without rkc-core), the
      * player attachment, and the fallback {@code /settings}, and hands the declaration to the hub
      * whenever it publishes, with each setting's validator, so mod load order does not matter.
      *

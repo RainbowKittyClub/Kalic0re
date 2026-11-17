@@ -44,7 +44,7 @@ MC 26.2 and 26.3 (Stonecutter), published as `kalic0re:<version>+26.2` and
   a player. `CommandPermissions.holds(player, node, fallback)` asks the same of one player, the
   fallback an op level or, for a node no op level should imply, a boolean.
 - `common.config` — `ModConfig`, one mod's settings as typed `Setting`s (toggle, range, choice or
-  text, player or server scope), declared into the rkcore-common settings hub when it runs. Without
+  text, player or server scope), declared into the rkc-core settings hub when it runs. Without
   it, server values live in `common.rule` fallback rules and player values in a persistent player
   attachment `<mod>:settings`, edited through `/settings <mod> get|set|reset`. Each setting has a
   node `<mod>.config.<scope>.<key>`, and LuckPerms meta of that name forces a player value. An
@@ -89,8 +89,8 @@ MC 26.2 and 26.3 (Stonecutter), published as `kalic0re:<version>+26.2` and
   `Presence` answers present, absent or unknown. The consumer owns the three mixins that call
   `PositionDataHooks`, named in `PositionMarks`.
 - `common.rule` — `FallbackRules`, game rules standing in for server settings where the
-  rkcore-common settings hub is absent: `bool`, `integer`, `choice` and `text` each register their
-  rule only when `rkcorecommon` is not loaded, and return null when it is.
+  rkc-core settings hub is absent: `bool`, `integer`, `choice` and `text` each register their
+  rule only when `rkc-core` is not loaded, and return null when it is.
 - `common.text` — `FallbackText`, translatable text carrying the mod's English from its own
   `en_us.json` as fallback, since a vanilla client holds no server-side mod's lang file. English
   lives only in that file; a key it lacks is logged once and shown as itself. `Titles`, a title

@@ -30,7 +30,7 @@ import net.minecraft.server.level.ServerPlayer;
 // any argument sibling (Brigadier tries arguments only when no literal matches), so it could
 // not answer as unknown. Each mod is its own literal, so several mods' trees merge cleanly.
 final class SettingsCommand {
-    private static final String KEYS = "commands.rkcorecommon.settings.";
+    private static final String KEYS = "commands.rkc-core.settings.";
 
     private SettingsCommand() {
     }
@@ -204,7 +204,7 @@ final class SettingsCommand {
         return 0;
     }
 
-    // A reply under commands.rkcorecommon.settings.*, the hub's keys, with its English as the
+    // A reply under commands.rkc-core.settings.*, the hub's keys, with its English as the
     // fallback, since the shaded library ships no lang file of its own.
     private static Component text(String line, Object... args) {
         String english = switch (line) {
