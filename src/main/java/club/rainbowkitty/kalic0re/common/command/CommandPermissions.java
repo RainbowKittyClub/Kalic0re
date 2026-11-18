@@ -16,7 +16,7 @@ import net.minecraft.server.permissions.PermissionLevel;
  * Gates one mod's commands on permission nodes, with a vanilla operator level as fallback.
  *
  * <p>Every node is {@code <modId>.command.<path>}, the path being the command's literals from the
- * root down joined by dots ({@code rkcore.command.spawn.set}), so a permission plugin grants per
+ * root down joined by dots ({@code rkc-core.command.spawn.set}), so a permission plugin grants per
  * subcommand with one spelling across every mod. The node is asked through fabric-permissions-api
  * when some mod provides it at runtime (LuckPerms nests it); a defined answer wins, an undefined
  * one falls through to the level check. Without the API the gate is the level check alone. The

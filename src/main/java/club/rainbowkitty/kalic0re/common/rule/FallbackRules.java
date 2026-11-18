@@ -15,16 +15,16 @@ import net.minecraft.world.level.gamerules.GameRuleCategory;
 import net.minecraft.world.level.gamerules.GameRuleType;
 
 /**
- * Game rules that stand in for server settings where the rkcore-common settings hub is absent.
+ * Game rules that stand in for server settings where the rkc-core settings hub is absent.
  *
- * <p>Each helper registers its rule only when {@code rkcorecommon} is not loaded, and returns it,
+ * <p>Each helper registers its rule only when {@code rkc-core} is not loaded, and returns it,
  * or null when the hub owns the value instead. Loader settles the mod list before any
  * initializer runs, so the answer is the same however mods load. Call them from an initializer,
  * before the game-rule registry freezes.
  */
 public final class FallbackRules {
     /** The mod id of the settings hub whose presence suppresses every fallback rule. */
-    public static final String HUB_MOD_ID = "rkcorecommon";
+    public static final String HUB_MOD_ID = "rkc-core";
 
     private static final boolean HUB_LOADED = FabricLoader.getInstance().isModLoaded(HUB_MOD_ID);
 

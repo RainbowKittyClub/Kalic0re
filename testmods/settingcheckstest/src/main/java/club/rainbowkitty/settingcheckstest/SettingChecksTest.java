@@ -11,7 +11,7 @@ import club.rainbowkitty.kalic0re.common.text.FallbackText;
 
 /**
  * Settings whose checks look at who sets a value and for whom, and one whose default its own
- * check refuses, for the validator legs of rkcore-claims-b4.js. Never shipped: the value "who"
+ * check refuses, for the validator legs of rkc-claims-b4.js. Never shipped: the value "who"
  * is refused with the check's whole context, so a leg can read what the check saw.
  */
 public class SettingChecksTest implements ModInitializer {
